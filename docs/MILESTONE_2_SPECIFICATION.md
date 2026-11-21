@@ -1,6 +1,6 @@
 # Milestone 2 specification — Reference-sheet alignment and bubble recognition
 
-**Status:** Approved for implementation by the Product Owner after SWE Director review. Acceptance and merge require separate Product Owner approval.
+**Status:** Functionally accepted and merged following Product Owner iPhone validation. The representative physical benchmark and formal latency verification are deferred. See the [acceptance record](MILESTONE_2_ACCEPTANCE.md).
 
 ## Outcome and demonstration
 
