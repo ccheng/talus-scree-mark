@@ -1,6 +1,6 @@
 # Milestone 1 specification — Offline capture shell
 
-**Status:** Proposed for Product Owner approval. Milestone 0 is accepted. Approval of this specification authorizes implementation on a branch. Any merge or deployment needs its own authorization.
+**Status:** Approved by the Product Owner for implementation and a synthetic GitHub Pages development preview. Milestone 0 is accepted. Implementation stays on a branch pending explicit merge approval. Production deployment and student-data use require separate authorization.
 
 ## Outcome and scope
 
@@ -21,6 +21,10 @@ Use a relative manifest, local icons and scoped service worker. Test the project
 
 Stage each identified release with an explicit critical-asset list, a versioned cache and version-qualified resources or content validation that prevents mixing releases. Reject missing, failed, redirected or unexpected assets during staging. Preserve the active release while an update fails or waits. Use the normal waiting-worker lifecycle and tell the teacher to close and reopen the affected app clients when an update is ready. After activation, serve the matching shell and clean up only this scope's obsolete release caches. Limit interception to known same-origin shell GETs and cache only static assets. Temporary capture/import state always lives outside the service worker.
 
+## GitHub Pages development preview
+
+M1 and subsequent user-facing milestones must provide a directly accessible HTTPS preview for Product Owner testing at [ccheng.github.io/talus-scree-mark/](https://ccheng.github.io/talus-scree-mark/). Publish the tested candidate's static app and any approved synthetic preview assets only. Verify the live entry, version and required paths before reporting it as available. Preserve candidate identity in the test report. Use only synthetic or mock answer sheets on this public preview. The preview authorizes no processing of actual student data. Evaluate a dedicated, isolated HTTPS origin before any actual student-data pilot.
+
 ## Privacy acceptance
 
 The app must attempt zero outbound transfers of photos, metadata, results or derived image content. It uses no analytics, CDN, cloud inference, write API, remote fonts or user accounts. The only expected application network traffic is documented same-origin GETs for initial static delivery and updates. The app must create no persistent working image, identifier, metadata or capture history in Cache Storage, IndexedDB, local/session storage or other app-origin persistence. It must leave no app-created copy in Photos or Files. Imports read a teacher-selected source, which remains managed by the source app.
@@ -39,13 +43,13 @@ Use synthetic and physical mock sheets. For an online run, inspect browser-conte
 | M1-06 Import and preview | Asymmetric JPEG/PNG fixtures render upright and correctly mirrored where specified. Accept valid JPEG/PNG bytes despite an incorrect extension or MIME label. Reject corrupt, unsupported or oversized bytes with a clear message, including unsupported bytes labeled as JPEG/PNG. Validate actual iPhone picker output and portrait/landscape shots. Preview survives a failed replacement. Clear/reopen removes the working image. | Unit tests, desktop browser and actual iPhone. |
 | M1-07 Privacy | No image data or metadata leaves the app, no capture content enters persistent storage, and cache contents match the static allowlist. Verify online failed and successful operations as well as offline workflows. | Static audit, desktop browser and server evidence, corroborated by iPhone workflow. |
 
-For each run record candidate commit/build, test origin and subpath, device/OS, browser mode, fixture IDs, install/cache state, exact steps, expected/actual results and sanitized evidence. Test a named Product Owner-approved reference iPhone with recorded iOS build. Desktop Chromium or desktop WebKit gives browser integration evidence. Emulation and simulated camera input provide no physical-device result. Device-dependent gates remain pending until run on hardware at the approved origin.
+For each run record candidate commit/build, test origin and subpath, device/OS, browser mode, fixture IDs, install/cache state, exact steps, expected/actual results and sanitized evidence. Test the GitHub Pages preview on the Product Owner's reference iPhone and record the phone model and iOS build. Desktop Chromium or desktop WebKit gives browser integration evidence. Emulation and simulated camera input provide no physical-device result. Device-dependent gates remain pending until run on physical iPhone hardware.
 
-## Roles and approval inputs
+## Roles and review
 
 The Developer implements and tests from the approved spec. The Independent Tester owns the acceptance oracles and verifies the exact candidate. The Research Evaluator reviews image normalization and capture fixtures for future recognition work and records capture constraints. Recognition accuracy is outside M1. If defects are verified, use one bounded correction with regression tests followed by focused independent retest and Coordinator disposition.
 
-For specification approval, confirm the proposed memory-only scope and input contract. For physical-device acceptance, record the reference iPhone and iOS version and authorize a reachable private HTTPS origin, such as a local network server with a trusted certificate. Localhost suffices for desktop verification. A public GitHub Pages deployment is a separate decision. If device access or the authorized origin is pending, complete authorized desktop checks and identify the remaining hardware gates in the report.
+Provide the clickable GitHub Pages URL, candidate and test evidence, known limitations, and step-by-step iPhone instructions for camera capture, JPEG/PNG import, retake, clear, Home Screen installation and offline reopening. Label the publication and hardware gates pending if they remain unverified. A development preview and completed desktop checks do not constitute Product Owner acceptance of M1.
 
 ## Platform references
 

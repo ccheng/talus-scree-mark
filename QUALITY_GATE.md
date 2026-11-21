@@ -6,10 +6,10 @@ The Coordinator submits each milestone with a candidate SHA, intended criteria, 
 | --- | --- | --- |
 | Foundation and pure logic | Fresh-checkout `npm test`, document/fixture inspection and deterministic input/output oracles | Repository conventions, schema, raw recognition/correction separation and grading logic when present |
 | Desktop browser | Reproducible localhost or HTTPS setup, project-subpath checks, automated browser tests when useful | Manifest and worker scope, cache/update failure injection, persistence and attempted-request interception |
-| Real iPhone | Named model, iOS version and build, Safari and installed Home Screen, authorized HTTPS origin and deliberate airplane mode | Camera/lifecycle, storage, field capture quality, responsiveness and local export |
+| Real iPhone | Named model, iOS version and build, Safari and installed Home Screen, verified GitHub Pages development preview and deliberate airplane mode | Camera/lifecycle, storage, field capture quality, responsiveness and local export |
 | Research benchmark | Frozen candidate and Evaluation-owned holdout with documented thresholds and group-level uncertainty | Recognition performance and safe rejection, separate from deterministic functional checks |
 
-The Independent Tester designs inputs and expected outcomes before relying on Developer evidence. Test the exact candidate content and record SHA and environment, commands, fixture IDs, expected and actual, status (pass, fail or not run) and sanitized evidence. Distinguish simulated, desktop-browser and device tests. GitHub Pages base-path testing must use `/talus-scree-mark/`; root-only success provides no subpath evidence. An iPhone needs an authorized HTTPS test route. Desktop WebKit and phone viewport emulation do not establish iPhone behavior.
+The Independent Tester designs inputs and expected outcomes before relying on Developer evidence. Test the exact candidate content and record SHA and environment, commands, fixture IDs, expected and actual, status (pass, fail or not run) and sanitized evidence. Distinguish simulated, desktop-browser and device tests. GitHub Pages base-path testing must use `/talus-scree-mark/`; root-only success provides no subpath evidence. Each user-facing milestone requires a verified synthetic HTTPS GitHub Pages preview, with the exact link and candidate recorded for Product Owner testing. Desktop WebKit and phone viewport emulation do not establish iPhone behavior.
 
 ## Fixtures and defects
 

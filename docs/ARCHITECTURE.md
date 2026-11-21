@@ -1,6 +1,6 @@
 # Proposed architecture
 
-Use static HTML, CSS and native ES modules. Keep browser adapters separate from pure image and grading logic. Build under `app/` with an app shell, relative manifest and service worker, `src/` for modules, and same-origin `assets/`. For a future approved GitHub Pages deployment, publish the contents of `app/` as the artifact root so the entry point is `/talus-scree-mark/`. Keep verification in `tests/` and design records in `docs/`. Start with Node's test runner and zero runtime dependencies. Add a dev-only browser harness when M1 needs it.
+Use static HTML, CSS and native ES modules. Keep browser adapters separate from pure image and grading logic. Build under `app/` with an app shell, relative manifest and service worker, `src/` for modules, and same-origin `assets/`. For the authorized synthetic GitHub Pages preview, publish the contents of `app/` as the artifact root so the entry point is `/talus-scree-mark/`. Keep verification in `tests/` and design records in `docs/`. Start with Node's test runner and zero runtime dependencies. Add a dev-only browser harness when M1 needs it.
 
 | Boundary | Input | Output and ownership |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ Use video only for in-app capture, with a rear-camera preference and file-import
 
 Scope the manifest and service worker to the app's relative path. Test the actual GitHub Pages-style subpath. Precache an explicit versioned app-shell allowlist. Confirm that a compatible worker controls the app and verified required assets are available before reporting offline readiness. Preserve the previous usable shell during interrupted updates. Cache optional, version-pinned same-origin CNN/runtime assets separately and expose their own readiness. Keep student data in the local data layer outside the service-worker cache and keep all capture and grading operations free of outbound requests.
 
-WebKit storage is subject to quota and eviction. Plan quota and migration failure handling, explicit deletion, and a local recovery path. Serve device tests on an authorized HTTPS origin. GitHub Pages project paths share the `ccheng.github.io` origin, so service-worker scopes or distinct database names do not isolate student data from other same-origin pages. Prefer a dedicated HTTPS origin before any student-data pilot, subject to approval. Browser-origin boundaries and platform backup/export behavior must be verified before such a pilot.
+WebKit storage is subject to quota and eviction. Plan quota and migration failure handling, explicit deletion, and a local recovery path. Serve development device tests on the authorized synthetic GitHub Pages HTTPS preview. GitHub Pages project paths share the `ccheng.github.io` origin, so service-worker scopes or distinct database names do not isolate student data from other same-origin pages. Prefer a dedicated HTTPS origin before any student-data pilot, subject to approval. Browser-origin boundaries and platform backup/export behavior must be verified before such a pilot.
 
 - [WebKit storage policy](https://webkit.org/blog/14403/updates-to-storage-policy/)
 - [MDN origin and storage isolation](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy#cross-origin_data_storage_access)
