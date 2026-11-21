@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { profileRecord } from '../app/src/profile-store.js';
+import { profileRecord, saveProfile } from '../app/src/profile-store.js';
 
 test('saved profile records retain only the approved geometry and printed descriptors', () => {
   const bounds = { x: 4, y: 6, width: 20, height: 25, pixels: 'discard' };
@@ -19,4 +19,8 @@ test('saved profile records retain only the approved geometry and printed descri
   assert.equal(record.allowManualIdentity, true);
   profile.features[0].samples[0] = 'photo data';
   assert.throws(() => profileRecord(profile), /must be numeric/);
+});
+
+test('an unconfirmed profile cannot open the database for writing', async () => {
+  await assert.rejects(saveProfile({ id: 'invalid', revision: 1 }), /name/);
 });

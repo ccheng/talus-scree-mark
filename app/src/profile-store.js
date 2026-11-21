@@ -1,3 +1,5 @@
+import { createMarkerlessProfile } from './profile-authoring.js';
+
 const databaseName = 'talus-scree-mark-profiles';
 const storeName = 'profiles';
 
@@ -118,7 +120,7 @@ export async function saveProfile(profile) {
       !Number.isSafeInteger(profile.revision) || profile.revision < 1) {
     throw new Error('A profile ID and positive revision are required.');
   }
-  const record = profileRecord(profile);
+  const record = profileRecord(createMarkerlessProfile(profile));
   return runTransaction('readwrite', (store, complete, fail) => {
     const request = store.openCursor(revisions(record.id), 'prev');
     request.onsuccess = () => {

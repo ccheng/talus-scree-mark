@@ -1,0 +1,1047 @@
+{
+  "id": "mc-only",
+  "name": "Kinematics Checkpoint",
+  "paper": {
+    "width": 612,
+    "height": 792,
+    "units": "pt"
+  },
+  "itemOrder": [
+    "MC1",
+    "MC2",
+    "MC3",
+    "MC4",
+    "MC5",
+    "MC6",
+    "MC7",
+    "MC8",
+    "MC9",
+    "MC10",
+    "MC11",
+    "MC12",
+    "MC13",
+    "MC14",
+    "MC15",
+    "MC16",
+    "MC17",
+    "MC18",
+    "MC19",
+    "MC20",
+    "MC21",
+    "MC22",
+    "MC23",
+    "MC24"
+  ],
+  "expected": {
+    "MC1": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "MC2": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "A"
+    },
+    "MC3": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    },
+    "MC4": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC5": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC6": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "MC7": {
+      "kind": "mc",
+      "state": "blank",
+      "rawText": null
+    },
+    "MC8": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    },
+    "MC9": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    },
+    "MC10": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC11": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "MC12": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "A"
+    },
+    "MC13": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "A"
+    },
+    "MC14": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    },
+    "MC15": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC16": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "MC17": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "MC18": {
+      "kind": "mc",
+      "state": "blank",
+      "rawText": null
+    },
+    "MC19": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    },
+    "MC20": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC21": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC22": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "MC23": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "A"
+    },
+    "MC24": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    }
+  },
+  "blocks": [
+    {
+      "kind": "mc",
+      "label": "Questions 1–12",
+      "bounds": {
+        "x": 79.4,
+        "y": 200.4,
+        "width": 93.2,
+        "height": 263.2
+      },
+      "items": [
+        {
+          "id": "MC1",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 211,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 211,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 211,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 211,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 203.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC2",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 233,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 233,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 233,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 233,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 225.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC3",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 255,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 255,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 255,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 255,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 247.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC4",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 277,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 277,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 277,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 277,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 269.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC5",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 299,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 299,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 299,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 299,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 291.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC6",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 321,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 321,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 321,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 321,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 313.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC7",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 343,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 343,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 343,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 343,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 335.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC8",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 365,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 365,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 365,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 365,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 357.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC9",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 387,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 387,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 387,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 387,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 379.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC10",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 409,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 409,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 409,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 409,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 401.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC11",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 431,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 431,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 431,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 431,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 423.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC12",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 453,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 453,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 453,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 453,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 445.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "mc",
+      "label": "Questions 13–24",
+      "bounds": {
+        "x": 354.4,
+        "y": 200.4,
+        "width": 93.2,
+        "height": 263.2
+      },
+      "items": [
+        {
+          "id": "MC13",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 211,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 211,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 211,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 211,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 203.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC14",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 233,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 233,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 233,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 233,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 225.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC15",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 255,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 255,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 255,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 255,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 247.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC16",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 277,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 277,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 277,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 277,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 269.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC17",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 299,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 299,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 299,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 299,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 291.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC18",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 321,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 321,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 321,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 321,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 313.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC19",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 343,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 343,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 343,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 343,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 335.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC20",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 365,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 365,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 365,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 365,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 357.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC21",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 387,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 387,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 387,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 387,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 379.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC22",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 409,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 409,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 409,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 409,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 401.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC23",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 431,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 431,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 431,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 431,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 423.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC24",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 365,
+              "y": 453,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 389,
+              "y": 453,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 413,
+              "y": 453,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 437,
+              "y": 453,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 357.4,
+            "y": 445.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        }
+      ]
+    }
+  ]
+}
