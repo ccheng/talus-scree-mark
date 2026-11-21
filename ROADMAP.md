@@ -1,6 +1,6 @@
 # Milestone roadmap
 
-M0 and M1 are accepted and merged. The [M2 specification](docs/MILESTONE_2_SPECIFICATION.md) is proposed for SWE Director and Product Owner review. Implementation awaits approval. Recognition targets below are provisional engineering targets. Finalize criteria with the Product Owner and SWE Director Assistant before implementing each milestone. Keep each milestone independently reviewable and record exact build and evidence in its PR. User-facing milestones require a directly accessible HTTPS GitHub Pages preview for mock data at [the development URL](https://ccheng.github.io/talus-scree-mark/). Evaluate a dedicated, isolated HTTPS origin before real student-data use.
+M0 and M1 are accepted and merged. The [M2 specification](docs/MILESTONE_2_SPECIFICATION.md) is approved for implementation after SWE Director review. Acceptance and merge require separate Product Owner approval. Recognition targets below are provisional engineering targets. Finalize criteria with the Product Owner and SWE Director Assistant before implementing each milestone. Keep each milestone independently reviewable and record exact build and evidence in its PR. User-facing milestones require a directly accessible HTTPS GitHub Pages preview for mock data at [the development URL](https://ccheng.github.io/talus-scree-mark/). Evaluate a dedicated, isolated HTTPS origin before real student-data use.
 
 | Milestone | Scope | Proposed acceptance |
 | --- | --- | --- |

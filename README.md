@@ -2,7 +2,7 @@
 
 Talus Scree Mark is a planned iPhone-first web app for photographing, reading and grading paper answer sheets. It will support multiple-choice bubbles, four-position numerical-response bubbles, optional local handwriting recognition and teacher review. Capture, recognition, grading and storage will run on the device, with explicit local export.
 
-The accepted Milestone 0 foundation provides the project documentation and a synthetic fixture test harness. Milestone 1 is accepted and merged. Its offline shell supports temporary camera capture and JPEG/PNG preview. Milestone 2 proposes reference-sheet alignment and bubble recognition for review before implementation.
+The accepted Milestone 0 foundation provides the project documentation and a synthetic fixture test harness. Milestone 1 is accepted and merged. Its offline shell supports temporary camera capture and JPEG/PNG preview. Milestone 2 adds reference-sheet alignment and bubble recognition for synthetic evaluation. Acceptance is pending.
 
 ## Run locally
 
@@ -17,7 +17,8 @@ For physical iPhone testing, use the [GitHub Pages development preview](https://
 - [Recognition research and benchmark](docs/RECOGNITION_RESEARCH.md)
 - [Roadmap](ROADMAP.md)
 - [Milestone 1 specification](docs/MILESTONE_1_SPECIFICATION.md)
-- [Milestone 2 specification (proposed)](docs/MILESTONE_2_SPECIFICATION.md)
+- [Milestone 2 specification](docs/MILESTONE_2_SPECIFICATION.md)
+- [Milestone 2 printable materials and iPhone walkthrough](docs/MILESTONE_2_PHYSICAL_EVALUATION.md)
 - [iPhone acceptance checklist](docs/MILESTONE_1_IPHONE_CHECKLIST.md)
 - [Quality gate](QUALITY_GATE.md)
 - [Handoff](HANDOFF.md)

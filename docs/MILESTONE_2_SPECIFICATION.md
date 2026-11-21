@@ -1,6 +1,6 @@
 # Milestone 2 specification — Reference-sheet alignment and bubble recognition
 
-**Status:** Proposed for SWE Director and Product Owner review. Obtain Product Owner approval before implementation.
+**Status:** Approved for implementation by the Product Owner after SWE Director review. Acceptance and merge require separate Product Owner approval.
 
 ## Outcome and demonstration
 
@@ -13,7 +13,7 @@ Deliver a reproducibly printable reference PDF, its machine-readable layout prof
 - Propose one US Letter portrait page with 12 four-choice MC rows (A–D) and four NR blocks of four columns. Each NR column has digit bubbles 0–9. Include decimal bubbles in columns 2 and 3 for this reference sheet. Print clear IDs and protected spacing. Include a blank reference and a synthetic filled example with print instructions for actual-size printing.
 - Use a versioned profile with a stable ID, revision, canonical dimensions, units, anchor and check-mark definitions, orientation, expected component bounds, stable question/slot IDs, bubble centers/radii and per-column symbol sets. Coordinates use the top-left origin, x right and y down. Validate all declared regions and their geometry before scoring.
 - Use four distinguishable non-collinear registration marks in the reference layout, plus an independently verified layout/revision discriminator. Place at least six additional check landmarks spread across the interior, near both MC and NR and across the page. These landmarks are independent of the four points that fit the transform.
-- Treat printed marks and identifiers as a strategy of this reference profile. Keep registration, layout binding and reading separate so M3 can supply teacher-selected per-test profiles with teacher-confirmed blank-sheet import or manual registration for existing unmarked sheets. A future discovery strategy may supply candidate MC/NR regions through the same profile/region validation boundary.
+- Treat printed marks and identifiers as a strategy of this reference profile. Keep registration, layout binding and reading separate so M3 can supply teacher-selected per-test profiles with teacher-confirmed blank-sheet import or manual registration for existing unmarked sheets. A future discovery strategy may supply candidate MC/NR regions through the same profile/region validation boundary. Printed markers are required by the M2 reference strategy only. M3 must preserve the option to register existing sheets without special printing.
 
 ## Recognition pipeline
 
@@ -38,7 +38,7 @@ NR results retain ordered slot symbols and states. Serialize a complete resolved
 
 ## Quantitative gates and reporting
 
-The targets below are provisional engineering criteria. Report values for standard data and separately for stress, MC and NR, marked and clear-blank items, and relevant capture modes. Never pool passing strata to hide a failing stratum.
+The targets below are provisional engineering criteria. A missed target is reported as a measurable performance shortfall unless it also demonstrates a correctness or safety defect. Keep all safety-related rejection rules in force during tuning and retest. Recommend a disposition with the exact evidence. Report values for standard data and separately for stress, MC and NR, marked and clear-blank items, and relevant capture modes. Never pool passing strata to hide a failing stratum.
 
 | Measure | Proposed criterion and evidence |
 | --- | --- |
@@ -61,7 +61,7 @@ Report the predefined treatment of retakes and any exclusions. Compare bubble-on
 | M2-05 HTTPS and device | Match published preview assets to the exact candidate. Capture and import mocked sheets in iPhone Safari and installed Home Screen mode. Cold-reopen in airplane mode after cache readiness in each mode, then read bubbles and trigger a retake with a negative sheet. Record build and model. |
 | M2-06 Independent evaluation | Report frozen synthetic and physical holdout results, all denominators, cluster uncertainty, silent errors and latency. Distinguish simulated and desktop evidence from physical iPhone results. Mark any required unperformed test pending. |
 
-After approval the Developer implements and documents the candidate. The Independent Tester owns acceptance oracles and verifies the exact release. The Research Evaluator owns the sealed benchmark and interpretation. The Coordinator reports the results and stops for Product Owner acceptance and merge approval. Evaluate a dedicated isolated HTTPS origin before any real student-data use.
+The Coordinator may use internal development checkpoints under one M2 acceptance decision and the established one-cycle correction policy. The Developer implements and documents the candidate. The Independent Tester owns acceptance oracles and verifies the exact release. The Research Evaluator owns the sealed benchmark and interpretation. The Coordinator reports the results and stops for Product Owner acceptance and merge approval. Provide the printable physical evaluation package, ground-truth procedures and iPhone walkthrough alongside the working GitHub Pages preview. Leave physical recognition, phone latency and any other unperformed hardware gates explicitly pending. Evaluate a dedicated isolated HTTPS origin before any real student-data use.
 
 ## References
 
