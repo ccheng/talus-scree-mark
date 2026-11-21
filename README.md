@@ -4,9 +4,11 @@ Talus Scree Mark is a planned iPhone-first web app for photographing, reading an
 
 The accepted Milestone 0 foundation provides the project documentation and a synthetic fixture test harness. Milestone 1 provides an offline shell for temporary camera capture and JPEG/PNG preview. Optical recognition and grading are future milestones.
 
-## Run the foundation checks
+## Run locally
 
-Use Node.js 24 LTS. From a fresh checkout, run `npm test`. The test runner uses Node built-ins and needs no dependency installation, credentials, browser or network. The results cover repository and fixture contracts.
+Use Node.js 24 LTS. Run `npm test` for the foundation and capture unit tests, `npm run check:release` to verify the shell asset digests, and `npm start` to open [the local app](http://127.0.0.1:4173/talus-scree-mark/). Run `npm run build` after editing the shell. The app and its unit tests use no third-party packages.
+
+For physical iPhone testing, use the [GitHub Pages development preview](https://ccheng.github.io/talus-scree-mark/) once published and follow the [iPhone acceptance checklist](docs/MILESTONE_1_IPHONE_CHECKLIST.md). Use mock data only.
 
 ## Project documents
 
@@ -15,6 +17,7 @@ Use Node.js 24 LTS. From a fresh checkout, run `npm test`. The test runner uses 
 - [Recognition research and benchmark](docs/RECOGNITION_RESEARCH.md)
 - [Roadmap](ROADMAP.md)
 - [Milestone 1 specification](docs/MILESTONE_1_SPECIFICATION.md)
+- [iPhone acceptance checklist](docs/MILESTONE_1_IPHONE_CHECKLIST.md)
 - [Quality gate](QUALITY_GATE.md)
 - [Handoff](HANDOFF.md)
 - [Contributor instructions](AGENTS.md)

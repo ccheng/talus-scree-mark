@@ -7,8 +7,8 @@ Use a sheet you make for this test. Write “MOCK SHEET” and mark four differe
 ## Safari
 
 1. Open the preview in Safari while online. Wait for **Offline ready** before going offline. Record the visible build.
-2. Start the camera and allow access. Point the rear camera at the mock sheet and capture. Check that the preview is upright, shows the full camera framing, and stops the live camera. Retake with the phone rotated and verify the new preview. Clear and verify the image disappears.
-3. Import the local mock JPEG or PNG. Verify its orientation and clear it. Try a corrupt or unsupported file if available and check that the error leaves the controls usable. Note whether Photos supplied a converted image or an unsupported HEIC file if you use a HEIC source.
+2. Tap **Open camera** and allow access. Point the rear camera at the mock sheet and tap **Take photo**. Check that the preview is upright, shows the full camera framing, and stops the live camera. Tap **Retake photo**, rotate the phone, take another photo and verify the new preview. Tap **Clear preview** and verify the image disappears.
+3. Tap **Choose image** and select the local mock JPEG or PNG. Verify its orientation and clear it. Try a corrupt or unsupported file if available and check that the error leaves the controls usable. Note whether Photos supplied a converted image or an unsupported HEIC file if you use a HEIC source.
 4. Turn on airplane mode and verify both Wi-Fi and cellular service are off. Close Safari, reopen it and load the preview URL while still offline. Confirm the shell opens and the previous image is gone. Capture, import the local mock file, preview, retake and clear before restoring connectivity.
 5. While online again, test camera denial and recovery. Deny camera permission, verify import stays usable, then re-allow camera access through Safari’s website settings and retry. Background the app while the camera is open and verify it returns without restarting the camera.
 

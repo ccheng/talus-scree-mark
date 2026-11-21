@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="scree-release" content="14ff46694abd365fcde4b849">
+  <meta name="theme-color" content="#eff3ec">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Talus Scree Mark</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="./assets/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/icon-180.png">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body>
+  <main class="app">
+    <header class="heading">
+      <h1><img src="./assets/icon-192.png" width="44" height="44" alt="">Talus Scree Mark</h1>
+      <div class="offline-panel">
+        <p id="offline-status" role="status">Checking offline setup…</p>
+        <button id="retry-offline" type="button" hidden>Retry offline setup</button>
+        <p id="build-id" class="build-id"></p>
+      </div>
+    </header>
+    <section class="capture-panel" aria-labelledby="capture-heading">
+      <h2 id="capture-heading">Capture an answer sheet</h2>
+      <p class="preview-note">Development preview. Use mock sheets only.</p>
+      <p class="hint">Use the camera or choose a JPEG or PNG. The preview clears when you close this page.</p>
+      <div class="controls">
+        <button id="start-camera" type="button" class="primary">Open camera</button>
+        <button id="shutter" type="button" class="primary" hidden disabled>Take photo</button>
+        <button id="cancel-camera" type="button" hidden>Cancel camera</button>
+        <button id="choose-image" type="button">Choose image</button>
+        <input id="image-picker" type="file" hidden>
+        <button id="clear-image" type="button" hidden>Clear preview</button>
+      </div>
+      <p id="capture-status" class="capture-status" role="status"></p>
+      <div id="camera-preview" class="preview" hidden>
+        <video id="camera-video" aria-label="Live camera preview" autoplay playsinline muted></video>
+      </div>
+      <figure id="image-preview" class="preview" hidden>
+        <canvas id="sheet-canvas" width="1" height="1" role="img" aria-label="Answer sheet preview"></canvas>
+        <figcaption id="preview-caption"></figcaption>
+      </figure>
+      <noscript>Turn on JavaScript to capture a sheet or set up offline use.</noscript>
+    </section>
+  </main>
+</body>
+</html>
