@@ -122,6 +122,20 @@ async function trackEnds(page, index) {
   await page.waitForFunction((index) => window.__cam.tracks[index]?.readyState === 'ended' && !document.querySelector('#camera-video').srcObject, index, { timeout: 4000 });
 }
 
+function classifyPrivacyRequest(entry, origin, staticPaths) {
+  const url = new URL(entry.url);
+  assert.equal(entry.method, 'GET', `unexpected request method for ${entry.url}`);
+  assert.equal(entry.body, null, `unexpected request body for ${entry.url}`);
+  if (url.protocol === 'blob:') {
+    assert.equal(url.origin, origin, `unexpected blob origin for ${entry.url}`);
+    assert.equal(entry.worker, false, `unexpected worker blob read for ${entry.url}`);
+    return 'blob';
+  }
+  assert(url.protocol === 'http:' || url.protocol === 'https:', `unexpected request scheme for ${entry.url}`);
+  assert(staticPaths.has(entry.url), `unexpected HTTP(S) request ${entry.url}`);
+  return 'http';
+}
+
 add('M1-01 path, scope, viewport and keyboard', async () => scoped(async (context) => {
   const page = await load(context, projectPath.slice(0, -1));
   assert.equal(new URL(page.url()).pathname, projectPath);
@@ -344,6 +358,7 @@ add('M1-03 simulated offline reopen and M1-07 online/offline privacy', async () 
   assert.deepEqual(baseline.locals, {});
   assert.deepEqual(baseline.session, {});
   const onlineStart = requestLog.length;
+  const onlineServerStart = server.requests.length;
   await upload(page, 'corners-2.jpeg', 'unique-synthetic-name.jpeg');
   await assertImage(page, oracle['corners-2.jpeg']);
   await upload(page, 'unsupported.gif', 'unique-synthetic-invalid.jpeg');
@@ -370,14 +385,34 @@ add('M1-03 simulated offline reopen and M1-07 online/offline privacy', async () 
   await assertImage(page, oracle['corners.png']);
   assert.deepEqual(await collectState(page), baseline);
   assert.equal(server.requests.length, beforeCold);
-  const staticPaths = new Set([target, ...baseline.cache.flatMap(({ keys }) => keys)]);
-  for (const entry of [...onlineWorkflow, ...requestLog.slice(offlineStart)]) {
+  const release = await import(pathToFileURL(resolve(appPath, 'precache.generated.js')).href);
+  const cachedAssets = Object.keys(release.shellAssets).map((path) => new URL(path, target).href);
+  assert.deepEqual(baseline.cache.flatMap(({ keys }) => keys).sort(), cachedAssets.sort());
+  const staticPaths = new Set([
+    target, ...cachedAssets, new URL('sw.js', target).href, new URL('precache.generated.js', target).href,
+  ]);
+  assert.throws(() => classifyPrivacyRequest({
+    url: new URL('unexpected-test-probe', target).href,
+    method: 'GET',
+    worker: false,
+    body: null,
+  }, server.origin, staticPaths), /unexpected HTTP\(S\) request/);
+
+  function summarize(entries) {
+    const counts = { http: 0, blob: 0 };
+    for (const entry of entries) counts[classifyPrivacyRequest(entry, server.origin, staticPaths)]++;
+    return `${counts.http} allowlisted HTTP(S) request event(s), ${counts.blob} same-origin local blob read(s)`;
+  }
+
+  const onlineServerRequests = server.requests.slice(onlineServerStart, beforeCold);
+  for (const entry of onlineServerRequests) {
     assert.equal(entry.method, 'GET');
-    assert.equal(entry.body, null);
-    assert(staticPaths.has(entry.url), `unexpected request ${entry.url}`);
+    assert.equal(Number(entry.bytes ?? 0), 0);
+    assert(staticPaths.has(new URL(entry.url, server.origin).href), `unexpected request in server log ${entry.url}`);
   }
   assert(!JSON.stringify(requestLog).includes('unique-synthetic'));
-  console.log(`  Observed ${requestLog.length} request event(s), ${onlineWorkflow.length} after ready online capture start, ${requestLog.length - offlineStart} during offline capture/import.`);
+  console.log(`  Online workflow: ${summarize(onlineWorkflow)}. Server received ${onlineServerRequests.length} allowed request(s).`);
+  console.log(`  Offline workflow: ${summarize(requestLog.slice(offlineStart))}. Server received no requests on reopen or during capture/import.`);
 }));
 
 try {
