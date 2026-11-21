@@ -1,0 +1,71 @@
+# Milestone 2 specification — Reference-sheet alignment and bubble recognition
+
+**Status:** Proposed for SWE Director and Product Owner review. Obtain Product Owner approval before implementation.
+
+## Outcome and demonstration
+
+A teacher can capture or import a completed synthetic reference sheet using the M1 controls, inspect the image, then select **Read bubbles**. The app displays the observed multiple-choice (MC) selections and four-position numerical-response (NR) strings, with marked regions and reasons for review. A capture that fails registration or reference-layout verification gives a retake instruction without automatically accepting any answers. Retake, clear and page reopening discard the previous result. Captures, scores and review evidence are held in memory on the device. Use the existing [HTTPS development preview](https://ccheng.github.io/talus-scree-mark/) with mock sheets only.
+
+Deliver a reproducibly printable reference PDF, its machine-readable layout profile and digest, a known-answer example and key for testing, the local recognition and review UI, independent acceptance fixtures and an evaluation report. Use plain HTML and JavaScript for the application, with heavy pixel work isolated from the UI thread. Include no grading, editable corrections, persistence, export, handwriting recognition, layout editor or automatic layout discovery.
+
+## Controlled reference layout
+
+- Propose one US Letter portrait page with 12 four-choice MC rows (A–D) and four NR blocks of four columns. Each NR column has digit bubbles 0–9. Include decimal bubbles in columns 2 and 3 for this reference sheet. Print clear IDs and protected spacing. Include a blank reference and a synthetic filled example with print instructions for actual-size printing.
+- Use a versioned profile with a stable ID, revision, canonical dimensions, units, anchor and check-mark definitions, orientation, expected component bounds, stable question/slot IDs, bubble centers/radii and per-column symbol sets. Coordinates use the top-left origin, x right and y down. Validate all declared regions and their geometry before scoring.
+- Use four distinguishable non-collinear registration marks in the reference layout, plus an independently verified layout/revision discriminator. Place at least six additional check landmarks spread across the interior, near both MC and NR and across the page. These landmarks are independent of the four points that fit the transform.
+- Treat printed marks and identifiers as a strategy of this reference profile. Keep registration, layout binding and reading separate so M3 can supply teacher-selected per-test profiles with teacher-confirmed blank-sheet import or manual registration for existing unmarked sheets. A future discovery strategy may supply candidate MC/NR regions through the same profile/region validation boundary.
+
+## Recognition pipeline
+
+| Boundary | Required behavior |
+| --- | --- |
+| Job lifecycle | Accept M1’s normalized image and a validated profile. Allow one active job. Support cancellation or worker replacement. Tag requests and responses so late work from a cleared or replaced capture cannot update the UI. |
+| Registration | Find the four required anchors and resolve page orientation. Fit a source-to-page projective transform and retain its inverse. Reject missing, ambiguous, mirrored, wrong-order, ill-conditioned or clipped registrations. Check plausible projected geometry, coverage of required content, the independent profile/revision discriminator and distributed validation landmarks before opening automatic recognition. |
+| Bubble observations | Sample known interiors with a local background reference, excluding printed outlines and labels as feasible. Check visible area and local contrast. Record raw per-choice fill scores, quality and the margin between candidates. Use separate calibrated conditions for clear blanks, single marks and rivals. |
+| Result evidence | Preserve capture ID, profile ID/revision, algorithm and threshold versions, alignment diagnostics, region location or source crop, scores, literal observed responses and reasons. Show item-level review reasons and evidence overlays or crops. Retain any readable portions of a reviewed NR response without manufacturing a complete string. |
+
+Registration and profile identity failures block the entire sheet. With verified registration, local blur, glare, occlusion or a missing required ROI blocks the affected item. A clear second mark is **multiple**. Weak marks, erasures or close rival scores are **ambiguous** where evidence is insufficient. Unusable evidence is **unreadable**. A **blank** requires usable evidence and sufficiently low fill. Clear single marks and clear intentional blanks may be accepted as observations. Use raw scores as calibrated decision inputs. Report probability only if a later calibration establishes its meaning.
+
+NR results retain ordered slot symbols and states. Serialize a complete resolved observation as an exact four-character string with spaces for empty positions. Required examples include `"5.3 "`, `"12.3"`, `"0.25"`, `"3008"` and `"    "`. Preserve leading zeros, leading or internal blanks, and repeated decimal marks where physically observed. Flag convention-invalid resolved strings for review, and leave the complete string unset if any slot is unresolved. Compare exact strings and states during evaluation. Numeric equivalence and scoring rules belong to grading.
+
+## Independent fixtures and benchmark
+
+1. **Development and calibration.** Provide open fixtures for geometry and mark-rule development. Tune parameters on the designated calibration split. Record fixture IDs, seeds, print settings, reference profile digest and each threshold configuration.
+2. **Sealed evaluation.** Freeze the exact candidate, profile, thresholds, fixture manifest, conditions, exclusions, metric definitions and oracle before opening the holdout. Group synthetic derivatives by original answer pattern and rendering source. Group physical recaptures with the original mock sheet, writer and capture session. The Research Evaluator controls holdout and reserve access. Two readers label borderline physical marks independently before adjudication. Record intended marks, observable evidence status and expected review decisions.
+3. **Deterministic coverage.** Plan at least 20 distinct standard synthetic full-sheet fixtures and 20 stress or negative synthetic fixtures. Include 0°, 90°, 180° and 270° rotation, keystone, translation, scale, missing/duplicate/clipped anchors, matching anchor geometry with wrong or missing layout identity, mirrored sheets, dark/light marks, erasures, double marks, glare and partial or occluded ROIs. Cover all allowed MC choices, each digit and decimal position, and each NR status. Declare which degradations must reject and which are characterization cases. Record counts by condition.
+4. **Physical engineering holdout.** Target approximately 30 distinct printed mock sheets using the single reference profile, with one preregistered standard capture per sheet per mode under evaluation. Run on the named reference iPhone with recorded iOS and build. Record the number of distinct sheets, writers, sessions, photos and responses. Report paired variants and stress captures separately, and do not treat repeat captures or responses on the same sheet as independent. This evaluates M2 on a controlled layout. The later 30–40-sheet classroom workflow pilot remains on the roadmap.
+5. **After a defect.** Allow one bounded Developer correction and regression-test cycle. The Independent Tester performs a focused retest. The Research Evaluator uses a fresh sealed reserve to assess affected recognition thresholds or code when the original holdout has informed a correction. Report any exposed or reused evaluation sets explicitly.
+
+## Quantitative gates and reporting
+
+The targets below are provisional engineering criteria. Report values for standard data and separately for stress, MC and NR, marked and clear-blank items, and relevant capture modes. Never pool passing strata to hide a failing stratum.
+
+| Measure | Proposed criterion and evidence |
+| --- | --- |
+| Geometry | Compare projected independent landmarks and manually labeled or generated bubble centers against the oracle. Use local bubble radius `r` as the unit. For automatically registered standard sheets target p95 displacement ≤0.25r and maximum verified displacement ≤0.50r at the sampled check points, with coverage across all regions and oracle precision reported. A four-fit-anchor residual alone cannot verify alignment. Report invalid registrations and valid-sheet retakes separately. |
+| Automatic coverage | For each of MC and NR on the standard physical holdout, target `A/N ≥ 95%`. `N` includes all planned scorable observations, including items on rejected sheets and clear intentional blanks. `A` counts automatically accepted observations and clear blanks. Report retakes, item reviews and remaining unresolved items. |
+| Silent error | For MC and NR separately, target `W/A ≤ 0.5%`. `W` is any wrong auto-accepted observed status or literal response, including an auto-accepted item whose frozen oracle requires review. For NR, any wrong slot makes the response wrong. Report `W/A`, `W/N`, wrong-profile acceptances, number of affected sheets and exact whole-sheet agreement. If `A = 0`, selective error is undefined. |
+| Blocking safety cases | Every seeded unmistakable double mark must be reviewed, and every seeded unknown or wrong revision, failed identity check or unusable registration must yield no automatically accepted responses. Silently accepting any such seeded case is a blocking defect regardless of aggregate rates. |
+| Performance | On the named iPhone target p95 ≤3 s from analysis dispatch on an available working image to an actionable painted outcome, including review or retake. Record cold/warm groups, scan count, timeouts and interruptions separately. Also report capture or file-selection completion to working-image-ready time and end-to-end time excluding human interaction. |
+
+Report the predefined treatment of retakes and any exclusions. Compare bubble-only recognition using oracle geometry with the complete capture-to-result path, using paired inputs where feasible. Report confidence–coverage tradeoffs and rejection reasons with counts and explicit denominators. Report cluster counts and uncertainty intervals using the independent sampling unit, such as a sheet or writer/session block where justified. Recompute ratios within resampled clusters. An all-zero or sparse clustered sample does not justify a response-level reliability claim. Report zero observed errors as a sample result, and give a defensible bound at its stated unit or mark uncertainty unresolved. Identify which provisional targets were met and what the evidence can support.
+
+## Acceptance and handoff
+
+| Check | Independent evidence |
+| --- | --- |
+| M2-01 Reference contract | Print and inspect the reference, profile, dimensions, stable mappings and synthetic example. Verify that generated fixtures and the printed regions agree. |
+| M2-02 Alignment and rejection | Verify orientation and displacement against independent landmarks and ROI centers, with exact negative oracles and all blocking safety cases. |
+| M2-03 MC and NR reading | Validate the full literal responses and states for deterministic baseline fixtures, all symbols, blanks, narrow score margins and quality rejection. Inspect review overlays or crops. |
+| M2-04 App and privacy | Verify result invalidation after retake, clear and stale responses. Rerun applicable M1 tests and audit that no capture, observations or review evidence enters app storage, cache or outbound requests. |
+| M2-05 HTTPS and device | Match published preview assets to the exact candidate. Capture and import mocked sheets in iPhone Safari and installed Home Screen mode. Cold-reopen in airplane mode after cache readiness in each mode, then read bubbles and trigger a retake with a negative sheet. Record build and model. |
+| M2-06 Independent evaluation | Report frozen synthetic and physical holdout results, all denominators, cluster uncertainty, silent errors and latency. Distinguish simulated and desktop evidence from physical iPhone results. Mark any required unperformed test pending. |
+
+After approval the Developer implements and documents the candidate. The Independent Tester owns acceptance oracles and verifies the exact release. The Research Evaluator owns the sealed benchmark and interpretation. The Coordinator reports the results and stops for Product Owner acceptance and merge approval. Evaluate a dedicated isolated HTTPS origin before any real student-data use.
+
+## References
+
+- [Alberta Math 30–1 information bulletin, numerical-response examples](https://www.alberta.ca/system/files/custom_downloaded_images/edc-math-30-1-info-bulletin.pdf)
+- [OpenCV documentation on perspective transforms](https://docs.opencv.org/4.x/da/d54/group__imgproc__transform.html)
+- [Selective classification and risk–coverage curves](https://papers.neurips.cc/paper_files/paper/2017/hash/4a8423d5e91fda00bb7e46540e2b0cf1-Abstract.html)
+- [Interpreting zero observed events](https://www.med.mcgill.ca/epidemiology/hanley/tmp/Proportion/zero_numerator.pdf)

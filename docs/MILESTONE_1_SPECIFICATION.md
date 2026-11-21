@@ -1,6 +1,6 @@
 # Milestone 1 specification — Offline capture shell
 
-**Status:** Approved by the Product Owner for implementation and a synthetic GitHub Pages development preview. Milestone 0 is accepted. Implementation stays on a branch pending explicit merge approval. Production deployment and student-data use require separate authorization.
+**Status:** Accepted after Product Owner iPhone validation and merged in [PR #3](https://github.com/ccheng/talus-scree-mark/pull/3). The [synthetic GitHub Pages development preview](https://ccheng.github.io/talus-scree-mark/) remains live. See the [handoff](../HANDOFF.md) for the acceptance record. Production deployment and student-data use require separate authorization.
 
 ## Outcome and scope
 
