@@ -17,6 +17,8 @@ Use deterministic seeds, generator versions, stable fixture and template IDs, pa
 
 Log a defect with ID, severity, criterion, SHA, environment, fixture/configuration, reproduction steps, expected and actual, impact, sanitized evidence, status and regression/fix SHA. For the bounded retest, reproduce the original issue and verify adjacent behavior, recording unresolved results. Use synthetic analogues for published recognition regressions and reserve holdout assets for genuine independent confirmation.
 
+Recognition acceptance reports must include counts and denominators, independent cluster counts and uncertainty by relevant strata. Report the number of wrong auto-accepted responses over both auto-accepted and all in-scope responses. Mark limits arising from sparse clusters, and avoid reliability claims based on small samples even when a provisional target was met. Use approximately 30–40 distinct mock sheets for the final classroom pilot. Seven sheets can serve as an intermediate smoke test.
+
 ## Real-device and privacy checks
 
 - Exercise rear-camera selection, permission denial and recovery, interruption/backgrounding, portrait and landscape, image import and supported formats including observed EXIF/HEIC behavior, blur, glare, skew and clipped regions.
