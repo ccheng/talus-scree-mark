@@ -1,0 +1,10 @@
+{
+  "name": "talus-scree-mark",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
