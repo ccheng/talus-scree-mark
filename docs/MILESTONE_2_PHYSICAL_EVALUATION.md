@@ -16,7 +16,7 @@ Print on white US Letter paper, portrait, single-sided, at **Actual Size** or **
 ## Quick iPhone check
 
 1. Open the preview in Safari while online and wait for **Offline ready**. Save the filled PNG to Files before the offline test.
-2. Choose **Open camera** and photograph the printed filled sheet. Include the entire page, hold the phone steady and keep glare off the paper. Tap **Read bubbles** and compare each MC and each four-position NR observation with the key. Open the review evidence and verify it points at the expected row or grid.
+2. Choose **Open camera** and photograph the printed filled sheet. Include the entire page, hold the phone steady and keep glare off the paper. Tap **Read bubbles** and compare each MC and each four-position NR observation with the key. Inspect the outlines on the image and verify they point at the expected rows and grids. Read any review reasons in the results table.
 3. Tap **Choose image**, select the saved PNG and tap **Read bubbles**. Check the same key. Retake or clear and confirm the previous results disappear.
 4. On a separate blank print, fill two choices on one MC row and leave another deliberately blank. Verify the double mark goes to review and the clear blank stays distinguishable. Then photograph a sheet with a corner registration mark outside the frame. Expect a retake with no accepted answers.
 5. In Safari, use **Share → Add to Home Screen** and enable **Open as Web App** if shown. Launch from the Home Screen and let it become **Offline ready**. With Wi‑Fi and cellular off, quit and reopen. Repeat a known-answer capture or import and a retake case while offline. Also test offline reopening in Safari after its own cache is ready.

@@ -1,0 +1,74 @@
+{
+  "id": "filled-example-1",
+  "profile": {
+    "id": "scree-reference-letter",
+    "revision": 1,
+    "sha256": "3c47f44df558e3b5cb693d883bfe76b9c50a66f3b1e7a049d8b5c7127764e8e8"
+  },
+  "items": {
+    "MC1": {
+      "status": "single",
+      "rawText": "B"
+    },
+    "MC2": {
+      "status": "single",
+      "rawText": "D"
+    },
+    "MC3": {
+      "status": "single",
+      "rawText": "A"
+    },
+    "MC4": {
+      "status": "single",
+      "rawText": "C"
+    },
+    "MC5": {
+      "status": "single",
+      "rawText": "A"
+    },
+    "MC6": {
+      "status": "single",
+      "rawText": "D"
+    },
+    "MC7": {
+      "status": "single",
+      "rawText": "B"
+    },
+    "MC8": {
+      "status": "single",
+      "rawText": "C"
+    },
+    "MC9": {
+      "status": "blank",
+      "rawText": null
+    },
+    "MC10": {
+      "status": "single",
+      "rawText": "D"
+    },
+    "MC11": {
+      "status": "single",
+      "rawText": "C"
+    },
+    "MC12": {
+      "status": "single",
+      "rawText": "A"
+    },
+    "NR1": {
+      "status": "single",
+      "rawText": "5.3 "
+    },
+    "NR2": {
+      "status": "single",
+      "rawText": "12.3"
+    },
+    "NR3": {
+      "status": "single",
+      "rawText": "0.25"
+    },
+    "NR4": {
+      "status": "single",
+      "rawText": "3008"
+    }
+  }
+}

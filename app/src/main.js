@@ -1,6 +1,7 @@
 import { createCamera } from './camera.js';
 import { importWorkingImage, ImageInputError } from './image.js';
 import { prepareOffline } from './offline.js';
+import { createRecognitionView } from './recognition-view.js';
 
 const byId = (id) => document.getElementById(id);
 const start = byId('start-camera');
@@ -17,6 +18,11 @@ const caption = byId('preview-caption');
 let workingImage;
 let importOperation;
 let pickerPending = false;
+const read = byId('read-bubbles');
+const recognition = createRecognitionView({
+  button: read, status: byId('recognition-status'), results: byId('recognition-results'),
+  table: byId('recognition-items'), overlay: byId('recognition-overlay'),
+});
 
 function showStatus(message) {
   status.textContent = message;
@@ -27,6 +33,7 @@ function updatePreview() {
   start.textContent = workingImage?.source === 'camera' ? 'Retake photo' : 'Open camera';
   clear.hidden = !workingImage;
   sheet.hidden = !workingImage || camera.state !== 'closed';
+  recognition.setAvailable(!sheet.hidden && !pickerPending && !importOperation);
   if (!workingImage) {
     canvas.width = 1;
     canvas.height = 1;
@@ -36,6 +43,7 @@ function updatePreview() {
 }
 
 function showWorkingImage(image) {
+  recognition.reset();
   workingImage = image;
   canvas.width = image.width;
   canvas.height = image.height;
@@ -69,6 +77,7 @@ function cancelImport() {
 
 start.addEventListener('click', () => {
   cancelImport();
+  recognition.reset();
   camera.open();
 });
 cancel.addEventListener('click', () => camera.close('Camera canceled. Open it again or choose an image.'));
@@ -88,17 +97,24 @@ choose.addEventListener('click', () => {
   camera.close();
   showStatus('');
   pickerPending = true;
+  updatePreview();
   picker.click();
 });
-picker.addEventListener('cancel', () => { pickerPending = false; });
+picker.addEventListener('cancel', () => {
+  pickerPending = false;
+  updatePreview();
+});
 picker.addEventListener('change', async () => {
   if (!pickerPending) return;
   const file = picker.files[0];
   cancelImport();
+  updatePreview();
   if (!file) return;
 
+  recognition.reset();
   const operation = new AbortController();
   importOperation = operation;
+  updatePreview();
   showStatus('Reading the selected image…');
   try {
     const imported = await importWorkingImage(file, operation.signal);
@@ -110,11 +126,17 @@ picker.addEventListener('change', async () => {
       showStatus(error instanceof ImageInputError ? error.message : 'Could not read the image. Choose another JPEG or PNG.');
     }
   } finally {
-    if (importOperation === operation) importOperation = undefined;
+    if (importOperation === operation) {
+      importOperation = undefined;
+      updatePreview();
+    }
   }
 });
 
+read.addEventListener('click', () => recognition.read(workingImage));
+
 clear.addEventListener('click', () => {
+  recognition.reset();
   cancelImport();
   camera.close();
   workingImage = undefined;
@@ -123,6 +145,7 @@ clear.addEventListener('click', () => {
 });
 
 function resetPage() {
+  recognition.reset();
   cancelImport();
   camera.close();
   workingImage = undefined;

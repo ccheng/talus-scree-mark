@@ -8,7 +8,8 @@
     "test": "node --test",
     "build": "node scripts/build-release.mjs",
     "check:release": "node scripts/build-release.mjs --check",
-    "start": "node scripts/serve-app.mjs"
+    "start": "node scripts/serve-app.mjs",
+    "build:reference": "node scripts/generate-reference.mjs"
   },
   "type": "module"
 }
