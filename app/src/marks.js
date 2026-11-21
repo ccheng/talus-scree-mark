@@ -1,0 +1,103 @@
+import { grayAt, quantile } from './omr-image.js';
+import { project } from './projective.js';
+
+export const thresholdVersion = 'reference-v1';
+export const thresholds = Object.freeze({
+  maximumBlankFill: .105,
+  minimumClearFill: .265,
+  maximumRivalFill: .144,
+  minimumSeparation: .15,
+  minimumOutlineContrast: 28,
+  minimumOutlineSupport: .5,
+});
+
+const angles = Array.from({ length: 24 }, (_, index) => {
+  const radians = index * Math.PI / 12;
+  return [Math.cos(radians), Math.sin(radians)];
+});
+const coreOffsets = [];
+for (let y = -.66; y < .67; y += .22) {
+  for (let x = -.66; x < .67; x += .22) {
+    if (Math.hypot(x, y) <= .68) coreOffsets.push([x, y]);
+  }
+}
+
+function observeBubble(image, matrix, option) {
+  const { x, y, radius, symbol } = option;
+  const source = project(matrix, x, y);
+  const edge = project(matrix, x + radius, y);
+  const sourceRadius = source && edge ? Math.hypot(edge.x - source.x, edge.y - source.y) : 0;
+  const evidence = { x, y, radius, source, sourceRadius };
+  if (!source || sourceRadius < 2.5) return { symbol, score: null, quality: { usable: false }, evidence };
+
+  function sample(dx, dy) {
+    const point = project(matrix, x + dx * radius, y + dy * radius);
+    return point ? grayAt(image, point.x, point.y) : NaN;
+  }
+
+  const backgroundSamples = angles.map(([cos, sin]) => sample(cos * 1.55, sin * 1.55));
+  const outlineSamples = angles.map(([cos, sin]) => Math.min(
+    sample(cos * .84, sin * .84), sample(cos * .96, sin * .96),
+    sample(cos * 1.08, sin * 1.08), sample(cos * 1.20, sin * 1.20),
+  ));
+  const coreSamples = coreOffsets.map(([dx, dy]) => sample(dx, dy));
+  if ([...backgroundSamples, ...outlineSamples, ...coreSamples].some((value) => !Number.isFinite(value))) {
+    return { symbol, score: null, quality: { usable: false }, evidence };
+  }
+
+  const background = quantile(backgroundSamples, .53);
+  const outline = quantile(outlineSamples, .27);
+  const contrast = background - outline;
+  const support = outlineSamples.filter((sample) => background - sample >= Math.max(20, contrast * .30)).length / angles.length;
+  const usable = contrast >= thresholds.minimumOutlineContrast && support >= thresholds.minimumOutlineSupport;
+  const quality = { usable, contrast, outlineSupport: support, background };
+
+  if (!usable) return { symbol, score: null, quality, evidence };
+  const darkness = coreSamples.reduce((sum, sample) =>
+    sum + Math.max(0, Math.min(1, (background - sample) / contrast)), 0);
+  return { symbol, score: darkness / coreSamples.length, quality, evidence };
+}
+
+function observeGroup(image, matrix, choices) {
+  const scores = choices.map((option) => observeBubble(image, matrix, option));
+  const ranked = scores.filter(({ score }) => score !== null).sort((a, b) => b.score - a.score);
+  const best = ranked[0];
+  const runner = ranked[1];
+  const margin = best && runner ? best.score - runner.score : null;
+  const evidence = { choices: scores, margin };
+
+  if (ranked.length !== scores.length) {
+    return { status: 'unreadable', symbol: null, review: true, reasons: ['insufficient-region-evidence'], ...evidence };
+  }
+  if (runner && runner.score >= thresholds.minimumClearFill) {
+    return { status: 'multiple', symbol: null, review: true, reasons: ['multiple-marks'], ...evidence };
+  }
+  if (best.score <= thresholds.maximumBlankFill) {
+    return { status: 'blank', symbol: null, review: false, reasons: [], ...evidence };
+  }
+  if (best.score >= thresholds.minimumClearFill && runner.score <= thresholds.maximumRivalFill && margin >= thresholds.minimumSeparation) {
+    return { status: 'single', symbol: best.symbol, review: false, reasons: [], ...evidence };
+  }
+  const reason = runner.score > thresholds.maximumRivalFill ? 'competing-mark' : 'weak-mark';
+  return { status: 'ambiguous', symbol: null, review: true, reasons: [reason], ...evidence };
+}
+
+export function readBubbleRegions(image, pageToSource, items) {
+  return items.map((item) => {
+    const fields = { id: item.id, kind: item.kind, bounds: item.bounds };
+    if (item.kind === 'mc') {
+      const observation = observeGroup(image, pageToSource, item.choices);
+      return { ...fields, rawText: observation.symbol, ...observation };
+    }
+
+    const slots = item.slots.map(({ id, choices }) => ({ id, ...observeGroup(image, pageToSource, choices) }));
+    const unresolved = ['unreadable', 'multiple', 'ambiguous'].find((state) => slots.some(({ status }) => status === state));
+    if (unresolved) {
+      return { ...fields, slots, status: unresolved, rawText: null, review: true, reasons: [...new Set(slots.flatMap(({ reasons }) => reasons))] };
+    }
+    const rawText = slots.map(({ symbol }) => symbol ?? ' ').join('');
+    const blank = rawText === '    ';
+    const review = !blank && !/^\d+(?:\.\d+)? *$/.test(rawText);
+    return { ...fields, slots, status: blank ? 'blank' : 'single', rawText, review, reasons: review ? ['nr-format'] : [] };
+  });
+}

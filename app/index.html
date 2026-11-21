@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="14ff46694abd365fcde4b849">
+  <meta name="scree-release" content="c7c778c9b5411e111938540c">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -33,6 +33,7 @@
         <button id="cancel-camera" type="button" hidden>Cancel camera</button>
         <button id="choose-image" type="button">Choose image</button>
         <input id="image-picker" type="file" hidden>
+        <button id="read-bubbles" type="button" class="primary" hidden>Read bubbles</button>
         <button id="clear-image" type="button" hidden>Clear preview</button>
       </div>
       <p id="capture-status" class="capture-status" role="status"></p>
@@ -40,9 +41,31 @@
         <video id="camera-video" aria-label="Live camera preview" autoplay playsinline muted></video>
       </div>
       <figure id="image-preview" class="preview" hidden>
-        <canvas id="sheet-canvas" width="1" height="1" role="img" aria-label="Answer sheet preview"></canvas>
+        <div class="image-stack">
+          <canvas id="sheet-canvas" width="1" height="1" role="img" aria-label="Answer sheet preview"></canvas>
+          <canvas id="recognition-overlay" width="1" height="1" aria-hidden="true" hidden></canvas>
+        </div>
         <figcaption id="preview-caption"></figcaption>
       </figure>
+      <p id="recognition-status" class="capture-status" role="status" data-status="idle"></p>
+      <section id="recognition-results" aria-labelledby="recognition-heading" data-status="idle" hidden>
+        <h3 id="recognition-heading">Observed responses</h3>
+        <p class="hint">Dashed outlines show areas to review. In numerical responses, · marks an empty position and ? marks an unresolved position.</p>
+        <table>
+          <thead><tr><th scope="col">Item</th><th scope="col">Observed</th><th scope="col">Review</th></tr></thead>
+          <tbody id="recognition-items"></tbody>
+        </table>
+      </section>
+      <details class="reference-panel">
+        <summary>Reference sheet and examples</summary>
+        <p>Print on Letter paper at actual size (100%). Keep all four corner markers in view.</p>
+        <ul>
+          <li><a href="./reference/reference-blank.pdf">Blank reference PDF</a></li>
+          <li><a href="./reference/reference-filled.pdf">Filled example PDF</a></li>
+          <li><a href="./reference/reference-filled.png">Filled example image</a></li>
+          <li><a href="./reference/reference-key.json">Expected readings</a></li>
+        </ul>
+      </details>
       <noscript>Turn on JavaScript to capture a sheet or set up offline use.</noscript>
     </section>
   </main>
