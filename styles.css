@@ -78,3 +78,40 @@ video, canvas {
 }
 video { width: 100%; object-fit: contain; }
 figcaption { color: var(--muted); margin-top: .45rem; font-size: .87rem; text-align: center; }
+
+
+.image-stack { display: grid; justify-items: center; }
+.image-stack canvas { grid-area: 1 / 1; }
+#recognition-overlay { pointer-events: none; background: transparent; }
+#recognition-results { margin-top: 1rem; }
+#recognition-results h3 { margin: 0; }
+#recognition-results table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+#recognition-results th, #recognition-results td {
+  padding: .45rem .35rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  text-align: left;
+}
+#recognition-results tr[data-review="true"] { background: #fff1e4; }
+.observed-slots {
+  display: inline-flex;
+  gap: .15rem;
+  font-family: ui-monospace, monospace;
+}
+.observed-slots span {
+  display: inline-block;
+  min-width: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: .2rem;
+  text-align: center;
+}
+.reference-panel { margin-top: 1.2rem; }
+.reference-panel summary { cursor: pointer; font-weight: 650; }
+.reference-panel ul { margin-top: .4rem; padding-inline-start: 1.3rem; }
+.reference-panel a { color: #245c8e; }
+:where(summary, a):focus-visible { outline: 3px solid #385d97; outline-offset: 3px; }
