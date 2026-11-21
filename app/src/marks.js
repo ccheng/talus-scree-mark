@@ -63,7 +63,8 @@ function observeGroup(image, matrix, choices) {
   const ranked = scores.filter(({ score }) => score !== null).sort((a, b) => b.score - a.score);
   const best = ranked[0];
   const runner = ranked[1];
-  const margin = best && runner ? best.score - runner.score : null;
+  const rivalFill = runner?.score ?? 0;
+  const margin = best ? best.score - rivalFill : null;
   const evidence = { choices: scores, margin };
 
   if (ranked.length !== scores.length) {
@@ -75,10 +76,10 @@ function observeGroup(image, matrix, choices) {
   if (best.score <= thresholds.maximumBlankFill) {
     return { status: 'blank', symbol: null, review: false, reasons: [], ...evidence };
   }
-  if (best.score >= thresholds.minimumClearFill && runner.score <= thresholds.maximumRivalFill && margin >= thresholds.minimumSeparation) {
+  if (best.score >= thresholds.minimumClearFill && rivalFill <= thresholds.maximumRivalFill && margin >= thresholds.minimumSeparation) {
     return { status: 'single', symbol: best.symbol, review: false, reasons: [], ...evidence };
   }
-  const reason = runner.score > thresholds.maximumRivalFill ? 'competing-mark' : 'weak-mark';
+  const reason = rivalFill > thresholds.maximumRivalFill ? 'competing-mark' : 'weak-mark';
   return { status: 'ambiguous', symbol: null, review: true, reasons: [reason], ...evidence };
 }
 

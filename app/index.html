@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="c7c778c9b5411e111938540c">
+  <meta name="scree-release" content="a6a89da71dbf2ef84af9b726">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -47,6 +47,20 @@
         </div>
         <figcaption id="preview-caption"></figcaption>
       </figure>
+      <div class="controls scan-registration" id="scan-registration" hidden>
+        <button id="manual-corners" type="button" hidden>Set scan corners</button>
+        <button id="confirm-identity" type="button" hidden>Confirm this sheet matches the selected revision</button>
+      </div>
+      <section id="scan-corner-panel" class="profile-card" aria-labelledby="scan-corner-heading" hidden>
+        <h3 id="scan-corner-heading">Set scan corners</h3>
+        <p>Tap the page corners in sheet order: top left, top right, bottom right, bottom left.</p>
+        <div class="profile-viewport"><canvas id="scan-corner-canvas" width="1" height="1" aria-label="Mark scan corners"></canvas></div>
+        <div class="controls">
+          <button id="reset-scan-corners" type="button">Start over</button>
+          <button id="apply-scan-corners" type="button" disabled>Use these corners</button>
+          <button id="cancel-scan-corners" type="button">Cancel</button>
+        </div>
+      </section>
       <p id="recognition-status" class="capture-status" role="status" data-status="idle"></p>
       <section id="recognition-results" aria-labelledby="recognition-heading" data-status="idle" hidden>
         <h3 id="recognition-heading">Observed responses</h3>
@@ -56,6 +70,118 @@
           <tbody id="recognition-items"></tbody>
         </table>
       </section>
+      <section class="profile-card" aria-labelledby="profiles-heading">
+        <h3 id="profiles-heading">Answer-sheet profiles</h3>
+        <label for="profile-selector">Profile for successive scans</label>
+        <select id="profile-selector"><option value="reference">Coded reference sheet (M2)</option></select>
+        <p id="profile-pin" class="hint">Coded reference sheet selected.</p>
+        <div class="controls">
+          <button id="setup-profile" type="button">Set up a blank sheet</button>
+          <button id="revise-profile" type="button" hidden>Revise selected profile</button>
+          <button id="rename-profile" type="button" hidden>Rename</button>
+          <button id="delete-profile" type="button" hidden>Delete</button>
+        </div>
+        <form id="profile-management" hidden>
+          <p id="profile-management-message" role="status"></p>
+          <label id="rename-profile-label" hidden>New profile name <input id="rename-profile-name" maxlength="80" required></label>
+          <button id="confirm-profile-management" type="submit">Confirm</button>
+          <button id="cancel-profile-management" type="button">Cancel</button>
+        </form>
+        <p id="profile-status" class="capture-status" role="status"></p>
+      </section>
+      <section id="profile-editor" class="profile-card" aria-labelledby="profile-editor-heading" hidden>
+        <h3 id="profile-editor-heading">Set up a blank sheet</h3>
+        <div class="editor-fields">
+          <label>Profile name <input id="profile-name" maxlength="80"></label>
+          <label>Paper orientation
+            <select id="profile-orientation"><option value="portrait">Letter portrait</option><option value="landscape">Letter landscape</option></select>
+          </label>
+        </div>
+        <p id="editor-status" role="status"></p>
+        <div class="controls">
+          <button id="editor-zoom-out" type="button">Zoom out</button>
+          <button id="editor-zoom-in" type="button">Zoom in</button>
+          <button id="reset-blank-corners" type="button">Place corners again</button>
+          <button id="apply-blank-corners" type="button" disabled>Use these corners</button>
+        </div>
+        <div class="profile-viewport"><canvas id="profile-canvas" width="1" height="1" aria-label="Blank reference image and layout marks"></canvas></div>
+        <div id="profile-grid-controls" hidden>
+          <fieldset>
+            <legend>Regions and printed features</legend>
+            <p>Drag a box on the image or enter its position in Letter points.</p>
+            <div class="editor-fields">
+              <label>Left <input id="region-x" type="number" step="any"></label>
+              <label>Top <input id="region-y" type="number" step="any"></label>
+              <label>Width <input id="region-width" type="number" step="any" min="1"></label>
+              <label>Height <input id="region-height" type="number" step="any" min="1"></label>
+            </div>
+            <div class="controls">
+              <button id="preview-region" type="button">Preview box</button>
+              <button id="add-feature" type="button">Add printed feature</button>
+            </div>
+            <p class="hint">First choose a distinctive version or form label. Add at least three other fixed printed features spread across the page. Exclude name fields and answer areas.</p>
+            <ol id="profile-features"></ol>
+            <label><input id="allow-manual-identity" type="checkbox"> This form has no usable printed identifiers. Require manual corners and identity confirmation for every scan.</label>
+          </fieldset>
+          <fieldset>
+            <legend>Bubble grid</legend>
+            <div class="editor-fields">
+              <label>Block type <select id="block-kind"><option value="mc">Multiple choice</option><option value="nr">Numerical response</option></select></label>
+              <label>Rows <input id="grid-rows" type="number" value="8" min="1" max="64"></label>
+              <label>Columns <input id="grid-columns" type="number" value="4" min="1" max="64"></label>
+              <label>Item prefix <input id="item-prefix" value="MC" maxlength="30"></label>
+              <label>First item number <input id="item-start" type="number" min="1" value="1"></label>
+              <label>Direction <select id="grid-axis"><option value="rows">MC items down; NR slots across</option><option value="columns">MC items across; NR slots down</option></select></label>
+              <label>Symbols in order <input id="grid-symbols" value="A,B,C,D"></label>
+              <label id="decimal-slots-label" hidden>Slots with a decimal bubble <input id="decimal-slots" value="2,3"></label>
+            </div>
+            <label><input id="reverse-grid-order" type="checkbox"> Reverse item or slot order</label>
+            <div class="controls">
+              <button id="detect-grid" type="button">Find bubbles in box</button>
+              <button id="manual-grid" type="button">Place grid across box</button>
+              <button id="assign-grid-labels" type="button">Apply labels and order</button>
+            </div>
+            <details>
+              <summary>Adjust grid endpoints, spacing or angle</summary>
+              <div class="editor-fields">
+                <label>First cell x <input id="grid-first-x" type="number" step="any"></label>
+                <label>First cell y <input id="grid-first-y" type="number" step="any"></label>
+                <label>Last cell in first row x <input id="grid-across-x" type="number" step="any"></label>
+                <label>Last cell in first row y <input id="grid-across-y" type="number" step="any"></label>
+                <label>Last cell in first column x <input id="grid-down-x" type="number" step="any"></label>
+                <label>Last cell in first column y <input id="grid-down-y" type="number" step="any"></label>
+                <label>Radius <input id="grid-radius" type="number" step="any" min=".25" value="3"></label>
+                <label>Column spacing <input id="grid-column-spacing" type="number" step="any" min="0"></label>
+                <label>Row spacing <input id="grid-row-spacing" type="number" step="any" min="0"></label>
+                <label>Across angle (degrees) <input id="grid-angle" type="number" step="any"></label>
+              </div>
+              <div class="controls">
+                <button id="apply-grid-endpoints" type="button">Apply endpoints and counts</button>
+                <button id="apply-grid-spacing" type="button">Apply spacing and angle</button>
+                <button id="pick-grid-endpoints" type="button">Point to three end cells</button>
+              </div>
+            </details>
+            <details>
+              <summary>Correct an individual bubble</summary>
+              <div class="editor-fields">
+                <label>Position <select id="cell-selector"></select></label>
+                <label>Center x <input id="cell-x" type="number" step="any"></label>
+                <label>Center y <input id="cell-y" type="number" step="any"></label>
+                <label>Radius <input id="cell-radius" type="number" step="any" min=".25"></label>
+                <label>Symbol <input id="cell-symbol" maxlength="5"></label>
+              </div>
+              <label><input id="cell-omit" type="checkbox"> This position has no printed bubble</label>
+              <button id="apply-cell" type="button">Apply bubble correction</button>
+            </details>
+            <div class="controls"><button id="confirm-block" type="button">Confirm this block</button></div>
+          </fieldset>
+          <h4>Confirmed blocks</h4>
+          <ol id="profile-blocks"></ol>
+          <label><input id="confirm-profile-preview" type="checkbox"> I compared every listed ID and overlay with the blank sheet and checked the printed features exclude name fields.</label>
+          <div class="controls"><button id="enroll-profile" type="button" class="primary">Save profile revision</button></div>
+        </div>
+        <button id="cancel-profile-editor" type="button">Close setup</button>
+      </section>
       <details class="reference-panel">
         <summary>Reference sheet and examples</summary>
         <p>Print on Letter paper at actual size (100%). Keep all four corner markers in view.</p>
@@ -64,6 +190,9 @@
           <li><a href="./reference/reference-filled.pdf">Filled example PDF</a></li>
           <li><a href="./reference/reference-filled.png">Filled example image</a></li>
           <li><a href="./reference/reference-key.json">Expected readings</a></li>
+          <li><a href="./fixtures/m3/mc-only-blank.png">MC-only blank image</a> · <a href="./fixtures/m3/mc-only-filled.png">Filled example</a></li>
+          <li><a href="./fixtures/m3/mixed-blank.png">Mixed blank image</a> · <a href="./fixtures/m3/mixed-filled.png">Filled example</a></li>
+          <li><a href="./fixtures/m3/interleaved-blank.png">Interleaved blank image</a> · <a href="./fixtures/m3/interleaved-filled.png">Filled example</a></li>
         </ul>
       </details>
       <noscript>Turn on JavaScript to capture a sheet or set up offline use.</noscript>

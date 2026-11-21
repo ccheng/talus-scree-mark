@@ -12,9 +12,9 @@ Use the [GitHub Pages preview](https://ccheng.github.io/talus-scree-mark/) with 
 
 ## Quick iPhone check
 
-1. Save the blank JPEG/PNG for one mock layout to Files or Photos. In the app, create a profile and select that blank. Verify the page orientation and all four corners.
-2. Select a single MC or NR block and try the automatic grid proposal. Compare its detected centers, rows and columns with the printed bubbles. Use the parametric grid for a region if the suggestion needs rebuilding. Define endpoints, row and column counts, spacing and orientation, then use individual corrections only for missed or displaced bubbles.
-3. Check the mapping from each bubble to the correct item, choice or NR slot. Confirm and save the profile. Select it once, then import or photograph several different mock copies of that form. Confirm the selected revision stays active and every capture has fresh alignment and layout verification.
+1. Save the blank JPEG/PNG for one mock layout to Files or Photos. Tap **Set up a blank sheet**, select that blank, and name the profile. Verify the page orientation and all four corners, then tap **Use these corners**.
+2. Drag a box around a single MC or NR block and tap **Find bubbles in box**. Compare its detected centers, rows and columns with the printed bubbles. If the suggestion needs rebuilding, use **Place grid across box** or **Adjust grid endpoints, spacing or angle**. Define the grid once, then use **Correct an individual bubble** only for exceptions.
+3. Check the mapping from each bubble to the correct item, choice or NR slot and confirm the block. Add a distinctive printed heading as the first registration feature, then at least three other printed details distributed across the page. Keep features outside names and responses. Review the overlay and save the profile. Select it once, then import or photograph several different mock copies of that form. Confirm the selected revision stays active and every capture has fresh alignment and layout verification.
 4. Try an intentionally similar sheet with a different geometry or printed layout. It must ask for a retake or review when identity cannot be verified. Two assessments can share one geometry, so the scanner cannot infer which assessment or answer key the teacher intends.
 5. Open the app from the Home Screen once while online and wait for **Offline ready**. Turn on airplane mode with Wi-Fi off, close and reopen the app, choose the saved profile, and capture or import a new mock sheet. The saved profile is available offline. Previous scanned pages and results are ephemeral.
 6. Repeat with the MC-only, mixed and interleaved mock forms, then check the M2 anchored example as a compatibility control.
@@ -23,7 +23,7 @@ Use the [GitHub Pages preview](https://ccheng.github.io/talus-scree-mark/) with 
 
 Print the one-page PDFs at **Actual Size** or **100%** on Letter paper. Keep all page edges and fixed printed details visible in photographs. Use the downloadable raster blank for the app’s blank-sheet import. The PDFs are for printing; M3 uses the JPEG/PNG import route.
 
-Measure setup from opening a prepared blank to saving a confirmed profile. Count guide adjustments, grid rebuilds, exceptional bubble corrections, retries and invalid proposals. Mark setup as assisted or manual and record the layout and app build. Around two minutes for straightforward MC and five minutes for typical mixed MC/NR are provisional usability targets. Scripted browser interaction times and actual teacher times must be reported separately.
+Measure setup from opening a prepared blank to saving a confirmed profile. Where enough adult operators are available, compare assisted and manual setup on equivalent blanks, vary which path goes first, and keep the paired results. Count guide adjustments, grid rebuilds, exceptional bubble corrections, retries and invalid proposals. Mark setup as assisted or manual and record the layout and app build. Around two minutes for straightforward MC and five minutes for typical mixed MC/NR are provisional usability targets. Scripted browser interaction times and actual teacher times must be reported separately.
 
 ## Representative physical benchmark
 
