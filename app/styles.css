@@ -1,0 +1,80 @@
+:root {
+  color-scheme: light;
+  font: 100%/1.5 system-ui, sans-serif;
+  background: #eff3ec;
+  color: #192820;
+  --ink: #192820;
+  --muted: #4e5d54;
+  --line: #bac9bb;
+  --primary: #244f3a;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+.app {
+  max-width: 51rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 2.5rem);
+}
+.heading { margin-bottom: 1.2rem; }
+.heading h1 {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin: 0;
+  font-size: clamp(1.35rem, 4vw, 1.85rem);
+  letter-spacing: -.035em;
+}
+.heading img { border-radius: .65rem; }
+.offline-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .85rem;
+  align-items: center;
+  min-height: 2.75rem;
+  margin: .65rem 0 0;
+}
+.offline-panel p { margin: 0; font-size: .93rem; }
+.offline-panel .build-id { color: var(--muted); font-size: .8rem; }
+.capture-panel {
+  padding: clamp(1rem, 4vw, 1.8rem);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #fffdf8;
+}
+h2 { margin: 0; font-size: clamp(1.3rem, 4vw, 1.7rem); letter-spacing: -.025em; }
+.hint { margin: .45rem 0 1rem; color: var(--muted); }
+.preview-note { margin: .35rem 0 0; color: var(--muted); font-size: .9rem; font-weight: 650; }
+.controls { display: flex; flex-wrap: wrap; gap: .55rem; }
+button {
+  min-height: 2.75rem;
+  padding: .45rem .85rem;
+  border: 1px solid #728678;
+  border-radius: .6rem;
+  background: #fffdf8;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+}
+button:not(:disabled) { cursor: pointer; }
+button:not(:disabled):hover { background: #e4eee3; }
+button:focus-visible { outline: 3px solid #385d97; outline-offset: 3px; }
+button.primary { background: var(--primary); border-color: var(--primary); color: white; }
+button.primary:not(:disabled):hover { background: #31664d; }
+button:disabled { opacity: .6; }
+.capture-status { color: var(--muted); margin: .7rem 0 0; }
+.capture-status:empty { display: none; }
+.preview { margin: 1rem 0 0; }
+video, canvas {
+  display: block;
+  max-width: 100%;
+  max-height: min(64vh, 40rem);
+  margin: 0 auto;
+  width: auto;
+  height: auto;
+  border-radius: .5rem;
+  background: #203127;
+}
+video { width: 100%; object-fit: contain; }
+figcaption { color: var(--muted); margin-top: .45rem; font-size: .87rem; text-align: center; }

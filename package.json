@@ -5,6 +5,10 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test"
-  }
+    "test": "node --test",
+    "build": "node scripts/build-release.mjs",
+    "check:release": "node scripts/build-release.mjs --check",
+    "start": "node scripts/serve-app.mjs"
+  },
+  "type": "module"
 }
