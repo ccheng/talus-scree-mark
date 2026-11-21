@@ -1,6 +1,6 @@
 # Proposed architecture
 
-Use static HTML, CSS and native ES modules. Keep browser adapters separate from pure image and grading logic. Build under `app/` with an app shell, relative manifest and service worker, `src/` for modules, and same-origin `assets/`. Keep verification in `tests/` and design records in `docs/`. Start with Node's test runner and zero runtime dependencies. Add a dev-only browser harness when M1 needs it.
+Use static HTML, CSS and native ES modules. Keep browser adapters separate from pure image and grading logic. Build under `app/` with an app shell, relative manifest and service worker, `src/` for modules, and same-origin `assets/`. For a future approved GitHub Pages deployment, publish the contents of `app/` as the artifact root so the entry point is `/talus-scree-mark/`. Keep verification in `tests/` and design records in `docs/`. Start with Node's test runner and zero runtime dependencies. Add a dev-only browser harness when M1 needs it.
 
 | Boundary | Input | Output and ownership |
 | --- | --- | --- |

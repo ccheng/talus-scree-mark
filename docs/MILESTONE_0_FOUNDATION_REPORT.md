@@ -10,7 +10,7 @@ The public `ccheng/talus-scree-mark` repository started on `main` at `4c840c6171
 - [Quality gate and device matrix](../QUALITY_GATE.md)
 - [Coordinator handoff](../HANDOFF.md)
 - [Milestone branch](https://github.com/ccheng/talus-scree-mark/tree/milestone-0/foundation)
-- [Pull request and acceptance evidence](https://github.com/ccheng/talus-scree-mark/pulls?q=is%3Apr+head%3Amilestone-0%2Ffoundation)
+- [Pull request and acceptance evidence](https://github.com/ccheng/talus-scree-mark/pull/1)
 
 ## Team and execution
 
