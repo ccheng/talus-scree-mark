@@ -23,11 +23,18 @@ const read = byId('read-bubbles');
 const recognition = createRecognitionView({
   button: read, status: byId('recognition-status'), results: byId('recognition-results'),
   table: byId('recognition-items'), overlay: byId('recognition-overlay'),
-  onResult: (result) => workspace.registered(result),
 });
 const workspace = createProfileWorkspace({
   image: () => workingImage,
-  onChanged: () => { recognition.reset(); updatePreview(); },
+  onChanged({ clearImage = false } = {}) {
+    if (clearImage) {
+      cancelImport();
+      workingImage = undefined;
+      workspace.resetCapture();
+    }
+    recognition.reset();
+    updatePreview();
+  },
   onEditorClosed(saved) {
     if (saved) {
       recognition.reset();
@@ -49,7 +56,7 @@ function updatePreview() {
   start.textContent = workingImage?.source === 'camera' ? 'Retake photo' : 'Open camera';
   clear.hidden = !workingImage;
   sheet.hidden = !workingImage || camera.state !== 'closed';
-  recognition.setAvailable(!sheet.hidden && !pickerPending && !importOperation && !workspace.editing);
+  recognition.setAvailable(!sheet.hidden && !pickerPending && !importOperation && !workspace.editing && workspace.canRead);
   if (!workingImage) {
     canvas.width = 1;
     canvas.height = 1;
@@ -153,9 +160,9 @@ picker.addEventListener('change', async () => {
   }
 });
 
-function runRecognition(confirmedIdentity = false) {
-  if (workspace.editing) return;
-  recognition.read(workingImage, workspace.scanOptions(confirmedIdentity));
+function runRecognition() {
+  if (workspace.editing || !workspace.canRead) return;
+  recognition.read(workingImage, workspace.scanOptions());
 }
 read.addEventListener('click', () => runRecognition());
 
@@ -174,7 +181,7 @@ function resetPage() {
   cancelImport();
   camera.close();
   workingImage = undefined;
-  workspace.reset();
+  workspace.reset({ end: true });
   updatePreview();
   showStatus('');
 }

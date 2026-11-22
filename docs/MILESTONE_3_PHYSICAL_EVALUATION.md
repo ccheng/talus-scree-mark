@@ -1,5 +1,7 @@
 # M3 setup and physical evaluation
 
+Use the [M3.2 iPhone checklist](MILESTONE_3_2_TEMPLATE_BATCH.md#iphone-acceptance-after-publication) for the teacher-confirmed batch workflow. The earlier identity checks below document the M3.1 workflow. The printable forms and physical benchmark procedures also apply to M3.2.
+
 Use the [GitHub Pages preview](https://ccheng.github.io/talus-scree-mark/) with mock answer sheets only. Record the build, phone model, iOS version, and whether you used Safari or the Home Screen app. Perform the quick check before beginning a scored benchmark.
 
 ## Printable forms and digital samples

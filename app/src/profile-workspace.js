@@ -13,7 +13,10 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   const manualCanvas = byId('scan-corner-canvas');
   const manualBackground = document.createElement('canvas');
   const manual = byId('manual-corners');
-  const confirmIdentity = byId('confirm-identity');
+  const batchConfirmation = byId('batch-confirmation');
+  const attestation = byId('batch-attestation');
+  const startBatch = byId('start-batch');
+  const endBatch = byId('end-batch');
   const userCorners = [];
   let selectedKey = referenceKey;
   let profiles = [];
@@ -21,7 +24,8 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   let pendingBlank = false;
   let manageAction = null;
   let activeCorners;
-  let canConfirm = false;
+  let activeBatch;
+  let offeredBatch;
   let refreshSequence = 0;
 
   function selected() {
@@ -31,18 +35,40 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   function label() {
     const active = selected();
     byId('profile-pin').textContent = active
-      ? `${active.name}, revision ${active.revision}, remains selected for successive scans.`
+      ? activeBatch
+        ? `Batch active for ${active.name}, revision ${active.revision}.`
+        : `${active.name}, revision ${active.revision}. Start a batch to read marked sheets.`
       : 'Coded reference sheet selected.';
-    byId('revise-profile').hidden = !active || latest.get(active.id) !== active.revision;
-    byId('rename-profile').hidden = !active || latest.get(active.id) !== active.revision;
+    selector.disabled = Boolean(activeBatch);
+    startBatch.hidden = !active || Boolean(activeBatch) || !batchConfirmation.hidden;
+    endBatch.hidden = !activeBatch;
+    byId('setup-profile').disabled = Boolean(activeBatch);
+    for (const control of ['revise-profile', 'rename-profile']) {
+      const button = byId(control);
+      button.hidden = !active || latest.get(active.id) !== active.revision;
+      button.disabled = Boolean(activeBatch);
+    }
     byId('delete-profile').hidden = !active;
+    byId('delete-profile').disabled = Boolean(activeBatch);
   }
 
   function actions() {
-    const enabled = Boolean(image() && selected() && !editor.active);
+    const enabled = Boolean(image() && activeBatch && selected() && !editor.active);
     byId('scan-registration').hidden = !enabled;
     manual.hidden = !enabled;
-    confirmIdentity.hidden = !enabled || !canConfirm;
+  }
+
+  function closeBatchConfirmation() {
+    offeredBatch = undefined;
+    batchConfirmation.hidden = true;
+    attestation.checked = false;
+    byId('confirm-batch').disabled = true;
+  }
+
+  function clearBatch() {
+    activeBatch = undefined;
+    closeBatchConfirmation();
+    label();
   }
 
   function closeManual() {
@@ -53,18 +79,18 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
 
   function resetCapture() {
     activeCorners = undefined;
-    canConfirm = false;
     closeManual();
     actions();
   }
 
-  function reset() {
+  function reset({ end = false } = {}) {
+    if (end) clearBatch();
     pendingBlank = false;
     editor.close();
     resetCapture();
   }
 
-  async function refresh(want = selectedKey) {
+  async function refresh(want) {
     const transaction = ++refreshSequence;
     try {
       const all = await listProfiles({ allRevisions: true });
@@ -75,12 +101,15 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
       const previous = selectedKey;
       selector.replaceChildren(new Option('Coded reference sheet (M2)', referenceKey), ...profiles.map((profile) =>
         new Option(`${profile.name} (revision ${profile.revision})`, key(profile))));
-      selectedKey = profiles.some((profile) => key(profile) === want) ? want : referenceKey;
+      const target = want ?? selectedKey;
+      selectedKey = profiles.some((profile) => key(profile) === target) ? target : referenceKey;
       selector.value = selectedKey;
       label();
       if (previous !== selectedKey) {
+        const wasActive = Boolean(activeBatch);
+        clearBatch();
         resetCapture();
-        onChanged();
+        onChanged({ clearImage: wasActive });
       }
     } catch (error) {
       profileStatus.textContent = `Saved profiles are unavailable. ${error.message}`;
@@ -92,13 +121,16 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
       const saved = await saveProfile(profile);
       editor.close();
       await refresh(key(saved));
-      profileStatus.textContent = `Saved ${saved.name}, revision ${saved.revision}. Choose a marked copy to scan.`;
+      profileStatus.textContent = `Saved ${saved.name}, revision ${saved.revision}. Start a batch to scan marked copies.`;
       onEditorClosed(true);
     },
     onClose() { actions(); onEditorClosed(false); },
   });
 
   function beginBlank(prior) {
+    if (activeBatch) return;
+    closeBatchConfirmation();
+    label();
     if (editor.active) editor.close();
     const current = image();
     profileStatus.textContent = '';
@@ -131,6 +163,9 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   }
 
   function selectManagement(action) {
+    if (activeBatch) return;
+    closeBatchConfirmation();
+    label();
     const profile = selected();
     if (!profile) return;
     manageAction = { action, profile };
@@ -146,6 +181,11 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   }
 
   selector.addEventListener('change', () => {
+    if (activeBatch) {
+      selector.value = selectedKey;
+      return;
+    }
+    closeBatchConfirmation();
     editor.close();
     closeManagement();
     pendingBlank = false;
@@ -153,6 +193,41 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
     resetCapture();
     label();
     onChanged();
+  });
+  startBatch.addEventListener('click', () => {
+    const profile = selected();
+    if (!profile || activeBatch || editor.active) return;
+    closeManagement();
+    offeredBatch = key(profile);
+    batchConfirmation.hidden = false;
+    byId('batch-summary').textContent = `Confirm ${profile.name}, revision ${profile.revision}, for these scans.`;
+    label();
+    attestation.focus();
+  });
+  attestation.addEventListener('change', () => {
+    byId('confirm-batch').disabled = !attestation.checked;
+  });
+  byId('cancel-batch').addEventListener('click', () => {
+    closeBatchConfirmation();
+    label();
+    startBatch.focus();
+  });
+  byId('confirm-batch').addEventListener('click', () => {
+    const profile = selected();
+    if (!profile || offeredBatch !== key(profile) || !attestation.checked || editor.active) return;
+    activeBatch = Object.freeze({ profileId: profile.id, revision: profile.revision });
+    closeBatchConfirmation();
+    label();
+    resetCapture();
+    onChanged();
+    endBatch.focus();
+  });
+  endBatch.addEventListener('click', () => {
+    if (!activeBatch) return;
+    clearBatch();
+    resetCapture();
+    onChanged({ clearImage: true });
+    startBatch.focus();
   });
   byId('setup-profile').addEventListener('click', () => beginBlank());
   byId('revise-profile').addEventListener('click', () => beginBlank(selected()));
@@ -206,8 +281,7 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   }
 
   manual.addEventListener('click', () => {
-    if (!image()) return;
-    canConfirm = false;
+    if (!image() || !activeBatch) return;
     onChanged();
     userCorners.length = 0;
     sourceOnCanvas(manualBackground, image());
@@ -228,33 +302,23 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   byId('reset-scan-corners').addEventListener('click', () => { userCorners.length = 0; showManual(); });
   byId('cancel-scan-corners').addEventListener('click', closeManual);
   byId('apply-scan-corners').addEventListener('click', () => {
-    if (userCorners.length !== 4) return;
+    if (userCorners.length !== 4 || !activeBatch) return;
     activeCorners = userCorners.map(({ x, y }) => ({ x, y }));
     closeManual();
     read();
   });
-  confirmIdentity.addEventListener('click', () => {
-    if (canConfirm && image()) read(true);
-  });
-
-  function scanOptions(confirmedIdentity = false) {
+  function scanOptions() {
     const profile = selected();
     if (!profile) return undefined;
-    return {
-      profile, options: { corners: activeCorners, confirmedIdentity, alternatives: profiles },
-    };
-  }
-
-  function registered(result) {
-    canConfirm = Boolean(result?.registration.canConfirmIdentity);
-    actions();
+    return { profile, options: { corners: activeCorners, batch: activeBatch } };
   }
 
   window.addEventListener('focus', () => refresh());
   refresh();
   return {
-    acceptImage, scanOptions, resetCapture, reset, registered, actions,
+    acceptImage, scanOptions, resetCapture, reset,
     cancelBlank() { pendingBlank = false; },
     get editing() { return editor.active; },
+    get canRead() { return selectedKey === referenceKey || Boolean(activeBatch); },
   };
 }

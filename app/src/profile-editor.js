@@ -1,4 +1,4 @@
-import { capturePrintedFeatures, pageTransform, proposePageCorners } from './markerless-registration.js';
+import { pageTransform, proposePageCorners } from './markerless-registration.js';
 import { createMarkerlessProfile, manualGrid, proposeGrid, validBounds } from './profile-authoring.js';
 import { cross, project } from './projective.js';
 
@@ -52,7 +52,6 @@ export function createProfileEditor({ onSave, onClose }) {
   const background = document.createElement('canvas');
   const status = byId('editor-status');
   const blocksList = byId('profile-blocks');
-  const featuresList = byId('profile-features');
   const notConfirmed = () => { byId('confirm-profile-preview').checked = false; };
   const say = (msg) => { status.textContent = msg; };
   let state;
@@ -103,7 +102,6 @@ export function createProfileEditor({ onSave, onClose }) {
       state.corners.forEach((point, index) => dot(point, logical.width / 75, '#a33415', String(index + 1)));
       return;
     }
-    for (const feature of state.features) box(feature.bounds, '#753d94', 'Printed feature');
     for (const [index, block] of state.blocks.entries()) {
       box(block.bounds, '#287651', `Block ${index + 1}`);
       for (const item of block.items) {
@@ -138,7 +136,7 @@ export function createProfileEditor({ onSave, onClose }) {
     if (!matrix) return say('The corners do not form a usable page. Place them again.');
     state.matrix = matrix;
     rectifiedOnCanvas(background, state.image, matrix, page());
-    show('Draw a box around one answer block or fixed printed feature.');
+    show('Draw a box around one answer block.');
   }
 
   function pointAt(event) {
@@ -333,9 +331,9 @@ export function createProfileEditor({ onSave, onClose }) {
     const next = state.blocks.filter(({ id }) => id !== block.id);
     const oldIndex = state.blocks.findIndex(({ id }) => id === block.id);
     next.splice(oldIndex < 0 ? next.length : oldIndex, 0, block);
-    // Validate mappings now, even if printed features are still being enrolled.
+    // Validate the mapping when each block is confirmed.
     createMarkerlessProfile({
-      id: 'draft', revision: 1, name: 'Draft', page: page(), components: next, features: [], allowManualIdentity: true,
+      id: 'draft', revision: 1, name: 'Draft', page: page(), components: next,
     });
     state.blocks = next;
     state.drafts.set(block.id, {
@@ -420,8 +418,6 @@ export function createProfileEditor({ onSave, onClose }) {
 
   function lists() {
     blocksList.replaceChildren();
-    featuresList.replaceChildren();
-    byId('replace-identity-feature').hidden = state.features.length === 0;
     for (const [index, block] of state.blocks.entries()) {
       const move = (delta) => {
         const target = index + delta;
@@ -435,26 +431,6 @@ export function createProfileEditor({ onSave, onClose }) {
         ['Remove', () => { state.blocks.splice(index, 1); notConfirmed(); lists(); paint(); }],
       ]);
     }
-    state.features.forEach((feature, index) => listEntry(featuresList,
-      `${index === 0 ? 'Identity' : 'Alignment'} feature at ${Math.round(feature.bounds.x)}, ${Math.round(feature.bounds.y)}`, [
-        ['Remove', () => { state.features.splice(index, 1); notConfirmed(); lists(); paint(); }],
-      ]));
-  }
-
-  function addFeature(replace = false) {
-    if (!replace && state.features.length >= 16) throw new TypeError('Use no more than 16 printed features.');
-    const bounds = replace && !state.region ? state.features[0]?.bounds : inputRegion();
-    if (!bounds) throw new TypeError('Select a box around the distinctive printed identifier.');
-    const id = (replace && state.features[0]?.id) || idFor('feature');
-    const [feature] = capturePrintedFeatures(state.image, state.matrix, [{ id, bounds }]);
-    if ((replace || !state.features.length) && !feature.identitySamples) {
-      throw new TypeError('Choose a clear printed label with enough detail to distinguish the layout.');
-    }
-    if (replace) state.features[0] = feature;
-    else state.features.push(feature);
-    notConfirmed(); lists(); paint();
-    say(replace ? 'Identity feature replaced. The response grids are unchanged.' :
-      'Printed feature added. Use clear printed details distributed across the sheet.');
   }
 
   function handle(id, action) {
@@ -485,20 +461,13 @@ export function createProfileEditor({ onSave, onClose }) {
   });
   handle('apply-cell', applyCell);
   handle('confirm-block', confirmBlock);
-  handle('add-feature', addFeature);
-  handle('replace-identity-feature', () => addFeature(true));
   handle('cancel-profile-editor', () => { close(); onClose(); });
   handle('enroll-profile', async () => {
     if (!byId('confirm-profile-preview').checked) { say('Confirm the overlay and mappings before saving.'); return; }
-    if (state.features.length && !state.features[0].identitySamples) {
-      say('Use Replace identity feature on the blank sheet before saving this revision.');
-      return;
-    }
     try {
       const profile = createMarkerlessProfile({
         id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,
         name: value('profile-name'), page: page(), components: state.blocks,
-        features: state.features, allowManualIdentity: byId('allow-manual-identity').checked,
       });
       byId('enroll-profile').disabled = true;
       await onSave(profile);
@@ -506,7 +475,6 @@ export function createProfileEditor({ onSave, onClose }) {
     finally { byId('enroll-profile').disabled = false; }
   });
   byId('profile-orientation').addEventListener('change', () => { if (state) resetCorners(); });
-  byId('allow-manual-identity').addEventListener('change', notConfirmed);
   byId('cell-selector').addEventListener('change', selectCell);
   byId('block-kind').addEventListener('change', () => {
     const mc = value('block-kind') === 'mc';
@@ -551,7 +519,7 @@ export function createProfileEditor({ onSave, onClose }) {
     const height = Math.abs(start.y - end.y);
     if (width >= 2 && height >= 2) {
       setRegion({ x: Math.min(start.x, end.x), y: Math.min(start.y, end.y), width, height });
-      say('Box set. Find bubbles, place a grid or add this printed feature.');
+      say('Box set. Find bubbles or place a grid.');
     }
   });
   canvas.addEventListener('pointercancel', () => { if (state) state.drag = null; });
@@ -559,11 +527,10 @@ export function createProfileEditor({ onSave, onClose }) {
   function open(image, prior) {
     state = {
       image, prior, matrix: null, zoom: 1, pan: false, blocks: structuredClone(prior?.components ?? []),
-      features: structuredClone(prior?.features ?? []), drafts: new Map(),
+      drafts: new Map(),
     };
     byId('profile-name').value = prior?.name ?? '';
     byId('profile-orientation').value = prior?.page.orientation ?? (image.width > image.height ? 'landscape' : 'portrait');
-    byId('allow-manual-identity').checked = prior?.allowManualIdentity ?? false;
     panel.hidden = false;
     byId('editor-pan').setAttribute('aria-pressed', 'false');
     resetCorners();
@@ -579,7 +546,7 @@ export function createProfileEditor({ onSave, onClose }) {
     state = null;
     panel.hidden = true;
     canvas.width = canvas.height = background.width = background.height = 1;
-    blocksList.replaceChildren(); featuresList.replaceChildren();
+    blocksList.replaceChildren();
   }
 
   return { open, close, get active() { return Boolean(state); } };

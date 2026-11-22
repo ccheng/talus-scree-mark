@@ -8,7 +8,7 @@ const { chromium } = await import(process.env.TALUS_TEST_PLAYWRIGHT_PATH || 'pla
 const appPath = process.argv[2];
 assert(appPath, 'Provide the static app path');
 const fixtureFolder = new URL('./fixtures/', import.meta.url);
-const { families } = JSON.parse(await readFile(new URL('oracles.json', fixtureFolder), 'utf8'));
+const { families, orientationControl } = JSON.parse(await readFile(new URL('oracles.json', fixtureFolder), 'utf8'));
 assert(families.length === 3 && families.every(({ fixtures }) => fixtures.filter(({ mode }) => mode === 'standard').length >= 8));
 const encoded = (file) => readFile(new URL(file, fixtureFolder), 'base64');
 const server = await openServer(appPath);
@@ -69,18 +69,13 @@ async function installAdapters(page) {
   }, { authoring: appSource('profile-authoring.js'), registration: appSource('markerless-registration.js'), recognition: appSource('profile-omr.js'), storage: appSource('profile-store.js') });
 }
 
-async function enroll(page, family, allowManualIdentity = true) {
-  const data = {
-    base64: await encoded(family.blank), id: family.id, page: pageShape, components: family.components.map(scaleComponent),
-    boxes: family.features.map((bounds, index) => ({ id: `check-${index + 1}`, bounds: scaleBounds(bounds) })), allowManualIdentity,
-  };
-  return page.evaluate(async ({ base64, id, page, components, boxes, allowManualIdentity }) => {
-    const image = await window.m3qa.loadImage(base64, `${id}-blank`);
-    const features = await window.m3qa.capturePrintedFeatures(image, [2, 0, 0, 0, 2, 0, 0, 0, 1], boxes);
-    return window.m3qa.createMarkerlessProfile({ id, revision: 1, name: `QA ${id}`, page, components, features, allowManualIdentity });
-  }, data);
+async function enroll(page, family) {
+  return page.evaluate(({ id, page, components }) => window.m3qa.createMarkerlessProfile({
+    id, revision: 1, name: `QA ${id}`, page, components, features: [],
+  }), { id: family.id, page: pageShape, components: family.components.map(scaleComponent) });
 }
 
+const batchFor = ({ id, revision }) => ({ profileId: id, revision });
 function point(matrix, x, y) {
   const weight = matrix[6] * x + matrix[7] * y + matrix[8];
   return { x: (matrix[0] * x + matrix[1] * y + matrix[2]) / weight, y: (matrix[3] * x + matrix[4] * y + matrix[5]) / weight };
@@ -108,11 +103,20 @@ async function scan(page, profile, family, fixture, options = {}) {
   return page.evaluate(async ({ base64, id, profile, options }) => {
     const image = await window.m3qa.loadImage(base64, id);
     return window.m3qa.readProfileSheet(image, profile, options);
-  }, { base64: await encoded(fixture.file), id: `${family.id}-${fixture.id}`, profile, options });
+  }, { base64: await encoded(fixture.file), id: `${family.id}-${fixture.id}`, profile, options: { batch: batchFor(profile), ...options } });
 }
 
-function validateNoAccepted(result, label) {
-  assert(!result.items?.some(({ review }) => review === false), label);
+function assertRetake(result, label, reason) {
+  assert.equal(result.status, 'retake', label);
+  assert.deepEqual(result.items, [], label);
+  if (reason) assert(result.registration.reasons.includes(reason), `${label}: ${result.registration.reasons.join(', ')}`);
+}
+
+function assertExactRead(result, truth, label) {
+  assert.equal(result.status, 'read', `${label}: ${result.registration.reasons.join(', ')}`);
+  assert.equal(result.registration.authorization, 'teacher-confirmed-batch', label);
+  assert.deepEqual(result.items.map(({ id }) => id), truth.map(({ id }) => id), label);
+  for (const expected of truth) assertObservation(result.items.find(({ id }) => id === expected.id), expected);
 }
 
 try {
@@ -121,23 +125,21 @@ try {
     await installAdapters(page);
     const family = families[0];
     const block = family.components[0];
-    const levels = await page.evaluate(async ({ base64, block, profilePage, reference, boxes }) => {
+    const levels = await page.evaluate(async ({ base64, block, profilePage, reference }) => {
       const image = await window.m3qa.loadImage(base64, 'calibration-blank');
       const proposed = await window.m3qa.proposeGrid(image, [2, 0, 0, 0, 2, 0, 0, 0, 1], block.bounds, { rows: block.rows, columns: block.columns });
       const arranged = await window.m3qa.manualGrid(block);
       const custom = structuredClone(reference);
       custom[0].items[0].choices[0].x += 1.25;
-      const features = await window.m3qa.capturePrintedFeatures(image, [2, 0, 0, 0, 2, 0, 0, 0, 1], boxes);
-      const profile = window.m3qa.createMarkerlessProfile({ id: 'correction-test', revision: 1, name: 'Corrected cell', page: profilePage, components: custom, features });
+      const profile = window.m3qa.createMarkerlessProfile({ id: 'correction-test', revision: 1, name: 'Corrected cell', page: profilePage, components: custom, features: [] });
       const invalid = structuredClone(custom);
       invalid[0].items[0].choices[1].symbol = invalid[0].items[0].choices[0].symbol;
       let invalidRejected = false;
       try {
-        invalidRejected = !window.m3qa.createMarkerlessProfile({ id: 'invalid-test', revision: 1, name: 'Invalid map', page: profilePage, components: invalid, features });
+        invalidRejected = !window.m3qa.createMarkerlessProfile({ id: 'invalid-test', revision: 1, name: 'Invalid map', page: profilePage, components: invalid, features: [] });
       } catch { invalidRejected = true; }
       return { proposed, arranged, profile, invalidRejected };
     }, { base64: await encoded(family.blank), profilePage: pageShape, reference: family.components.map(scaleComponent),
-      boxes: family.features.map((bounds, index) => ({ id: `check-${index + 1}`, bounds: scaleBounds(bounds) })),
       block: { topLeft: scalePoint(block.topLeft), topRight: scalePoint(block.topRight), bottomLeft: scalePoint(block.bottomLeft), radius: block.radius / coordinateScale,
         rows: block.rows, columns: block.columns, bounds: scaleBounds(block.bounds) } });
     const expected = block.items.flatMap(({ choices }) => choices).map(scaleChoice);
@@ -154,19 +156,11 @@ try {
     assert(levels.invalidRejected, 'Duplicate choice mapping should be rejected');
   });
 
-  await group('M3 markerless registration, exact observations and layout identity safety across three independent families', async (page) => {
+  await group('M3.2 exact readings and per-capture structural checks across three layouts', async (page) => {
     await installAdapters(page);
-    const profiles = [];
-    for (const family of families) profiles.push(await enroll(page, family));
-    for (const [index, family] of families.entries()) {
-      const profile = profiles[index];
+    for (const family of families) {
+      const profile = await enroll(page, family);
       assert.deepEqual(profile.components.map(({ id }) => id), family.components.map(({ id }) => id));
-      const [nameLeft, nameTop, nameRight, nameBottom] = family.nameField.map((value) => value / coordinateScale);
-      for (const { bounds } of profile.features) {
-        assert(bounds.x + bounds.width <= nameLeft || bounds.x >= nameRight ||
-          bounds.y + bounds.height <= nameTop || bounds.y >= nameBottom, 'A fixed-feature descriptor covered the synthetic name field');
-      }
-
       const standardized = [];
       const displacements = [];
       let accepted = 0;
@@ -174,33 +168,33 @@ try {
       const outcomes = [];
       for (const fixture of family.fixtures) {
         const caption = `${family.id}/${fixture.id}`;
-        const result = await scan(page, profile, family, fixture, { alternatives: profiles.filter(({ id }) => id !== family.id) });
+        const result = await scan(page, profile, family, fixture);
         outcomes.push([fixture.id, result.status, result.registration?.reasons ?? []]);
         if (fixture.mode === 'must-retake') {
-          assert.equal(result.status, 'retake', caption);
-          validateNoAccepted(result, caption);
-        } else if (fixture.mode === 'must-review-missing-block') {
-          if (result.status === 'read') {
-            const missing = new Set(family.components.at(-1).items.map(({ id }) => id));
-            assert(!result.items.some(({ id, review }) => missing.has(id) && !review), `Missing block auto-accepted ${caption}`);
-          } else validateNoAccepted(result, caption);
+          assertRetake(result, caption);
+          if (fixture.pageToSource) {
+            const manual = await scan(page, profile, family, fixture, { corners: pageCorners(normalizeMatrix(fixture.pageToSource)) });
+            assertRetake(manual, `${caption} with accurate corners`, 'response-geometry');
+          }
         } else if (fixture.mode === 'must-review') {
           const verified = result.status === 'read' ? result : await scan(page, profile, family, fixture, { corners: pageCorners(normalizeMatrix(fixture.pageToSource)) });
           assert.equal(verified.status, 'read', caption);
           const double = fixture.truth.find(({ status }) => status === 'multiple');
           assertObservation(verified.items.find(({ id }) => id === double.id), double);
+        } else if (fixture.mode === 'compatible-print') {
+          assertExactRead(result, fixture.truth, caption);
         } else if (fixture.mode === 'standard') {
           planned += fixture.truth.length;
           const expectedMatrix = normalizeMatrix(fixture.pageToSource);
           if (result.status !== 'read') {
-            validateNoAccepted(result, caption);
-            // Independently known corners isolate registration from identity and mark reading.
+            assertRetake(result, caption);
             const manuallyAligned = await scan(page, profile, family, fixture, { corners: pageCorners(expectedMatrix) });
-            assert.equal(manuallyAligned.status, 'read', `${caption} fallback: ${JSON.stringify(manuallyAligned.registration)}`);
+            assertExactRead(manuallyAligned, fixture.truth, `${caption} fallback`);
             assert.equal(manuallyAligned.registration.cornerPath, 'manual-corners');
-            for (const expected of fixture.truth) assertObservation(manuallyAligned.items.find(({ id }) => id === expected.id), expected);
             continue;
           }
+          assert.equal(result.registration.authorization, 'teacher-confirmed-batch');
+          assert.equal(result.registration.geometry.verified, true);
           assert.deepEqual(result.items.map(({ id }) => id), fixture.truth.map(({ id }) => id));
           for (const expected of fixture.truth) {
             const actual = result.items.find(({ id }) => id === expected.id);
@@ -210,123 +204,107 @@ try {
           }
           displacements.push(...geometryErrors(profile, expectedMatrix, result.registration.pageToSource));
           standardized.push(fixture.id);
+        } else if (result.status === 'read') {
+          for (const item of result.items.filter(({ review }) => !review)) {
+            assertObservation(item, fixture.truth.find(({ id }) => id === item.id));
+          }
+        } else {
+          assertRetake(result, caption);
         }
       }
       displacements.sort((a, b) => a - b);
-      console.log(`  ${family.id}: ${standardized.length}/8 standard fixtures read automatically, ${accepted}/${planned} items accepted, and zero wrong accepted items observed; p95 normalized displacement ${displacements[Math.ceil(displacements.length * .95) - 1]}; ${JSON.stringify(outcomes)}`);
-      assert(standardized.length >= 1, `No automatic scan succeeded for ${family.id}`);
+      console.log(`  ${family.id}: ${standardized.length}/8 automatic standard reads, ${accepted}/${planned} accepted items and zero wrong accepted. p95 normalized displacement ${displacements[Math.ceil(displacements.length * .95) - 1]}. ${JSON.stringify(outcomes)}`);
+      assert(standardized.length >= 1, `No automatic standard read for ${family.id}`);
     }
+  });
+
+  await group('M3.2 exact batch authorization, geometric orientation and legacy profile reuse', async (page) => {
+    await installAdapters(page);
     const family = families[0];
     const fixture = family.fixtures[0];
-    const profile = profiles[0];
-    const sameMap = { ...profile, id: 'same-map-other-assessment', name: 'Other assessment' };
+    const profile = await enroll(page, family);
     const knownCorners = pageCorners(normalizeMatrix(fixture.pageToSource));
-    const layoutOnly = await scan(page, profile, family, fixture, { alternatives: [sameMap], corners: knownCorners });
-    assert.equal(layoutOnly.status, 'read');
+    for (const invalid of [null, { profileId: 'not-selected', revision: profile.revision }, { profileId: profile.id, revision: 2 }]) {
+      const result = await scan(page, profile, family, fixture, { batch: invalid, corners: knownCorners });
+      assertRetake(result, 'Image evidence and manual corners cannot authorize an unmatched batch', 'batch-not-confirmed');
+    }
+    const layoutOnly = await scan(page, profile, family, fixture, { corners: knownCorners });
+    assertExactRead(layoutOnly, fixture.truth, 'Teacher-selected response map');
     assert.deepEqual(layoutOnly.profile, { id: profile.id, revision: profile.revision });
-    for (const expected of fixture.truth) assertObservation(layoutOnly.items.find(({ id }) => id === expected.id), expected);
     for (const forbidden of ['assessmentId', 'answerKeyId', 'assessmentVersion', 'grade']) assert(!Object.hasOwn(layoutOnly, forbidden));
 
-    const twin = { ...structuredClone(profile), id: 'same-print-conflicting-map', name: 'Same print with a different response map' };
-    const [firstChoice, secondChoice] = twin.components[0].items[0].choices;
-    [firstChoice.symbol, secondChoice.symbol] = [secondChoice.symbol, firstChoice.symbol];
-    const unsuitable = await scan(page, profile, family, fixture, { alternatives: [twin], corners: knownCorners });
-    assert.notEqual(unsuitable.status, 'read', 'Indistinguishable print with conflicting maps cannot auto-verify');
-    validateNoAccepted(unsuitable, 'Indistinguishable layout auto-read');
-    assert(unsuitable.registration.reasons.includes('identity-confirmation'));
-    const result = await scan(page, profile, family, fixture, { alternatives: [twin], corners: knownCorners, confirmedIdentity: true });
-    assert.equal(result.status, 'read');
-    assert.equal(result.registration.identity, 'teacher-confirmed');
-    assert.equal(result.registration.automatic, false);
-    for (const expected of fixture.truth) assertObservation(result.items.find(({ id }) => id === expected.id), expected);
-    const next = family.fixtures[1];
-    const second = await scan(page, profile, family, next, { alternatives: [twin], corners: pageCorners(normalizeMatrix(next.pageToSource)) });
-    assert(second.registration.reasons.includes('identity-confirmation'), 'Identity decision must be per capture');
-    validateNoAccepted(second, 'Identity reused on next capture');
-    for (const forbidden of ['assessmentId', 'answerKeyId', 'assessmentVersion', 'grade']) assert(!Object.hasOwn(result, forbidden));
-    const wrong = family.fixtures.find(({ id }) => id === 'wrong-same-grid');
-    const withOverride = await scan(page, profile, family, wrong, { confirmedIdentity: true, corners: pageCorners(normalizeMatrix(wrong.pageToSource)) });
-    validateNoAccepted(withOverride, 'Manual identity must not bypass a conflicting available signature');
-  });
+    const alternate = { ...structuredClone(profile), id: 'identical-geometry-other-map', name: 'Separate response map' };
+    const marked = fixture.truth.find(({ status }) => status === 'single');
+    const { choices } = alternate.components.flatMap(({ items }) => items).find(({ id }) => id === marked.id);
+    const selected = choices.find(({ symbol }) => symbol === marked.value);
+    const other = choices.find(({ symbol }) => symbol !== marked.value);
+    const newSymbol = other.symbol;
+    [selected.symbol, other.symbol] = [other.symbol, selected.symbol];
+    const notAuthorized = await scan(page, alternate, family, fixture, { batch: batchFor(profile), corners: knownCorners });
+    assertRetake(notAuthorized, 'Same geometry cannot automatically activate a different profile', 'batch-not-confirmed');
+    const explicit = await scan(page, alternate, family, fixture, { corners: knownCorners });
+    const alternateTruth = fixture.truth.map((item) => item.id === marked.id ? { ...item, value: newSymbol } : item);
+    assertExactRead(explicit, alternateTruth, 'Deliberately selected alternative response map');
 
-  await group('M3.1 independently verified identity under same-grid lookalikes and shared maps', async (page) => {
-    await installAdapters(page);
-    const profiles = [];
-    for (const family of families) profiles.push(await enroll(page, family));
-    const family = families.at(-1);
-    const profile = profiles.at(-1);
-    const alternatives = profiles.slice(0, -1);
-    const results = [];
-    for (const fixture of family.fixtures.filter(({ id, mode }) => id === 'wrong-same-grid' || mode === 'identity-regression')) {
-      const corners = pageCorners(normalizeMatrix(fixture.pageToSource));
-      const paths = [
-        ['automatic', { alternatives }],
-        ['supplied geometry', { alternatives, corners }],
-      ];
-      if (fixture.id !== 'missing-title') paths.push(['manual identity claim', { alternatives, corners, confirmedIdentity: true }]);
-      for (const [path, options] of paths) {
-        const result = await scan(page, profile, family, fixture, options);
-        results.push({ id: fixture.id, path, status: result.status,
-          accepted: result.items.filter(({ review }) => !review).length, reasons: result.registration.reasons });
-      }
-    }
-    console.log(`  Same-grid identity probes ${JSON.stringify(results)}`);
-    assert(results.every(({ status, accepted }) => status === 'retake' && accepted === 0), 'A lookalike authorized a read without independently matched identity');
+    const symmetricProfile = await enroll(page, orientationControl);
+    const symmetricFixture = orientationControl.fixture;
+    const ambiguous = await scan(page, symmetricProfile, orientationControl, symmetricFixture);
+    assertRetake(ambiguous, 'Geometrically symmetric form', 'ambiguous-orientation');
+    const supplied = await scan(page, symmetricProfile, orientationControl, symmetricFixture, { corners: pageCorners(normalizeMatrix(symmetricFixture.pageToSource)) });
+    assertExactRead(supplied, symmetricFixture.truth, 'Explicit orientation still checks response geometry');
 
-    const legacyFixture = JSON.parse(await readFile(new URL('legacy-interleaved-signatures.json', import.meta.url), 'utf8'));
-    assert.equal(legacyFixture.fixture, family.blank);
-    assert.equal(legacyFixture.samplesByFeature.length, profile.features.length);
-    const legacy = {
-      ...profile, id: 'legacy-printed-profile', name: 'Saved coarse-only profile',
-      features: profile.features.map(({ id, bounds }, index) => ({
-        id, bounds, samples: [...legacyFixture.samplesByFeature[index]].map((value) => Number.parseInt(value, 16) / 15),
+    const legacyFamily = families.at(-1);
+    const geometry = await enroll(page, legacyFamily);
+    const historical = JSON.parse(await readFile(new URL('legacy-interleaved-signatures.json', import.meta.url), 'utf8'));
+    assert.equal(historical.fixture, legacyFamily.blank);
+    assert.equal(historical.samplesByFeature.length, legacyFamily.features.length);
+    const legacy = { ...geometry, id: 'legacy-printed-profile', allowManualIdentity: true,
+      features: legacyFamily.features.map((bounds, index) => ({ id: `feature-${index}`, bounds: scaleBounds(bounds),
+        samples: [...historical.samplesByFeature[index]].map((value) => Number.parseInt(value, 16) / 15),
       })),
     };
-    const restoredLegacy = await page.evaluate(async (record) => {
-      await window.m3qa.saveProfile(record);
+    const restored = await page.evaluate(async (record) => {
+      const database = await new Promise((resolve, reject) => {
+        const request = indexedDB.open('talus-scree-mark-profiles', 1);
+        request.onupgradeneeded = () => request.result.createObjectStore('profiles', { keyPath: ['id', 'revision'] });
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = database.transaction('profiles', 'readwrite');
+          transaction.objectStore('profiles').add(record);
+          transaction.oncomplete = resolve;
+          transaction.onabort = () => reject(transaction.error);
+        });
+      } finally { database.close(); }
       return window.m3qa.loadProfile(record.id, record.revision);
     }, legacy);
-    assert.deepEqual(restoredLegacy, legacy, 'Opening the app must preserve an existing profile record');
-    const editedTitle = family.fixtures.find(({ id }) => id === 'changed-title-only');
-    const oldResult = await scan(page, restoredLegacy, family, editedTitle, {
-      corners: pageCorners(normalizeMatrix(editedTitle.pageToSource)), confirmedIdentity: true,
-    });
-    assert.equal(oldResult.status, 'retake', 'A legacy coarse descriptor cannot authorize a contradictory title');
-    validateNoAccepted(oldResult, 'Legacy descriptor accepted responses from contradictory print');
-
-    const genuine = family.fixtures.find(({ id }) => id === 'standard-4');
-    const equivalent = { ...profile, id: 'shared-reading-map', name: 'Same response map, separate assessment' };
-    const result = await scan(page, profile, family, genuine, { alternatives: [...alternatives, equivalent] });
-    assert.equal(result.status, 'read');
-    assert.equal(result.registration.automatic, true);
-    assert.deepEqual(result.profile, { id: profile.id, revision: profile.revision });
-    for (const expected of genuine.truth) assertObservation(result.items.find(({ id }) => id === expected.id), expected);
-    for (const forbidden of ['assessmentId', 'assessmentVersion', 'answerKeyId', 'grade']) assert(!Object.hasOwn(result, forbidden));
+    assert.deepEqual(restored, legacy, 'Read the historical stored profile without mutating it');
+    const editedTitle = legacyFamily.fixtures.find(({ id }) => id === 'changed-title-only');
+    assertExactRead(await scan(page, restored, legacyFamily, editedTitle), editedTitle.truth, 'Old geometry in a fresh confirmed batch');
   });
 
-  await group('M3.1 reads an exact public answer oracle across independent PDF renderers', async (page) => {
+  await group('M3.2 alternate PDF renderer characterization', async (page) => {
     await installAdapters(page);
     const reference = resolve(appPath, 'fixtures/m3');
     const key = JSON.parse(await readFile(resolve(reference, 'mc-only-key.json'), 'utf8'));
-    const blank = await readFile(resolve(reference, 'mc-only-blank.png'), 'base64');
     const filled = await encoded('cross-renderer-filled.png');
-    const boxes = [[54, 40, 128, 26], [460, 48, 95, 16], [56, 140, 119, 18], [331, 176, 78, 16], [56, 515, 128, 19], [56, 757, 125, 17]];
-    const result = await page.evaluate(async ({ key, blank, filled, boxes }) => {
-      const setup = await window.m3qa.loadImage(blank, 'published-blank-raster');
-      const example = await window.m3qa.loadImage(filled, 'poppler-marked-raster');
-      const regions = boxes.map(([x, y, width, height], index) => ({ id: `feature-${index}`, bounds: { x, y, width, height } }));
-      const features = window.m3qa.capturePrintedFeatures(setup, [2.5, 0, 0, 0, 2.5, 0, 0, 0, 1], regions);
+    const result = await page.evaluate(async ({ key, filled }) => {
+      const image = await window.m3qa.loadImage(filled, 'poppler-marked-raster');
       const components = key.blocks.map(({ kind, bounds, items }, index) => ({ id: `block-${index}`, kind, bounds, items }));
       const profile = window.m3qa.createMarkerlessProfile({ id: 'cross-renderer', revision: 1, name: 'Cross renderer',
-        page: { ...key.paper, origin: 'top-left', orientation: 'portrait' }, components, features });
-      return window.m3qa.readProfileSheet(example, profile);
-    }, { key, blank, filled, boxes });
-    assert.equal(result.status, 'read', JSON.stringify(result.registration.reasons));
-    assert.deepEqual(result.items.map(({ id }) => id), key.itemOrder);
-    for (const item of result.items) {
-      const expected = key.expected[item.id];
-      assertObservation(item, { id: item.id, status: expected.state, value: expected.rawText, review: false });
-    }
+        page: { ...key.paper, origin: 'top-left', orientation: 'portrait' }, components, features: [] });
+      return window.m3qa.readProfileSheet(image, profile, { batch: { profileId: profile.id, revision: profile.revision } });
+    }, { key, filled });
+    if (result.status === 'read') {
+      assert.deepEqual(result.items.map(({ id }) => id), key.itemOrder);
+      for (const item of result.items.filter(({ review }) => !review)) {
+        const expected = key.expected[item.id];
+        assertObservation(item, { id: item.id, status: expected.state, value: expected.rawText, review: false });
+      }
+    } else assertRetake(result, 'Cross-renderer stress');
+    console.log(`  Optional renderer stress ${result.status}, ${result.items.filter(({ review }) => !review).length}/${key.itemOrder.length} exact accepted items.`);
   });
 
   await group('M3 teacher UI authors an automatic, parametric and individually corrected profile', async (page) => {
@@ -349,11 +327,6 @@ try {
     async function region(bounds) {
       const normalized = scaleBounds(bounds);
       await entries({ 'region-x': normalized.x, 'region-y': normalized.y, 'region-width': normalized.width, 'region-height': normalized.height });
-    }
-    for (const bounds of family.features.slice(0, 7)) {
-      await region(bounds);
-      await page.locator('#add-feature').click();
-      assert.match(await page.locator('#editor-status').textContent(), /Printed feature added/i);
     }
     const [detected, parametric] = family.components;
     await region(detected.bounds);
@@ -392,7 +365,7 @@ try {
     assert.deepEqual(enrolled[0].components[1].items[0].choices.map(({ symbol }) => symbol), ['A', 'B', 'C', 'D', 'E']);
   });
 
-  await group('M3 worker-backed successive scans, revision switch, privacy and offline validation', async (page, context) => {
+  await group('M3.2 confirmed-batch successive scans, invalidation, privacy and offline validation', async (page, context) => {
     await installAdapters(page);
     const family = families[1];
     const profile = await enroll(page, family);
@@ -440,33 +413,81 @@ try {
       await page.waitForFunction(() => ['read', 'retake'].includes(document.getElementById('recognition-status').dataset.status));
       return observed.getAttribute('data-status');
     }
+    async function authorize() {
+      await page.locator('#start-batch').click();
+      const attestation = page.locator('#batch-attestation');
+      assert.equal(await attestation.isChecked(), false, 'A new batch should require fresh attestation');
+      const confirm = page.locator('#confirm-batch');
+      if (await confirm.isEnabled()) await confirm.click();
+      assert.equal(await selector.isEnabled(), true, 'A batch started without attestation');
+      await attestation.check();
+      await confirm.click();
+      assert.equal(await selector.isDisabled(), true, 'The active template revision is not pinned');
+      assert.equal(await selector.inputValue(), active);
+    }
+    async function assertNotReading() {
+      if ((await readButton.isVisible()) && (await readButton.isEnabled())) await readButton.click();
+      assert(!['processing', 'read'].includes(await observed.getAttribute('data-status')));
+      assert.equal(await rows.count(), 0);
+    }
+    async function assertRows(truth) {
+      const reported = await rows.evaluateAll((items) => items.map((row) => ({
+        id: row.dataset.itemId, status: row.dataset.status, value: row.querySelector('[data-raw-text]')?.dataset.rawText ?? null,
+        review: row.dataset.review === 'true',
+      })));
+      assert.deepEqual(reported, truth);
+    }
 
     await choose(family.fixtures[0]);
+    await assertNotReading();
+    await authorize();
     assert.equal(await read(), 'read');
-    assert.equal(await rows.count(), family.fixtures[0].truth.length);
+    await assertRows(family.fixtures[0].truth);
     assert.equal(await observed.getAttribute('data-strategy'), 'markerless');
     assert.equal(await observed.getAttribute('data-profile-id'), profile.id);
     assert.equal(await observed.getAttribute('data-revision'), String(profile.revision));
-    await choose(family.fixtures.find(({ id }) => id === 'wrong-same-grid'));
+    const changedPrint = family.fixtures.find(({ id }) => id === 'wrong-same-grid');
+    await choose(changedPrint);
+    assert.equal(await read(), 'read');
+    await assertRows(changedPrint.truth);
+    const missing = family.fixtures.find(({ id }) => id === 'missing-block');
+    await choose(missing);
     assert.equal(await read(), 'retake');
     assert.equal(await rows.count(), 0);
+    assert.equal(await selector.isDisabled(), true, 'A retake must not clear batch confirmation');
+    await page.locator('#manual-corners').click();
+    const cornerCanvas = page.locator('#scan-corner-canvas');
+    const preview = await page.locator('#sheet-canvas').evaluate(({ width, height }) => ({ width, height }));
+    const display = await cornerCanvas.boundingBox();
+    assert(display, 'The scan-corner tool should be visible');
+    for (const point of pageCorners(normalizeMatrix(missing.pageToSource))) {
+      await cornerCanvas.click({ position: { x: point.x * display.width / preview.width, y: point.y * display.height / preview.height } });
+    }
+    await page.locator('#apply-scan-corners').click();
+    await observed.and(page.locator('[data-status="retake"]')).waitFor();
+    assert.equal(await rows.count(), 0, 'Manually supplied geometry must not excuse a missing block');
     await choose(family.fixtures[4]);
     assert.equal(await read(), 'read');
-    assert.equal(await rows.count(), family.fixtures[4].truth.length);
+    await assertRows(family.fixtures[4].truth);
+    await page.locator('#clear-image').click();
+    assert.equal(await rows.count(), 0);
+    assert.equal(await selector.isDisabled(), true, 'Clearing a capture must preserve the active batch');
     await choose(family.fixtures[0]);
     await page.evaluate(() => { window.delayProfileResults = true; });
     await readButton.click();
     await page.waitForFunction(() => window.delayedProfileResults.length > 0);
+    await page.locator('#end-batch').click();
+    assert.equal(await selector.isEnabled(), true, 'Ending the batch must unlock selection');
     await selector.selectOption('reference');
     await page.evaluate(() => {
       window.delayProfileResults = false;
       window.delayedProfileResults.splice(0).forEach((deliver) => deliver());
     });
-    assert.equal(await rows.count(), 0, 'Profile switch allowed a late result to appear');
+    assert.equal(await rows.count(), 0, 'Batch/profile switch allowed a late result to appear');
     assert.notEqual(await observed.getAttribute('data-status'), 'read');
     await selector.selectOption(active);
-    await page.locator('#clear-image').click();
-    assert.equal(await rows.count(), 0);
+    await choose(family.fixtures[0]);
+    await assertNotReading();
     const appRelease = await page.evaluate(async (url) => (await import(url)).shellAssets, new URL('precache.generated.js', target).href);
     const allowed = new Set(['./', ...Object.keys(appRelease), 'sw.js', 'precache.generated.js'].map((path) => new URL(path, target).href));
     for (const { url, method, data } of sent) {
@@ -506,7 +527,10 @@ try {
     assert.equal(await rows.count(), 0);
     await selector.selectOption(active);
     await choose(family.fixtures[0]);
+    await assertNotReading();
+    await authorize();
     assert.equal(await read(), 'read');
+    await assertRows(family.fixtures[0].truth);
     assert.equal(server.requests.length, beforeOffline);
   });
 

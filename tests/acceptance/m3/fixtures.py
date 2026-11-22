@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from random import Random
 
-from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps
+from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFont, ImageOps
 
 
 WIDTH = 1224
@@ -143,6 +143,16 @@ def items(components):
     return [item for component in components for item in component['items']]
 
 
+def extent(bounds):
+    return (bounds['x'], bounds['y'], bounds['x'] + bounds['width'], bounds['y'] + bounds['height'])
+
+
+def verify_response_pixels(reference, variant, components):
+    difference = ImageChops.difference(reference, variant)
+    assert difference.getbbox() is not None
+    assert all(difference.crop(extent(block['bounds'])).getbbox() is None for block in components)
+
+
 def mark_copy(blank, components, seed, *, double=False, names=False):
     dice = Random(seed)
     marked = blank.copy()
@@ -229,9 +239,12 @@ def generate(out):
         marked, truth = mark_copy(blank, components, 47)
         save('mirrored', framed(ImageOps.mirror(marked), 0)[0], 'must-retake')
         wrong = make_sheet('Practice page altered', ['Select the most accurate option', 'Different instructions for this version', 'Hand this page in after the test'], components)
-        negative, _ = mark_copy(wrong, components, 53)
-        wrong_frame, wrong_matrix, _ = framed(negative, 0)
-        save('wrong-same-grid', wrong_frame, 'must-retake', geometry=wrong_matrix)
+        same_grid, same_truth = mark_copy(wrong, components, 53)
+        original_print, _ = mark_copy(blank, components, 53)
+        verify_response_pixels(original_print, same_grid, components)
+        wrong_frame, wrong_matrix, _ = framed(same_grid, 0)
+        # Keep the historical fixture filename and bytes for longitudinal comparisons.
+        save('wrong-same-grid', wrong_frame, 'compatible-print', same_truth, geometry=wrong_matrix)
         if family_id == 'interleaved':
             changed_title = marked.copy()
             draw = ImageDraw.Draw(changed_title)
@@ -256,18 +269,50 @@ def generate(out):
 
             for case, page in [('changed-title-only', changed_title), ('missing-title', missing_title),
                                ('same-title-changed-labels', changed_labels)]:
+                verify_response_pixels(marked, page, components)
                 image, matrix, orientation = framed(page, 0)
-                save(case, image, 'identity-regression', geometry=matrix, orientation=orientation)
+                save(case, image, 'compatible-print', truth, geometry=matrix, orientation=orientation)
+
+            named, named_truth = mark_copy(blank, components, 47, names=True)
+            assert named_truth == truth
+            verify_response_pixels(marked, named, components)
+            for case, page in [('same-marks-empty-name', marked), ('same-marks-variable-name', named)]:
+                image, matrix, orientation = framed(page, 0)
+                save(case, image, 'compatible-print', truth, geometry=matrix, orientation=orientation)
+
+            displaced = marked.copy()
+            left, top, right, bottom = extent(components[-1]['bounds'])
+            moved_block = displaced.crop((left, top, right, bottom))
+            ImageDraw.Draw(displaced).rectangle((left, top, right, bottom), fill=PAPER)
+            displaced.paste(moved_block, (left + 42, top + 18))
+            image, matrix, _ = framed(displaced, 0)
+            save('displaced-complete-block', image, 'must-retake', geometry=matrix)
+
+            removed_row = marked.copy()
+            row = components[-1]['items'][1]
+            ImageDraw.Draw(removed_row).rectangle(extent(row['bounds']), fill=PAPER)
+            image, matrix, _ = framed(removed_row, 0)
+            save('missing-required-row', image, 'must-retake', geometry=matrix)
+
+            added_row = marked.copy()
+            draw = ImageDraw.Draw(added_row)
+            existing = components[-1]['items'][:2]
+            distance_between_rows = existing[1]['choices'][0]['y'] - existing[0]['choices'][0]['y']
+            for choice in existing[0]['choices']:
+                bubble(draw, {**choice, 'y': choice['y'] + distance_between_rows / 2})
+            image, matrix, _ = framed(added_row, 0)
+            save('extra-row-inside-block', image, 'must-retake', geometry=matrix)
         save('clipped', marked.crop((0, 0, WIDTH - 180, HEIGHT - 251)), 'must-retake')
         sanitized = marked.copy()
         last = components[-1]['bounds']
         bounds = (last['x'] - 4, last['y'] - 2, last['x'] + last['width'] + 1, last['y'] + last['height'] + 4)
         ImageDraw.Draw(sanitized).rectangle(bounds, fill=PAPER)
-        save('missing-block', framed(sanitized, 0)[0], 'must-review-missing-block', None)
+        image, matrix, _ = framed(sanitized, 0)
+        save('missing-block', image, 'must-retake', geometry=matrix)
         doubled, double_truth = mark_copy(blank, components, 54, double=True)
         double_frame, double_matrix, _ = framed(doubled, 0)
         save('double-mark', double_frame, 'must-review', double_truth, geometry=double_matrix)
-        save('low-contrast-edge', ImageEnhance.Contrast(framed(marked, 1)[0]).enhance(.38), 'characterize')
+        save('low-contrast-edge', ImageEnhance.Contrast(framed(marked, 1)[0]).enhance(.38), 'characterize', truth)
         records.append({'id': family_id, 'blank': blank_path, 'page': {'width': WIDTH, 'height': HEIGHT}, 'nameField': NAME_FIELD,
                         'features': [text_patch((74, 78), title, 53, True), text_patch((820, 92), 'MOCK SHEET', 36, True),
                                      text_patch((74, 233), notices[0], 26, True), text_patch((78, 326), notices[1], 27),
@@ -275,7 +320,15 @@ def generate(out):
                                      text_patch((836, 1480), 'Attach this page to your work.', 21)] +
                                     [text_patch((block['topLeft']['x'] - 88, block['topLeft']['y'] - 70), block['label'], 24, True) for block in components],
                         'components': components, 'fixtures': fixtures})
-    (out / 'oracles.json').write_text(json.dumps({'families': records}, indent=2) + '\n')
+    symmetric = [mc_block('centered-grid', 'Selected response', [f'S{i}' for i in range(1, 5)], 516, 696, 'ABCD', dx=64, dy=64)]
+    unmarked = make_sheet('Symmetric response layout', ['Mark your selection', 'The template has no orientation marks', 'Review after scanning'], symmetric)
+    marked, truth = mark_copy(unmarked, symmetric, 47)
+    image, matrix, orientation = framed(marked, 0)
+    image.save(out / 'symmetric-orientation.jpg', quality=93, subsampling=0)
+    orientation_control = {'id': 'symmetric', 'components': symmetric,
+                           'fixture': {'id': 'orientation', 'file': 'symmetric-orientation.jpg', 'truth': truth,
+                                       'pageToSource': matrix, 'orientation': orientation}}
+    (out / 'oracles.json').write_text(json.dumps({'families': records, 'orientationControl': orientation_control}, indent=2) + '\n')
     print(f'Generated {len(records)} markerless families and {sum(len(form["fixtures"]) for form in records)} marked cases.')
 
 

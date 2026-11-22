@@ -1,8 +1,7 @@
 import { cross, fitProjective, invertProjective, project } from './projective.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
-import { printedDetailShape } from './profile-authoring.js';
 
-export const markerlessThresholdVersion = 'printed-features-v4';
+export const markerlessThresholdVersion = 'batch-geometry-v1';
 const registrationStrategy = 'markerless';
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const failure = (reason, detail = {}) => ({
@@ -237,140 +236,16 @@ function featureSamples(gray, matrix, bounds, dx = 0, dy = 0) {
   return area >= 14 && area <= 120 ? samples : null;
 }
 
-function detailSamples(gray, matrix, bounds, dx = 0, dy = 0) {
-  const { rows, columns } = printedDetailShape(bounds);
-  return quantizeInk(sampleInk(gray, matrix, bounds, rows, columns, [.25, .75], dx, dy), .07);
-}
-
+// Compatibility helper for existing calibration tools. Registration does not use
+// printed text or any pixels outside the selected response blocks for identity.
 export function capturePrintedFeatures(image, pageToSource, regions) {
   const gray = toGrayImage(image);
   return regions.map((region, index) => {
     const { id, bounds = region } = region;
     const samples = featureSamples(gray, pageToSource, bounds);
     if (!samples) throw new TypeError(`Printed feature ${index + 1} needs contrasting, fixed printed ink and background.`);
-    const identitySamples = detailSamples(gray, pageToSource, bounds);
-    return {
-      id: id ?? `feature-${index + 1}`, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
-      samples, ...(identitySamples ? { identitySamples } : {}),
-    };
+    return { id: id ?? `feature-${index + 1}`, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, samples };
   });
-}
-
-function similarity(reference, candidate) {
-  if (!candidate) return 0;
-  let overlap = 0;
-  let energy = 0;
-  for (let i = 0; i < reference.length; i++) {
-    overlap += reference[i] * candidate[i];
-    energy += reference[i] ** 2 + candidate[i] ** 2;
-  }
-  return energy > 0 ? 2 * overlap / energy : 0;
-}
-
-function locateFeature(gray, matrix, feature, radius = 12) {
-  const { bounds, samples } = feature;
-  const center = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
-  let best = { score: -1, x: 0, y: 0 };
-  const tested = [];
-  function check(x, y) {
-    const score = similarity(samples, featureSamples(gray, matrix, bounds, x, y));
-    const rounded = Math.hypot(x, y);
-    tested.push({ score, x, y });
-    if (score - rounded * .001 > best.score - Math.hypot(best.x, best.y) * .001) best = { score, x, y };
-  }
-  for (let y = -radius; y <= radius; y += 4) {
-    for (let x = -radius; x <= radius; x += 4) check(x, y);
-  }
-  const rough = best;
-  for (let y = rough.y - 3; y <= rough.y + 3; y++) {
-    for (let x = rough.x - 3; x <= rough.x + 3; x++) check(x, y);
-  }
-  const rival = Math.max(0, ...tested.filter((candidate) => distance(best, candidate) >= 6).map(({ score }) => score));
-  const observed = project(matrix, center.x + best.x, center.y + best.y);
-  return {
-    id: feature.id, center, observed, score: best.score, margin: best.score - rival,
-    displacement: Math.hypot(best.x, best.y),
-    found: Boolean(observed) && best.score >= .80 && (best.score >= .88 || best.score - rival >= .045),
-  };
-}
-
-function inspectLandmarks(gray, profile, matrix) {
-  const [, first, ...remaining] = profile.features;
-  const firstCheck = locateFeature(gray, matrix, first);
-  if (firstCheck.score < .74) return { score: firstCheck.score, checks: [firstCheck], usable: [], verified: false };
-  const checks = [firstCheck, ...remaining.map((feature) => locateFeature(gray, matrix, feature))];
-  const usable = checks.filter((check) => check.found);
-  const score = checks.reduce((sum, item) => sum + item.score, 0) / checks.length;
-  return { score, checks, usable, verified: usable.length >= Math.max(3, Math.ceil(checks.length * .8)) && score >= .83 };
-}
-
-function localIdentityLoss(reference, observed, { rows, columns }) {
-  if (!observed) return null;
-  const w = Math.min(columns, Math.max(4, Math.min(9, Math.round(columns * .15))));
-  const h = Math.min(rows, Math.max(8, Math.round(rows * .67)));
-  const verticalStarts = new Set([0, Math.floor((rows - h) / 2), rows - h]);
-  let highest = null;
-  for (const y of verticalStarts) {
-    for (let x = 0; x + w <= columns; x++) {
-      let energy = 0;
-      let difference = 0;
-      for (let row = y; row < y + h; row++) {
-        for (let col = x; col < x + w; col++) {
-          const index = row * columns + col;
-          energy += reference[index] ** 2 + observed[index] ** 2;
-          difference += (reference[index] - observed[index]) ** 2;
-        }
-      }
-      // Very sparse windows fluctuate with insignificant stroke and edge noise.
-      if (energy < w * h * 225 * .16) continue;
-      highest = Math.max(highest ?? 0, difference / energy);
-    }
-  }
-  return highest;
-}
-
-function inspectIdentity(gray, profile, matrix, checks) {
-  const { bounds, identitySamples } = profile.features[0];
-  const method = 'printed-detail';
-  const candidates = [];
-  for (const y of [-1.5, -.75, 0, .75, 1.5]) {
-    for (const x of [-1.5, -.75, 0, .75, 1.5]) {
-      const signature = detailSamples(gray, matrix, bounds, x, y);
-      const score = similarity(identitySamples, signature);
-      candidates.push({ x, y, score, signature });
-    }
-  }
-  candidates.sort((a, b) => b.score - a.score || Math.hypot(a.x, a.y) - Math.hypot(b.x, b.y));
-  const best = candidates[0];
-  const localRunnerScore = candidates.find((candidate) => distance(candidate, best) >= 2.25)?.score ?? null;
-  const corroborated = checks.filter(({ score, displacement }) => score >= .90 && displacement <= 2.5).length;
-  const minimum = .82;
-  const localLoss = localIdentityLoss(identitySamples, best.signature, printedDetailShape(bounds));
-  // A short changed token must not be diluted by near-identical surrounding print.
-  // Allow more local rendition noise when the whole patch is less sharply matched.
-  const maximumLocalLoss = Math.max(.145, .095 + 1.55 * (1 - best.score));
-  const reasons = [];
-  if (best.score < minimum) reasons.push('identity-signature-mismatch');
-  if (localLoss === null || localLoss > maximumLocalLoss) reasons.push('identity-local-conflict');
-  return {
-    method, verified: reasons.length === 0, score: best.score, minimum, offset: { x: best.x, y: best.y },
-    localLoss, maximumLocalLoss,
-    localRunnerScore, localMargin: localRunnerScore === null ? null : best.score - localRunnerScore,
-    runnerScore: null, margin: null,
-    supportingChecks: { corroborated, total: checks.length },
-    reasons,
-  };
-}
-
-function legacyConflict(gray, profile, corners, allowRotation) {
-  const candidates = allowRotation ? rotations(corners, false) : [corners];
-  for (const quad of candidates) {
-    const matrix = pageTransform(profile.page, quad);
-    if (!matrix) continue;
-    const legacyLead = locateFeature(gray, matrix, profile.features[0], 0);
-    if (legacyLead.score >= .87 && inspectLandmarks(gray, profile, matrix).verified) return true;
-  }
-  return false;
 }
 
 const outlineDirections = Array.from({ length: 12 }, (_, index) => {
@@ -378,199 +253,192 @@ const outlineDirections = Array.from({ length: 12 }, (_, index) => {
   return [Math.cos(angle), Math.sin(angle)];
 });
 
-function printedGeometry(gray, profile, matrix) {
-  const bubbles = profile.components.flatMap(({ items }) => items.flatMap((item) =>
-    item.kind === 'mc' ? item.choices : item.slots.flatMap(({ choices }) => choices)));
-  const partitions = new Map();
-  for (const bubble of bubbles) {
-    const key = Math.floor(4 * bubble.x / profile.page.width) + 4 * Math.floor(4 * bubble.y / profile.page.height);
-    const group = partitions.get(key) ?? [];
-    group.push(bubble);
-    partitions.set(key, group);
-  }
-  const checks = [...partitions.values()].flatMap((group) =>
-    [group[0], group[Math.floor(group.length / 2)], group.at(-1)].filter((choice, index, choices) =>
-      choices.indexOf(choice) === index));
-  const supported = checks.filter(({ x, y, radius }) => {
-    let sectors = 0;
-    for (const [dx, dy] of outlineDirections) {
-      function sample(multiplier) {
-        const p = project(matrix, x + dx * radius * multiplier, y + dy * radius * multiplier);
-        return p ? grayAt(gray, p.x, p.y) : NaN;
-      }
-      if (sample(1.55) - Math.min(sample(.91), sample(1.08)) >= 26) sectors++;
+function outlineSupport(gray, transform, { x, y, radius }) {
+  let sectors = 0;
+  for (const [dx, dy] of outlineDirections) {
+    function sample(scale) {
+      const point = project(transform, x + dx * radius * scale, y + dy * radius * scale);
+      return point ? grayAt(gray, point.x, point.y) : NaN;
     }
-    return sectors >= 9;
-  });
+    if (sample(1.55) - Math.min(sample(.88), sample(1.02), sample(1.16)) >= 26) sectors++;
+  }
+  return sectors;
+}
+
+const choicesFor = (item) => item.kind === 'mc' ? item.choices : item.slots.flatMap(({ choices }) => choices);
+const supportCount = (choices, support) => choices.filter((choice) => support.get(choice) >= 8).length;
+
+function averagePoint(points) {
   return {
-    checked: checks.length,
-    supported: supported.length,
-    verified: checks.length > 0 && supported.length >= Math.ceil(checks.length * .7),
+    x: points.reduce((sum, point) => sum + point.x, 0) / points.length,
+    y: points.reduce((sum, point) => sum + point.y, 0) / points.length,
   };
 }
 
-function robustRefinement(gray, profile, candidate, result) {
-  const notes = result.usable;
-  const originalGeometry = printedGeometry(gray, profile, candidate);
-  // Paper edges supply one fit. Printed outlines verify that fit without
-  // mistaking a renderer-specific shift in a text glyph for page movement.
-  if (originalGeometry.verified) {
-    return { matrix: candidate, landmarks: result, checks: result.checks, geometry: originalGeometry };
+function perpendicular(first, last) {
+  const span = distance(first, last);
+  if (span < 1) return null;
+  return { x: (first.y - last.y) / span, y: (last.x - first.x) / span };
+}
+
+const position = (point, axis) => point.x * axis.x + point.y * axis.y;
+
+function numericalBands(item) {
+  const first = averagePoint(item.slots[0].choices);
+  const last = averagePoint(item.slots.at(-1).choices);
+  const axis = perpendicular(first, last);
+  if (!axis) return null;
+  const ordered = item.slots.flatMap(({ choices }, slot) =>
+    choices.map((choice) => ({ choice, slot, at: position(choice, axis) }))).sort((a, b) => a.at - b.at);
+  const grouped = [];
+  for (const { choice, slot, at } of ordered) {
+    const previous = grouped.at(-1);
+    if (previous && Math.abs(at - previous.at) <= choice.radius * .9 && !previous.slots.has(slot)) {
+      previous.slots.add(slot);
+      previous.choices.push(choice);
+      previous.at = position(averagePoint(previous.choices), axis);
+    } else grouped.push({ at, slots: new Set([slot]), choices: [choice] });
   }
-  // Topology of the blank is fixed. Hold at least one printed feature out of the adjusted fit.
-  if (notes.length < 5) return null;
-  let fit;
-  let bestSpan = 0;
-  for (let first = 0; first < notes.length - 3; first++) {
-    for (let second = first + 1; second < notes.length - 2; second++) {
-      for (let third = second + 1; third < notes.length - 1; third++) {
-        for (let fourth = third + 1; fourth < notes.length; fourth++) {
-          const used = [notes[first], notes[second], notes[third], notes[fourth]];
-          const ordered = [...used].sort((a, b) => a.center.y - b.center.y);
-          const span = Math.abs(cross(ordered[0].center, ordered[1].center, ordered[2].center)) +
-            Math.abs(cross(ordered[3].center, ordered[1].center, ordered[2].center));
-          if (span <= bestSpan) continue;
-          const model = fitProjective(used.map((item) => item.center), used.map((item) => item.observed));
-          if (!model) continue;
-          bestSpan = span;
-          fit = { model, ids: new Set(used.map(({ id }) => id)) };
-        }
-      }
+  return { axis, groups: grouped };
+}
+
+function multipleChoiceBands(items) {
+  const widest = [...items].sort((a, b) => b.choices.length - a.choices.length)[0].choices;
+  let endpoints = [widest[0], widest[1]];
+  for (const first of widest) {
+    for (const last of widest) {
+      if (distance(first, last) > distance(...endpoints)) endpoints = [first, last];
     }
   }
-  if (!fit || bestSpan < profile.page.width * profile.page.height * .15) return null;
-  const inverse = invertProjective(fit.model);
-  if (!inverse) return null;
-  const checks = result.checks.map((check) => {
-    if (!check.observed) return check;
-    const corrected = project(inverse, check.observed.x, check.observed.y);
-    return { ...check, displacement: corrected ? distance(check.center, corrected) : Infinity, fitPoint: fit.ids.has(check.id) };
-  });
-  const validation = checks.filter(({ found, fitPoint }) => found && !fitPoint);
-  if (!validation.length || validation.some(({ displacement }) => displacement > 1.55)) return null;
-  const closed = inspectLandmarks(gray, profile, fit.model);
-  const geometry = printedGeometry(gray, profile, fit.model);
-  return closed.verified && geometry.verified ? { matrix: fit.model, landmarks: closed, checks, geometry } : null;
+  const axis = perpendicular(...endpoints);
+  if (!axis) return null;
+  const groups = items.map(({ choices }) => ({ choices, at: position(averagePoint(choices), axis) }));
+  groups.sort((a, b) => a.at - b.at);
+  return { axis, groups };
 }
 
-function rotations(corners, mirrored) {
-  const base = mirrored ? [corners[0], corners[3], corners[2], corners[1]] : corners;
-  return base.map((_, index) => [...base.slice(index), ...base.slice(0, index)]);
+function extraRows(gray, transform, band, bounds, expectedChoices) {
+  if (!band) return 0;
+  const { axis, groups } = band;
+  // Use only repeated, enrolled rows to estimate pitch. A decimal in just one
+  // position does not establish a row or a guard region.
+  const rows = groups.filter(({ choices }) => choices.length >= 2);
+  const spacing = rows.slice(1).map((row, index) => row.at - rows[index].at);
+  const pitch = quantile(spacing, .5);
+  if (!Number.isFinite(pitch) || pitch <= .5) return 0;
+  const proposals = [[rows[0], -pitch], [rows.at(-1), pitch]];
+  for (const [index, gap] of spacing.entries()) {
+    proposals.push([rows[index], gap / 2]);
+    if (gap >= pitch * 1.75) proposals.push([rows[index], pitch]);
+  }
+  return proposals.filter(([row, delta]) => {
+    const shifted = row.choices.map(({ x, y, radius }) => ({ x: x + delta * axis.x, y: y + delta * axis.y, radius }));
+    const eligible = shifted.filter(({ x, y, radius }) => {
+      const margin = 1.6 * radius;
+      return x - margin >= bounds.x && x + margin <= bounds.x + bounds.width &&
+        y - margin >= bounds.y && y + margin <= bounds.y + bounds.height &&
+        expectedChoices.every((other) => Math.hypot(x - other.x, y - other.y) > 1.15 * (radius + other.radius));
+    });
+    const matching = eligible.filter((choice) => outlineSupport(gray, transform, choice) >= 8).length;
+    return matching >= Math.max(2, Math.ceil(row.choices.length * .70));
+  }).length;
 }
 
-function containsComponents(gray, profile, matrix) {
+function blockGeometry(gray, block, transform) {
+  const choices = block.items.flatMap(choicesFor);
+  const support = new Map(choices.map((choice) => [choice, outlineSupport(gray, transform, choice)]));
+  const supported = supportCount(choices, support);
+  let missingRows = 0;
+  let missingSlots = 0;
+  let excess = 0;
+  if (block.kind === 'mc') {
+    missingRows = block.items.filter(({ choices: row }) => supportCount(row, support) < Math.ceil(row.length / 2)).length;
+    excess = extraRows(gray, transform, multipleChoiceBands(block.items), block.bounds, choices);
+  } else {
+    for (const item of block.items) {
+      missingSlots += item.slots.filter(({ choices: slot }) => supportCount(slot, support) < Math.ceil(slot.length * .65)).length;
+      const band = numericalBands(item);
+      if (band) {
+        missingRows += band.groups.filter(({ choices: row }) => row.length >= 2 &&
+          supportCount(row, support) < Math.ceil(row.length / 2)).length;
+      }
+      const bounds = block.items.length === 1 ? block.bounds : item.bounds;
+      excess += extraRows(gray, transform, band, bounds, choices);
+    }
+  }
+  return {
+    id: block.id, checked: choices.length, supported, missingRows, missingSlots, extraRows: excess,
+    verified: supported >= Math.ceil(choices.length * .70) && !missingRows && !missingSlots && !excess,
+  };
+}
+
+function containsComponents(gray, profile, transform) {
   return profile.components.every(({ bounds }) => [
     [bounds.x, bounds.y], [bounds.x + bounds.width, bounds.y], [bounds.x + bounds.width, bounds.y + bounds.height],
     [bounds.x, bounds.y + bounds.height],
   ].every(([x, y]) => {
-    const point = project(matrix, x, y);
+    const point = project(transform, x, y);
     return point && Number.isFinite(grayAt(gray, point.x, point.y));
   }));
 }
 
-function bestOrientation(gray, profile, corners, allowRotation) {
-  const possible = allowRotation ? rotations(corners, false) : [corners];
-  const reflected = allowRotation ? rotations(corners, true) : [];
-  const candidates = [...possible, ...reflected].flatMap((quad, index) => {
-    const matrix = pageTransform(profile.page, quad);
-    if (!matrix) return [];
-    const landmarks = inspectLandmarks(gray, profile, matrix);
-    const identityEvidence = landmarks.verified ? inspectIdentity(gray, profile, matrix, landmarks.checks) : null;
-    const rank = landmarks.verified
-      ? 1 + identityEvidence.score + (identityEvidence.verified ? 1 : 0)
-      : landmarks.score;
-    return [{ matrix, mirrored: index >= possible.length, landmarks, identityEvidence, rank }];
-  }).sort((a, b) => b.rank - a.rank);
-  return { first: candidates[0], second: candidates[1] };
-}
-
-function withRunner(identityEvidence, runnerScore) {
-  if (!identityEvidence) return null;
+function inspectOrientation(gray, profile, corners, mirrored) {
+  const pageToSource = pageTransform(profile.page, corners);
+  const sourceToPage = pageToSource && invertProjective(pageToSource);
+  if (!sourceToPage) return null;
+  const blocks = profile.components.map((block) => blockGeometry(gray, block, pageToSource));
+  const total = (key) => blocks.reduce((sum, block) => sum + block[key], 0);
+  const checked = total('checked');
+  const supported = total('supported');
+  const inFrame = containsComponents(gray, profile, pageToSource);
+  const geometry = { checked, supported, verified: inFrame && blocks.every(({ verified }) => verified), blocks };
   return {
-    ...identityEvidence, runnerScore,
-    margin: runnerScore === null ? null : identityEvidence.score - runnerScore,
+    pageToSource, sourceToPage, inFrame, geometry, mirrored,
+    score: supported / checked,
   };
 }
 
-export function registerMarkerless(image, profile, options = {}) {
-  const { corners, confirmedIdentity = false, alternatives = [] } = options;
+function rotations(corners) {
+  return corners.map((_, index) => [...corners.slice(index), ...corners.slice(0, index)]);
+}
+
+export function registerMarkerless(image, profile, { corners, batch } = {}) {
+  if (batch?.profileId !== profile.id || batch?.revision !== profile.revision) {
+    return failure('batch-not-confirmed');
+  }
   const gray = toGrayImage(image);
   const measured = corners ?? pageCorners(gray);
   if (!measured) return failure('page-corners', { canSetCorners: true });
   if (!plausible(measured, gray)) {
     return failure(plausible(measured, gray, true) ? 'mirrored-registration' : 'page-corners', { canSetCorners: true });
   }
-  const cornerPath = corners ? 'manual-corners' : 'page-boundary';
-
-  if (profile.features.length === 0) {
-    if (!profile.allowManualIdentity || !corners) return failure('manual-geometry-required', { canSetCorners: true });
-    if (!confirmedIdentity) return failure('identity-confirmation', { canConfirmIdentity: true, canSetCorners: true });
-    const pageToSource = pageTransform(profile.page, corners);
-    const sourceToPage = pageToSource && invertProjective(pageToSource);
-    if (!sourceToPage || !containsComponents(gray, profile, pageToSource)) return failure('clipped-content');
-    return { status: 'registered', strategy: registrationStrategy, reasons: [], pageToSource, sourceToPage,
-      cornerPath, identity: 'teacher-confirmed', automatic: false, checks: [], corners: measured };
-  }
-
-  if (!profile.features[0].identitySamples) return failure('legacy-identity-signature', {
-    identityEvidence: { method: 'legacy-coarse', verified: false, score: null, runnerScore: null, margin: null,
-      reasons: ['identity-detail-required'] },
-  });
-
-  const { first, second } = bestOrientation(gray, profile, measured, !corners);
-  const orientationRunner = second?.identityEvidence?.score ?? null;
-  const diagnostics = {
-    checks: first?.landmarks.checks ?? [],
-    identityEvidence: withRunner(first?.identityEvidence, orientationRunner),
-    canSetCorners: true,
-  };
-  if (first?.mirrored && first.identityEvidence?.verified) return failure('mirrored-registration', diagnostics);
-  if (!first?.landmarks.verified) return failure('layout-identity', diagnostics);
-  if (second?.identityEvidence?.verified && first.identityEvidence.score - second.identityEvidence.score < .095) {
-    return failure('ambiguous-orientation', diagnostics);
-  }
-  const adjusted = robustRefinement(gray, profile, first.matrix, first.landmarks);
-  if (!adjusted) return failure(first.identityEvidence.verified ? 'check-displacement' : 'layout-identity', diagnostics);
-  const pageToSource = adjusted.matrix;
-  const sourceToPage = invertProjective(pageToSource);
-  const boundary = pagePoints(profile.page).map(({ x, y }) => project(pageToSource, x, y));
-  if (!sourceToPage || boundary.some((point) => !point) || boundary.some((point, index) =>
-    cross(point, boundary[(index + 1) % 4], boundary[(index + 2) % 4]) <= 0)) return failure('ill-conditioned-registration');
-  if (!containsComponents(gray, profile, pageToSource)) return failure('clipped-content');
-  const measuredIdentity = adjusted.matrix === first.matrix
-    ? first.identityEvidence
-    : inspectIdentity(gray, profile, adjusted.matrix, adjusted.landmarks.checks);
-  const detail = { ...diagnostics, checks: adjusted.checks, geometry: adjusted.geometry };
-  if (!measuredIdentity.verified || first.mirrored) return failure(first.mirrored ? 'mirrored-registration' : 'layout-identity', {
-    ...detail, identityEvidence: withRunner(measuredIdentity, orientationRunner),
-  });
-
-  let ambiguous = false;
-  let runner = orientationRunner;
-  for (const alternative of alternatives) {
-    if (alternative?.strategy !== registrationStrategy || !alternative.features.length ||
-        (alternative.id === profile.id && alternative.revision === profile.revision)) continue;
-    if (!alternative.features[0].identitySamples) {
-      if (legacyConflict(gray, alternative, measured, !corners)) ambiguous = true;
-      continue;
-    }
-    const competing = bestOrientation(gray, alternative, measured, !corners).first;
-    if (!competing?.identityEvidence?.verified || competing.mirrored) continue;
-    const score = competing.identityEvidence.score;
-    runner = Math.max(runner ?? 0, score);
-    if (score - measuredIdentity.score >= .095) return failure('wrong-profile', {
-      ...detail, identityEvidence: withRunner(measuredIdentity, runner),
+  const reflected = [measured[0], measured[3], measured[2], measured[1]];
+  const direct = corners ? [measured] : rotations(measured);
+  const mirrorVariants = corners ? [reflected] : rotations(reflected);
+  const candidates = [
+    ...direct.map((quad) => inspectOrientation(gray, profile, quad, false)),
+    ...mirrorVariants.map((quad) => inspectOrientation(gray, profile, quad, true)),
+  ].filter(Boolean).sort((a, b) => b.score - a.score);
+  const eligible = candidates.filter(({ geometry }) => geometry.verified);
+  const best = eligible[0];
+  if (!best) {
+    const first = candidates[0];
+    return failure(first?.inFrame ? 'response-geometry' : 'clipped-content', {
+      canSetCorners: true, geometry: first?.geometry,
     });
-    if (measuredIdentity.score - score < .095) ambiguous = true;
   }
-  const identityEvidence = withRunner(measuredIdentity, runner);
-  if (ambiguous && !confirmedIdentity) return failure('identity-confirmation', {
-    ...detail, identityEvidence, canConfirmIdentity: true,
-  });
-  const automatic = !ambiguous;
+  const competitor = eligible[1];
+  const tied = competitor && best.score - competitor.score < .075;
+  const evidence = { geometry: best.geometry, canSetCorners: true, orientationMargin: competitor ? best.score - competitor.score : null };
+  if (tied && !corners) return failure('ambiguous-orientation', evidence);
+  if (best.mirrored && !(tied && corners && !competitor.mirrored)) return failure('mirrored-registration', evidence);
+  // Manually ordered corners resolve orientation only. The direct hypothesis
+  // must have passed exactly the same complete response-geometry checks.
+  const aligned = best.mirrored ? competitor : best;
   return {
-    status: 'registered', strategy: registrationStrategy, reasons: [], pageToSource, sourceToPage,
-    identity: automatic ? 'printed-features' : 'teacher-confirmed', automatic,
-    cornerPath, corners: measured, checks: adjusted.checks, geometry: adjusted.geometry, identityEvidence,
+    status: 'registered', strategy: registrationStrategy, reasons: [],
+    pageToSource: aligned.pageToSource, sourceToPage: aligned.sourceToPage,
+    authorization: 'teacher-confirmed-batch', orientationMargin: evidence.orientationMargin,
+    cornerPath: corners ? 'manual-corners' : 'page-boundary', corners: measured, geometry: aligned.geometry,
   };
 }

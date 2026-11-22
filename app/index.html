@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="36a6aae3c30bda2326174cf1">
+  <meta name="scree-release" content="6236e104d6190d85d936489a">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -49,11 +49,10 @@
       </figure>
       <div class="controls scan-registration" id="scan-registration" hidden>
         <button id="manual-corners" type="button" hidden>Set scan corners</button>
-        <button id="confirm-identity" type="button" hidden>Confirm this sheet matches the selected revision</button>
       </div>
       <section id="scan-corner-panel" class="profile-card" aria-labelledby="scan-corner-heading" hidden>
         <h3 id="scan-corner-heading">Set scan corners</h3>
-        <p>Tap the page corners in sheet order: top left, top right, bottom right, bottom left.</p>
+        <p>Check that the photo is upright and unmirrored. Tap the page corners in sheet order: top left, top right, bottom right, bottom left.</p>
         <div class="profile-viewport"><canvas id="scan-corner-canvas" width="1" height="1" aria-label="Mark scan corners"></canvas></div>
         <div class="controls">
           <button id="reset-scan-corners" type="button">Start over</button>
@@ -74,7 +73,19 @@
         <h3 id="profiles-heading">Answer-sheet profiles</h3>
         <label for="profile-selector">Profile for successive scans</label>
         <select id="profile-selector"><option value="reference">Coded reference sheet (M2)</option></select>
-        <p id="profile-pin" class="hint">Coded reference sheet selected.</p>
+        <p id="profile-pin" class="hint" role="status">Coded reference sheet selected.</p>
+        <div class="controls">
+          <button id="start-batch" type="button" class="primary" hidden>Start batch</button>
+          <button id="end-batch" type="button" hidden>End batch</button>
+        </div>
+        <div id="batch-confirmation" hidden>
+          <p id="batch-summary"></p>
+          <label><input id="batch-attestation" type="checkbox"> The sheets in this batch use this template and print run, and I have the intended answer key.</label>
+          <div class="controls">
+            <button id="confirm-batch" type="button" class="primary" disabled>Confirm batch</button>
+            <button id="cancel-batch" type="button">Cancel</button>
+          </div>
+        </div>
         <div class="controls">
           <button id="setup-profile" type="button">Set up a blank sheet</button>
           <button id="revise-profile" type="button" hidden>Revise selected profile</button>
@@ -108,8 +119,8 @@
         <div class="profile-viewport"><canvas id="profile-canvas" width="1" height="1" aria-label="Blank reference image and layout marks"></canvas></div>
         <div id="profile-grid-controls" hidden>
           <fieldset>
-            <legend>Regions and printed features</legend>
-            <p>Drag a box on the image or enter its position in Letter points.</p>
+            <legend>Response region</legend>
+            <p>Draw a box around one bubble block or enter its bounds in Letter points. Exclude names, headings and other non-response areas.</p>
             <div class="editor-fields">
               <label>Left <input id="region-x" type="number" step="any"></label>
               <label>Top <input id="region-y" type="number" step="any"></label>
@@ -118,12 +129,7 @@
             </div>
             <div class="controls">
               <button id="preview-region" type="button">Preview box</button>
-              <button id="add-feature" type="button">Add printed feature</button>
-              <button id="replace-identity-feature" type="button" hidden>Replace identity feature</button>
             </div>
-            <p class="hint">First choose a box that includes the whole distinctive version or form label. Add at least three other fixed printed features spread across the page. Exclude name fields and answer areas.</p>
-            <ol id="profile-features"></ol>
-            <label><input id="allow-manual-identity" type="checkbox"> This form has no usable printed identifiers. Require manual corners and identity confirmation for every scan.</label>
           </fieldset>
           <fieldset>
             <legend>Bubble grid</legend>
@@ -179,7 +185,7 @@
           </fieldset>
           <h4>Confirmed blocks</h4>
           <ol id="profile-blocks"></ol>
-          <label><input id="confirm-profile-preview" type="checkbox"> I compared every listed ID and overlay with the blank sheet and checked the printed features exclude name fields.</label>
+          <label><input id="confirm-profile-preview" type="checkbox"> I checked every item ID, symbol and bubble overlay against the blank sheet.</label>
           <div class="controls"><button id="enroll-profile" type="button" class="primary">Save profile revision</button></div>
         </div>
         <button id="cancel-profile-editor" type="button">Close setup</button>

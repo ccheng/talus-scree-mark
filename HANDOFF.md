@@ -6,4 +6,6 @@ M2 is accepted as a functional recognition milestone after seven Product Owner i
 
 The [M3 specification](docs/MILESTONE_3_SPECIFICATION.md) is approved for implementation with the Product Owner’s calibration, PDF, repeated scanning, usability and evaluation clarifications. Preserve the M1/M2 automated suites and M2 reference compatibility. After approval, the Developer implements, the Independent Tester verifies the exact build and the Research Evaluator controls the holdout. Use one bounded correction with focused retest and reassessment, then stop for the Product Owner’s acceptance and merge decision.
 
+The [M3.2 acceptance contract](docs/MILESTONE_3_2_TEMPLATE_BATCH.md) supersedes the earlier title-based identity requirement. The teacher confirms the template revision for the batch, and each capture must pass response geometry verification. See PR #7 for the current candidate and gate disposition.
+
 See the [architecture](docs/ARCHITECTURE.md), [roadmap](ROADMAP.md), [research proposal](docs/RECOGNITION_RESEARCH.md), and [quality gate](QUALITY_GATE.md). Before M4, resolve NR grading rules. Evaluate a dedicated isolated HTTPS origin before any actual student-data pilot. Repository licensing remains a Product Owner decision.
