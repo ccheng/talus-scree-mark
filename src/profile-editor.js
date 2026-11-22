@@ -52,9 +52,24 @@ export function createProfileEditor({ onSave, onClose }) {
   const background = document.createElement('canvas');
   const status = byId('editor-status');
   const blocksList = byId('profile-blocks');
+  const discoveryStatus = byId('discovery-status');
+  const mappingPanel = byId('block-mapping');
+  const mappingFields = byId('block-mapping-fields');
   const notConfirmed = () => { byId('confirm-profile-preview').checked = false; };
   const say = (msg) => { status.textContent = msg; };
   let state;
+  let nextJob = 0;
+
+  function discoveryMessage(progress, message = '') {
+    discoveryStatus.dataset.status = progress;
+    discoveryStatus.textContent = message;
+    byId('review-discovery').hidden = progress !== 'review' || !state?.discoveryIssues?.length;
+  }
+
+  function stopDiscovery() {
+    state?.discoveryWorker?.terminate();
+    if (state) state.discoveryWorker = null;
+  }
 
   function page() {
     const orientation = value('profile-orientation');
@@ -72,6 +87,8 @@ export function createProfileEditor({ onSave, onClose }) {
   function show(message) {
     byId('profile-grid-controls').hidden = !state.matrix;
     byId('apply-blank-corners').disabled = state.corners.length !== 4 || Boolean(state.matrix);
+    byId('discover-layout').hidden = Boolean(state.prior || state.discoveryWorker || state.blocks.length);
+    byId('clear-discovery').hidden = Boolean(state.prior) || !state.blocks.length;
     if (message) say(message);
     paint();
   }
@@ -105,8 +122,16 @@ export function createProfileEditor({ onSave, onClose }) {
     for (const [index, block] of state.blocks.entries()) {
       box(block.bounds, '#287651', `Block ${index + 1}`);
       for (const item of block.items) {
-        const choices = item.kind === 'mc' ? item.choices : item.slots.flatMap((slot) => slot.choices);
-        for (const choice of choices) dot(choice, choice.radius + .75, '#287651', `${item.id} ${choice.symbol}`);
+        if (item.kind === 'mc') {
+          for (const choice of item.choices) dot(choice, choice.radius + .75, '#287651', `${item.id} ${choice.symbol}`);
+        } else {
+          for (const [slot, entry] of item.slots.entries()) {
+            for (const choice of entry.choices) dot(choice, choice.radius + .75, '#287651', `${slot + 1}:${choice.symbol}`);
+          }
+        }
+      }
+      for (const writing of state.discoveryDiagnostics?.find(({ id }) => id === block.id)?.writingBoxes ?? []) {
+        box(writing, '#74528d', String(writing.slot));
       }
     }
     if (state.region) box(state.region, '#245c8e');
@@ -117,6 +142,9 @@ export function createProfileEditor({ onSave, onClose }) {
   }
 
   function resetCorners() {
+    stopDiscovery();
+    state.discoveryIssues = [];
+    discoveryMessage('idle');
     state.matrix = null;
     state.corners = [];
     state.grid = null;
@@ -137,6 +165,61 @@ export function createProfileEditor({ onSave, onClose }) {
     state.matrix = matrix;
     rectifiedOnCanvas(background, state.image, matrix, page());
     show('Draw a box around one answer block.');
+  }
+
+  function findLayout(useExistingCorners = false) {
+    if (state.prior || state.discoveryWorker) return;
+    const original = state;
+    const jobId = ++nextJob;
+    const worker = new Worker(new URL('./omr-worker.js', import.meta.url), { type: 'module' });
+    state.discoveryWorker = worker;
+    discoveryMessage('processing', 'Finding page corners and bubble blocks…');
+    notConfirmed();
+    say('');
+    show();
+    function finish(result) {
+      if (state !== original || state.discoveryWorker !== worker) return;
+      stopDiscovery();
+      if (!result || result.status === 'needs-corners') {
+        state.corners = result?.corners ?? [];
+        discoveryMessage('needs-corners', 'Page corners could not be used for discovery. Place or adjust them, then find the blocks again.');
+        show();
+        return;
+      }
+      state.corners = result.corners;
+      const matrix = pageTransform(page(), state.corners);
+      if (!matrix) {
+        discoveryMessage('needs-corners', 'Place the page corners before finding response blocks.');
+        show();
+        return;
+      }
+      state.matrix = matrix;
+      state.region = null;
+      state.grid = null;
+      state.editing = null;
+      state.blocks = result.components;
+      state.drafts.clear();
+      state.discoveryDiagnostics = result.diagnostics;
+      state.discoveryIssues = result.issues;
+      closeMapping();
+      rectifiedOnCanvas(background, state.image, matrix, page());
+      lists();
+      const count = state.blocks.length;
+      const instructions = count
+        ? `Found ${count} response block${count === 1 ? '' : 's'}. Check the page orientation, numbering and symbol order in the overlay.`
+        : 'No complete response blocks were found. Place the expected blocks manually.';
+      discoveryMessage(result.status, instructions + (result.issues.length ? ' Check for incomplete or extra geometry before saving.' : ''));
+      show();
+    }
+    worker.addEventListener('message', ({ data }) => { if (data?.jobId === jobId) finish(data.result); });
+    worker.addEventListener('error', () => finish());
+    worker.addEventListener('messageerror', () => finish());
+    try {
+      worker.postMessage({
+        type: 'discover-layout', jobId, page: page(), corners: useExistingCorners ? state.corners : undefined,
+        image: { id: state.image.id, width: state.image.width, height: state.image.height, pixels: state.image.pixels.data },
+      });
+    } catch { finish(); }
   }
 
   function pointAt(event) {
@@ -414,6 +497,74 @@ export function createProfileEditor({ onSave, onClose }) {
       item.append(button);
     }
     list.append(item);
+    return item;
+  }
+
+  function closeMapping() {
+    mappingPanel.hidden = true;
+    mappingFields.replaceChildren();
+    if (state) state.mappingBlock = null;
+  }
+
+  function editMapping(block) {
+    closeMapping();
+    state.mappingBlock = block.id;
+    function field(name, current, attribute, index) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.dataset[attribute] = String(index);
+      input.value = current;
+      label.append(name, input);
+      mappingFields.append(label);
+    }
+    for (const [i, item] of block.items.entries()) {
+      field(`Item ${i + 1} ID`, item.id, 'mapItem', i);
+      if (item.kind === 'mc') {
+        field('Choice symbols in printed order', item.choices.map(({ symbol }) => symbol).join(','), 'mapChoices', i);
+      } else {
+        for (const [slot, entry] of item.slots.entries()) {
+          field(`Slot ${slot + 1} symbols, top to bottom`, entry.choices.map(({ symbol }) => symbol).join(','),
+            'mapSlot', 1 + slot + i * 4);
+        }
+        field('Positions in output order', '1,2,3,4', 'mapOrder', i);
+      }
+    }
+    mappingPanel.hidden = false;
+    mappingFields.querySelector('input').focus();
+  }
+
+  function saveMapping() {
+    const block = state.blocks.find(({ id }) => id === state.mappingBlock);
+    if (!block) return;
+    const input = (attribute, index) => mappingFields.querySelector(`[data-${attribute}="${index}"]`).value.trim();
+    function mappedChoices(choices, literal) {
+      const symbols = literal.split(',').map((symbol) => symbol.trim());
+      if (symbols.length !== choices.length || symbols.some((symbol) => !symbol)) {
+        throw new TypeError('Enter one comma-separated symbol for every bubble in that position.');
+      }
+      return choices.map((choice, index) => ({ ...choice, symbol: symbols[index] }));
+    }
+    const items = block.items.map((item, index) => {
+      const id = input('map-item', index);
+      if (item.kind === 'mc') return { ...item, id, choices: mappedChoices(item.choices, input('map-choices', index)) };
+      const order = input('map-order', index).split(',').map((slot) => Number(slot.trim()));
+      if (order.length !== 4 || new Set(order).size !== 4 || order.some((slot) => ![1, 2, 3, 4].includes(slot))) {
+        throw new TypeError('List all four positions once, in output order.');
+      }
+      const slots = order.map((physical, output) => ({
+        id: `${id}.${output + 1}`,
+        choices: mappedChoices(item.slots[physical - 1].choices, input('map-slot', physical + index * 4)),
+      }));
+      return { ...item, id, slots };
+    });
+    const components = state.blocks.map((entry) => entry === block ? { ...block, items } : entry);
+    createMarkerlessProfile({ id: 'draft', revision: 1, name: 'Draft', page: page(), components });
+    state.blocks = components;
+    state.drafts.delete(block.id);
+    closeMapping();
+    notConfirmed();
+    lists(); paint();
+    say('Numbering and symbols updated. Check the overlay before saving.');
   }
 
   function lists() {
@@ -424,12 +575,19 @@ export function createProfileEditor({ onSave, onClose }) {
         [state.blocks[index], state.blocks[target]] = [state.blocks[target], state.blocks[index]];
         notConfirmed(); lists(); paint();
       };
-      listEntry(blocksList, block.items.map(({ id }) => id).join(', '), [
+      const caption = block.items.map(({ id }) => id).join(', ') +
+        (block.kind === 'nr' ? ' · Check printed symbols in each position.' : '');
+      const row = listEntry(blocksList, caption, [
+        ['Edit numbering and symbols', () => editMapping(block)],
         ['Edit block', () => chooseDraft(block)],
         ...(index ? [['Move up', () => move(-1)]] : []),
         ...(index + 1 < state.blocks.length ? [['Move down', () => move(1)]] : []),
-        ['Remove', () => { state.blocks.splice(index, 1); notConfirmed(); lists(); paint(); }],
+        ['Remove', () => {
+          state.blocks.splice(index, 1); closeMapping(); notConfirmed(); lists(); show();
+        }],
       ]);
+      row.dataset.profileBlock = block.id;
+      row.dataset.blockKind = block.kind;
     }
   }
 
@@ -449,6 +607,27 @@ export function createProfileEditor({ onSave, onClose }) {
   });
   handle('reset-blank-corners', resetCorners);
   handle('apply-blank-corners', confirmCorners);
+  handle('discover-layout', () => findLayout(state.corners.length === 4));
+  handle('clear-discovery', () => {
+    stopDiscovery();
+    state.blocks = [];
+    state.drafts.clear();
+    state.grid = null;
+    state.region = null;
+    state.editing = null;
+    state.endpoints = null;
+    state.discoveryIssues = [];
+    state.discoveryDiagnostics = [];
+    closeMapping();
+    discoveryMessage('idle');
+    notConfirmed(); lists(); show('Place the response blocks or find them again.');
+  });
+  handle('review-discovery', () => {
+    state.discoveryIssues = [];
+    discoveryMessage('manual-review', 'Check the full sheet and use the manual controls to correct any missing or extra regions.');
+  });
+  handle('apply-block-mapping', saveMapping);
+  handle('cancel-block-mapping', closeMapping);
   handle('preview-region', () => { inputRegion(); say('Box previewed.'); });
   handle('detect-grid', detect);
   handle('manual-grid', makeDefault);
@@ -463,6 +642,10 @@ export function createProfileEditor({ onSave, onClose }) {
   handle('confirm-block', confirmBlock);
   handle('cancel-profile-editor', () => { close(); onClose(); });
   handle('enroll-profile', async () => {
+    if (state.discoveryWorker || state.discoveryIssues?.length) {
+      say('Resolve the outstanding layout review before saving.');
+      return;
+    }
     if (!byId('confirm-profile-preview').checked) { say('Confirm the overlay and mappings before saving.'); return; }
     try {
       const profile = createMarkerlessProfile({
@@ -525,24 +708,31 @@ export function createProfileEditor({ onSave, onClose }) {
   canvas.addEventListener('pointercancel', () => { if (state) state.drag = null; });
 
   function open(image, prior) {
+    stopDiscovery();
     state = {
       image, prior, matrix: null, zoom: 1, pan: false, blocks: structuredClone(prior?.components ?? []),
-      drafts: new Map(),
+      drafts: new Map(), discoveryIssues: [], discoveryDiagnostics: [],
     };
     byId('profile-name').value = prior?.name ?? '';
     byId('profile-orientation').value = prior?.page.orientation ?? (image.width > image.height ? 'landscape' : 'portrait');
     panel.hidden = false;
     byId('editor-pan').setAttribute('aria-pressed', 'false');
     resetCorners();
-    const corners = proposePageCorners(image);
-    state.corners = corners ?? [];
-    if (!corners) say('Place four page corners in sheet order, starting at top left.');
-    else show('Check the proposed corners and sheet orientation. You can place them again.');
+    if (prior) {
+      state.corners = proposePageCorners(image) ?? [];
+      if (state.corners.length === 4) confirmCorners();
+      else say('Place four page corners in sheet order, starting at top left.');
+    } else {
+      try { findLayout(); }
+      catch { discoveryMessage('needs-corners', 'Discovery could not start. Place the page corners and set up the response regions manually.'); }
+    }
     lists();
     byId('profile-name').focus();
   }
 
   function close() {
+    stopDiscovery();
+    closeMapping();
     state = null;
     panel.hidden = true;
     canvas.width = canvas.height = background.width = background.height = 1;
