@@ -413,7 +413,8 @@ try {
     await page.locator('#enroll-profile').click();
     await panel.waitFor({ state: 'hidden' });
     const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
-    assertDiscoveredMapping(profile, fixture.oracle);
+    const oracleInPoints = { ...fixture.oracle, blocks: fixture.oracle.blocks.map(scaleComponent) };
+    assertDiscoveredMapping(profile, oracleInPoints);
     await confirmAndRead(page, fixtureFilePath(fixture.filled), 'four-writing-boxes-marked.jpg', 'image/jpeg', fixture.truth);
   });
 
