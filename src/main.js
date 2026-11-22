@@ -2,6 +2,7 @@ import { createCamera } from './camera.js';
 import { importWorkingImage, ImageInputError } from './image.js';
 import { prepareOffline } from './offline.js';
 import { createRecognitionView } from './recognition-view.js';
+import { createProfileWorkspace } from './profile-workspace.js';
 
 const byId = (id) => document.getElementById(id);
 const start = byId('start-camera');
@@ -23,6 +24,28 @@ const recognition = createRecognitionView({
   button: read, status: byId('recognition-status'), results: byId('recognition-results'),
   table: byId('recognition-items'), overlay: byId('recognition-overlay'),
 });
+const workspace = createProfileWorkspace({
+  image: () => workingImage,
+  onChanged({ clearImage = false } = {}) {
+    if (clearImage) {
+      cancelImport();
+      workingImage = undefined;
+      workspace.resetCapture();
+    }
+    recognition.reset();
+    updatePreview();
+  },
+  onEditorClosed(saved) {
+    if (saved) {
+      recognition.reset();
+      workingImage = undefined;
+      workspace.resetCapture();
+    }
+    updatePreview();
+  },
+  requestBlank: () => choose.click(),
+  read: runRecognition,
+});
 
 function showStatus(message) {
   status.textContent = message;
@@ -33,7 +56,7 @@ function updatePreview() {
   start.textContent = workingImage?.source === 'camera' ? 'Retake photo' : 'Open camera';
   clear.hidden = !workingImage;
   sheet.hidden = !workingImage || camera.state !== 'closed';
-  recognition.setAvailable(!sheet.hidden && !pickerPending && !importOperation);
+  recognition.setAvailable(!sheet.hidden && !pickerPending && !importOperation && !workspace.editing && workspace.canRead);
   if (!workingImage) {
     canvas.width = 1;
     canvas.height = 1;
@@ -49,6 +72,7 @@ function showWorkingImage(image) {
   canvas.height = image.height;
   canvas.getContext('2d').putImageData(image.pixels, 0, 0);
   caption.textContent = `${image.width} × ${image.height} pixels`;
+  workspace.acceptImage(image);
   updatePreview();
 }
 
@@ -77,6 +101,7 @@ function cancelImport() {
 
 start.addEventListener('click', () => {
   cancelImport();
+  workspace.reset();
   recognition.reset();
   camera.open();
 });
@@ -102,6 +127,7 @@ choose.addEventListener('click', () => {
 });
 picker.addEventListener('cancel', () => {
   pickerPending = false;
+  workspace.cancelBlank();
   updatePreview();
 });
 picker.addEventListener('change', async () => {
@@ -112,6 +138,7 @@ picker.addEventListener('change', async () => {
   if (!file) return;
 
   recognition.reset();
+  workspace.resetCapture();
   const operation = new AbortController();
   importOperation = operation;
   updatePreview();
@@ -133,13 +160,18 @@ picker.addEventListener('change', async () => {
   }
 });
 
-read.addEventListener('click', () => recognition.read(workingImage));
+function runRecognition() {
+  if (workspace.editing || !workspace.canRead) return;
+  recognition.read(workingImage, workspace.scanOptions());
+}
+read.addEventListener('click', () => runRecognition());
 
 clear.addEventListener('click', () => {
   recognition.reset();
   cancelImport();
   camera.close();
   workingImage = undefined;
+  workspace.reset();
   updatePreview();
   showStatus('Preview cleared.');
 });
@@ -149,6 +181,7 @@ function resetPage() {
   cancelImport();
   camera.close();
   workingImage = undefined;
+  workspace.reset({ end: true });
   updatePreview();
   showStatus('');
 }

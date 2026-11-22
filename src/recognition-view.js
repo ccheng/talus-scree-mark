@@ -1,13 +1,17 @@
 import { project } from './projective.js';
 
 const messages = {
+  'page-corners': 'Could not locate a reliable page outline. Use Set scan corners or retake against a contrasting background.',
+  'ambiguous-orientation': 'More than one page orientation fits. Set scan corners to identify the correct orientation.',
+  'batch-not-confirmed': 'Confirm a batch with the selected profile revision.',
+  'response-geometry': 'The bubble blocks or rows do not match the selected layout, or part of a block is obscured.',
   'missing-anchor': 'Could not find all four corner markers.',
   'ambiguous-anchor': 'Found conflicting corner markers.',
   'mirrored-registration': 'The reference sheet appears mirrored.',
   'invalid-anchor-order': 'The markers do not match the page orientation or shape.',
   'ill-conditioned-registration': 'The page is too distorted to align.',
   'clipped-content': 'Some of the answer regions are outside the photo.',
-  'layout-identity': 'The sheet does not match the supported reference revision.',
+  'layout-identity': 'The sheet does not match the selected layout.',
   'missing-check': 'Some alignment checks are not visible.',
   'check-displacement': 'The answer regions could not be aligned reliably.',
   'invalid-profile': 'The reference profile is unavailable.',
@@ -105,6 +109,7 @@ export function createRecognitionView({ button, status, results, table, overlay 
     active?.worker.terminate();
     active = undefined;
     setStatus('idle');
+    for (const field of ['strategy', 'authorization', 'cornerPath', 'profileId', 'revision']) delete status.dataset[field];
     table.replaceChildren();
     results.hidden = true;
     overlay.hidden = true;
@@ -112,7 +117,7 @@ export function createRecognitionView({ button, status, results, table, overlay 
     overlay.height = 1;
   }
 
-  function read(image) {
+  function read(image, request) {
     if (!available || active || !image) return;
     reset();
     let worker;
@@ -136,9 +141,19 @@ export function createRecognitionView({ button, status, results, table, overlay 
         setStatus('error', 'Recognition did not finish. Try reading the bubbles again.');
         return;
       }
+      if (result.registration.strategy) status.dataset.strategy = result.registration.strategy;
+      if (result.registration.authorization) status.dataset.authorization = result.registration.authorization;
+      if (result.registration.cornerPath) status.dataset.cornerPath = result.registration.cornerPath;
+      if (result.profile) {
+        status.dataset.profileId = result.profile.id;
+        status.dataset.revision = String(result.profile.revision);
+      }
       if (result.status === 'retake') {
         const explanation = result.registration.reasons.map((reason) => messages[reason]).filter(Boolean).join(' ');
-        setStatus('retake', `${explanation} Retake the photo or choose a clear image of the reference sheet.`);
+        const next = result.registration.reasons.includes('batch-not-confirmed') ? '' : request
+          ? ' Check the selected profile, retake or set scan corners.'
+          : ' Retake the photo or choose a clear image of the reference sheet.';
+        setStatus('retake', explanation + next);
         return;
       }
 
@@ -147,14 +162,16 @@ export function createRecognitionView({ button, status, results, table, overlay 
       results.hidden = false;
       const reviewCount = result.items.filter(({ review }) => review).length;
       const summary = reviewCount === 1 ? '1 response needs review.' : `${reviewCount} responses need review.`;
-      setStatus('read', reviewCount ? summary : 'All responses read.');
+      const path = request ? ' Read against the confirmed batch profile.' : '';
+      setStatus('read', (reviewCount ? summary : 'All responses read.') + path);
     }
     worker.addEventListener('message', ({ data }) => complete(data));
     worker.addEventListener('error', () => complete());
     worker.addEventListener('messageerror', () => complete());
     try {
       worker.postMessage({
-        type: 'read-reference', jobId: job.id,
+        type: request ? 'read-profile' : 'read-reference', jobId: job.id,
+        ...request,
         image: { id: image.id, width: image.width, height: image.height, pixels: image.pixels.data },
       });
     } catch {
