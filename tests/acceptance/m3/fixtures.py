@@ -344,7 +344,40 @@ def generate(out):
     orientation_control = {'id': 'symmetric', 'components': symmetric,
                            'fixture': {'id': 'orientation', 'file': 'symmetric-orientation.jpg', 'truth': truth,
                                        'pageToSource': matrix, 'orientation': orientation}}
-    (out / 'oracles.json').write_text(json.dumps({'families': records, 'orientationControl': orientation_control}, indent=2) + '\n')
+
+    recovery_blocks = [mc_block('single-grid', 'Selection check', [f'Q{i}' for i in range(1, 7)], 243, 491, 'ABCD', dx=62, dy=60)]
+    completed = make_sheet('Weather observations', ['Mark one choice per row', 'Read all of the choices', 'Return your response sheet'], recovery_blocks)
+    obscured = completed.copy()
+    missing = recovery_blocks[0]['items'][2]['choices'][1]
+    x, y, margin = missing['x'], missing['y'], missing['radius'] + 3
+    ImageDraw.Draw(obscured).rectangle((x - margin, y - margin, x + margin, y + margin), fill=PAPER)
+    obscured.save(out / 'discovery-uncertain-blank.png')
+    recovered, recovery_truth = mark_copy(completed, recovery_blocks, 47)
+    framed(recovered, 0)[0].save(out / 'discovery-recovery-filled.jpg', quality=93, subsampling=0)
+    discovery_control = {'blank': 'discovery-uncertain-blank.png', 'filled': 'discovery-recovery-filled.jpg',
+                         'components': recovery_blocks, 'truth': recovery_truth}
+
+    dot_first = nr_block('upper-decimal', 'Numerical response 1', 'NR1', 221, 913, dx=75, dy=32)
+    for slot in dot_first['items'][0]['slots']:
+        for choice in slot['choices']:
+            choice['y'] = 913 if choice['symbol'] == '.' else choice['y'] + 32
+    dot_last = nr_block('lower-decimal', 'Numerical response 2', 'NR2', 754, 913, symbols='9876543210', dx=75, dy=32)
+    four_box_blocks = [mc_block('choices', 'Selected response', [f'MC{i}' for i in range(1, 5)], 187, 480, 'ABCD'),
+                       dot_first, dot_last]
+    four_box_blank = make_sheet('Sample calculation form', ['Shade one circle for each position', 'Write each number in the rectangular boxes', 'Read both numerical choices'], four_box_blocks)
+    draw = ImageDraw.Draw(four_box_blank)
+    for block in four_box_blocks[1:]:
+        for slot in block['items'][0]['slots']:
+            x = slot['choices'][0]['x']
+            draw.rectangle((x - 24, 871, x + 24, 893), outline=(24, 26, 29), width=2)
+    four_box_blank.save(out / 'discovery-four-box-blank.png')
+    four_box_filled, four_box_truth = mark_copy(four_box_blank, four_box_blocks, 7)
+    framed(four_box_filled, 0)[0].save(out / 'discovery-four-box-filled.jpg', quality=93, subsampling=0)
+    four_box_control = {'blank': 'discovery-four-box-blank.png', 'filled': 'discovery-four-box-filled.jpg',
+                        'oracle': {'blocks': four_box_blocks, 'itemOrder': [item['id'] for item in items(four_box_blocks)]},
+                        'truth': four_box_truth}
+    (out / 'oracles.json').write_text(json.dumps({'families': records, 'orientationControl': orientation_control,
+                                               'discoveryControl': discovery_control, 'fourBoxControl': four_box_control}, indent=2) + '\n')
     print(f'Generated {len(records)} markerless families and {sum(len(form["fixtures"]) for form in records)} marked cases.')
 
 

@@ -21,6 +21,7 @@ const staticFiles = [
   'reference/reference-key.json',
   'src/camera.js',
   'src/image.js',
+  'src/layout-discovery.js',
   'src/main.js',
   'src/markerless-registration.js',
   'src/offline.js',

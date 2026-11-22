@@ -8,7 +8,7 @@ const { chromium } = await import(process.env.TALUS_TEST_PLAYWRIGHT_PATH || 'pla
 const appPath = process.argv[2];
 assert(appPath, 'Provide the static app path');
 const fixtureFolder = new URL('./fixtures/', import.meta.url);
-const { families, orientationControl } = JSON.parse(await readFile(new URL('oracles.json', fixtureFolder), 'utf8'));
+const { families, orientationControl, discoveryControl, fourBoxControl } = JSON.parse(await readFile(new URL('oracles.json', fixtureFolder), 'utf8'));
 assert(families.length === 3 && families.every(({ fixtures }) => fixtures.filter(({ mode }) => mode === 'standard').length >= 8));
 const encoded = (file) => readFile(new URL(file, fixtureFolder), 'base64');
 const server = await openServer(appPath);
@@ -51,9 +51,9 @@ async function group(name, check) {
 }
 
 async function installAdapters(page) {
-  await page.evaluate(async ({ authoring, registration, recognition, storage }) => {
+  await page.evaluate(async ({ authoring, registration, recognition, storage, discovery }) => {
     window.m3qa = {
-      ...(await import(authoring)), ...(await import(registration)), ...(await import(recognition)), ...(await import(storage)),
+      ...(await import(authoring)), ...(await import(registration)), ...(await import(recognition)), ...(await import(storage)), ...(await import(discovery)),
       async loadImage(base64, id) {
         const bytes = Uint8Array.from(atob(base64), (byte) => byte.charCodeAt(0));
         const bitmap = await createImageBitmap(new Blob([bytes]));
@@ -66,7 +66,7 @@ async function installAdapters(page) {
         return { id, width, height, pixels: context.getImageData(0, 0, width, height) };
       },
     };
-  }, { authoring: appSource('profile-authoring.js'), registration: appSource('markerless-registration.js'), recognition: appSource('profile-omr.js'), storage: appSource('profile-store.js') });
+  }, { authoring: appSource('profile-authoring.js'), registration: appSource('markerless-registration.js'), recognition: appSource('profile-omr.js'), storage: appSource('profile-store.js'), discovery: appSource('layout-discovery.js') });
 }
 
 async function enroll(page, family) {
@@ -117,6 +117,52 @@ function assertExactRead(result, truth, label) {
   assert.equal(result.registration.authorization, 'teacher-confirmed-batch', label);
   assert.deepEqual(result.items.map(({ id }) => id), truth.map(({ id }) => id), label);
   for (const expected of truth) assertObservation(result.items.find(({ id }) => id === expected.id), expected);
+}
+
+async function selectImage(page, path, name, mimeType) {
+  const open = page.waitForEvent('filechooser');
+  await page.locator('#choose-image').click();
+  const chooser = await open;
+  await chooser.setFiles({ name, mimeType, buffer: await readFile(path) });
+  await page.locator('#capture-status').filter({ hasText: /Image ready to review/i }).waitFor();
+}
+
+async function confirmAndRead(page, path, name, mimeType, truth) {
+  await page.locator('#start-batch').click();
+  await page.locator('#batch-attestation').check();
+  await page.locator('#confirm-batch').click();
+  await selectImage(page, path, name, mimeType);
+  await page.locator('#read-bubbles').click();
+  const outcome = page.locator('#recognition-status[data-status="read"]');
+  await outcome.waitFor();
+  assert.equal(await outcome.getAttribute('data-authorization'), 'teacher-confirmed-batch');
+  const rows = await page.locator('#recognition-results [data-item-id]').evaluateAll((elements) => elements.map((row) => ({
+    id: row.dataset.itemId, status: row.dataset.status, review: row.dataset.review === 'true',
+    value: row.querySelector('[data-raw-text]')?.dataset.rawText ?? null,
+  })));
+  assert.deepEqual(rows, truth);
+}
+
+function assertDiscoveredMapping(profile, oracle) {
+  const observed = profile.components.flatMap(({ items }) => items);
+  const expected = oracle.blocks.flatMap(({ items }) => items);
+  assert.equal(profile.components.length, oracle.blocks.length);
+  assert.deepEqual(observed.map(({ id }) => id), oracle.itemOrder);
+  for (const [index, item] of observed.entries()) {
+    const target = expected[index];
+    assert.equal(item.kind, target.kind, item.id);
+    const actualSlots = item.kind === 'mc' ? [{ choices: item.choices }] : item.slots;
+    const targetSlots = target.kind === 'mc' ? [{ choices: target.choices }] : target.slots;
+    assert.equal(actualSlots.length, targetSlots.length, item.id);
+    for (const [slotIndex, slot] of actualSlots.entries()) {
+      const expectedChoices = targetSlots[slotIndex].choices;
+      assert.deepEqual(slot.choices.map(({ symbol }) => symbol).sort(), expectedChoices.map(({ symbol }) => symbol).sort(), `${item.id} slot ${slotIndex + 1}`);
+      for (const choice of slot.choices) {
+        const expectedChoice = expectedChoices.find(({ symbol }) => symbol === choice.symbol);
+        assert(distance(choice, expectedChoice) <= expectedChoice.radius * .5, `${item.id} ${choice.symbol} bubble center`);
+      }
+    }
+  }
 }
 
 try {
@@ -307,6 +353,110 @@ try {
     console.log(`  Optional renderer stress ${result.status}, ${result.items.filter(({ review }) => !review).length}/${key.itemOrder.length} exact accepted items.`);
   });
 
+  for (const fixtureId of ['mc-only', 'mixed', 'interleaved']) {
+    await group(`Automatic blank discovery and exact paired batch read (${fixtureId})`, async (page) => {
+      const source = resolve(appPath, 'fixtures/m3');
+      const oracle = JSON.parse(await readFile(resolve(source, `${fixtureId}-key.json`), 'utf8'));
+      const truth = oracle.itemOrder.map((id) => ({ id, status: oracle.expected[id].state, value: oracle.expected[id].rawText, review: false }));
+      const start = performance.now();
+      // Neutral filenames prevent template selection based on the supplied name.
+      await selectImage(page, resolve(source, `${fixtureId}-blank.png`), 'independent-blank.png', 'image/png');
+      await page.locator('#setup-profile').click();
+      const panel = page.locator('#profile-editor');
+      await panel.waitFor();
+      await page.locator('#profile-name').fill(`Discovery QA ${fixtureId}`);
+      await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+      const proposalTime = performance.now() - start;
+      assert.equal(await page.locator('#profile-blocks > li').count(), oracle.blocks.length);
+      await installAdapters(page);
+      assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), [], 'The proposal must remain unsaved before confirmation');
+      // The normal path performs no corner, region, grid, or individual-cell edits.
+      await page.locator('#confirm-profile-preview').check();
+      await page.locator('#enroll-profile').click();
+      await panel.waitFor({ state: 'hidden' });
+      const setupTime = performance.now() - start;
+      const profiles = await page.evaluate(() => window.m3qa.listProfiles());
+      assert.equal(profiles.length, 1);
+      assertDiscoveredMapping(profiles[0], oracle);
+      await confirmAndRead(page, resolve(source, `${fixtureId}-filled.png`), 'independent-marked.png', 'image/png', truth);
+      console.log(`  ${fixtureId}: ${oracle.itemOrder.length} exact responses; zero geometry interventions; one accepted layout confirmation; scripted proposal ${Math.round(proposalTime)} ms, setup ${Math.round(setupTime)} ms.`);
+    });
+  }
+
+  await group('Automatic discovery finds four writing boxes and allows explicit NR symbol ordering', async (page) => {
+    const fixture = fourBoxControl;
+    await installAdapters(page);
+    const proposal = await page.evaluate(async ({ base64, shape }) => {
+      const blank = await window.m3qa.loadImage(base64, 'four-box-control');
+      return window.m3qa.discoverBlankLayout(blank, shape);
+    }, { base64: await encoded(fixture.blank), shape: pageShape });
+    assert.equal(proposal.status, 'proposed', proposal.issues.join(', '));
+    const numerical = proposal.diagnostics.filter(({ kind }) => kind === 'nr');
+    assert.deepEqual(numerical.map(({ writingBoxes, mappingReview }) => [writingBoxes.length, mappingReview]), [[4, true], [4, true]]);
+    await selectImage(page, fixtureFilePath(fixture.blank), 'four-writing-boxes.png', 'image/png');
+    await page.locator('#setup-profile').click();
+    const panel = page.locator('#profile-editor');
+    await panel.waitFor();
+    await page.locator('#profile-name').fill('Four writing boxes QA');
+    await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    const differentOrder = fixture.oracle.blocks.flatMap(({ items }) => items).find(({ id }) => id === 'NR2');
+    await page.locator('#profile-blocks > li').filter({ hasText: 'NR2' }).getByRole('button', { name: 'Edit numbering and symbols' }).click();
+    const mapping = page.locator('#block-mapping');
+    await mapping.waitFor();
+    for (const [index, slot] of differentOrder.slots.entries()) {
+      const topToBottom = [...slot.choices].sort((a, b) => a.y - b.y).map(({ symbol }) => symbol).join(',');
+      await mapping.locator(`[data-map-slot="${index + 1}"]`).fill(topToBottom);
+    }
+    await page.locator('#apply-block-mapping').click();
+    await mapping.waitFor({ state: 'hidden' });
+    await page.locator('#confirm-profile-preview').check();
+    await page.locator('#enroll-profile').click();
+    await panel.waitFor({ state: 'hidden' });
+    const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
+    assertDiscoveredMapping(profile, fixture.oracle);
+    await confirmAndRead(page, fixtureFilePath(fixture.filled), 'four-writing-boxes-marked.jpg', 'image/jpeg', fixture.truth);
+  });
+
+  await group('Automatic discovery exposes incomplete geometry and permits explicit correction', async (page) => {
+    const fixture = discoveryControl;
+    const block = fixture.components[0];
+    await selectImage(page, fixtureFilePath(fixture.blank), 'incomplete-blank.png', 'image/png');
+    await page.locator('#setup-profile').click();
+    const panel = page.locator('#profile-editor');
+    await panel.waitFor();
+    await page.locator('#profile-name').fill('Recovered discovery QA');
+    await page.locator('#discovery-status[data-status="review"]').waitFor();
+    const acknowledgment = page.locator('#confirm-profile-preview');
+    if ((await acknowledgment.isVisible()) && (await acknowledgment.isEnabled())) await acknowledgment.check();
+    const save = page.locator('#enroll-profile');
+    if ((await save.isVisible()) && (await save.isEnabled())) await save.click();
+    await installAdapters(page);
+    assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), [], 'An incomplete automatic proposal entered profile storage');
+    const clear = page.locator('#clear-discovery');
+    if (await clear.isVisible()) await clear.click();
+    else await page.locator('#review-discovery').click();
+    await page.locator('#profile-grid-controls').waitFor();
+    const bounds = scaleBounds(block.bounds);
+    const values = { 'region-x': bounds.x, 'region-y': bounds.y, 'region-width': bounds.width, 'region-height': bounds.height,
+      'grid-rows': block.rows, 'grid-columns': block.columns, 'item-prefix': 'Q', 'item-start': 1, 'grid-symbols': 'A,B,C,D',
+      'grid-first-x': block.topLeft.x / 2, 'grid-first-y': block.topLeft.y / 2,
+      'grid-across-x': block.topRight.x / 2, 'grid-across-y': block.topRight.y / 2,
+      'grid-down-x': block.bottomLeft.x / 2, 'grid-down-y': block.bottomLeft.y / 2, 'grid-radius': block.radius / 2,
+    };
+    await page.locator('details').filter({ hasText: 'Adjust grid endpoints' }).locator('summary').click();
+    for (const [id, value] of Object.entries(values)) await page.locator(`#${id}`).fill(String(value));
+    await page.locator('#apply-grid-endpoints').click();
+    await page.locator('#confirm-block').click();
+    assert.equal(await page.locator('#profile-blocks > li').count(), 1);
+    assert.equal(await acknowledgment.isChecked(), false, 'A revised map requires a fresh overlay confirmation');
+    await acknowledgment.check();
+    await save.click();
+    await panel.waitFor({ state: 'hidden' });
+    const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
+    assert.deepEqual(profile.components.flatMap(({ items }) => items.map(({ id }) => id)), fixture.truth.map(({ id }) => id));
+    await confirmAndRead(page, fixtureFilePath(fixture.filled), 'recovery-marked.jpg', 'image/jpeg', fixture.truth);
+  });
+
   await group('M3 teacher UI authors an automatic, parametric and individually corrected profile', async (page) => {
     const family = families[0];
     const file = fixtureFilePath(family.blank);
@@ -318,8 +468,12 @@ try {
     await page.locator('#setup-profile').click();
     await panel.waitFor();
     await page.locator('#profile-name').fill('Independent UI calibration');
-    await page.locator('#apply-blank-corners').click();
-    await page.locator('#profile-grid-controls').waitFor();
+    await page.locator('#discovery-status:is([data-status="proposed"], [data-status="review"], [data-status="needs-corners"])').waitFor();
+    const manual = page.locator('#clear-discovery');
+    if ((await manual.isVisible()) && (await manual.isEnabled())) await manual.click();
+    const gridControls = page.locator('#profile-grid-controls');
+    if (!(await gridControls.isVisible())) await page.locator('#apply-blank-corners').click();
+    await gridControls.waitFor();
 
     async function entries(values) {
       for (const [key, value] of Object.entries(values)) await page.locator(`#${key}`).fill(String(value));

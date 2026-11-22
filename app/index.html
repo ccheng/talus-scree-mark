@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="a37bb78ca332f68121e570b0">
+  <meta name="scree-release" content="aa175558bd36c1cb46482d42">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -109,12 +109,16 @@
           </label>
         </div>
         <p id="editor-status" role="status"></p>
+        <p id="discovery-status" role="status" class="capture-status" data-status="idle"></p>
         <div class="controls">
           <button id="editor-zoom-out" type="button">Zoom out</button>
           <button id="editor-zoom-in" type="button">Zoom in</button>
           <button id="editor-pan" type="button" aria-pressed="false">Pan preview</button>
           <button id="reset-blank-corners" type="button">Place corners again</button>
           <button id="apply-blank-corners" type="button" disabled>Use these corners</button>
+          <button id="discover-layout" type="button" hidden>Find all response blocks</button>
+          <button id="clear-discovery" type="button" hidden>Clear proposed blocks</button>
+          <button id="review-discovery" type="button" hidden>Keep found blocks and check gaps</button>
         </div>
         <div class="profile-viewport"><canvas id="profile-canvas" width="1" height="1" aria-label="Blank reference image and layout marks"></canvas></div>
         <div id="profile-grid-controls" hidden>
@@ -183,8 +187,16 @@
             </details>
             <div class="controls"><button id="confirm-block" type="button">Confirm this block</button></div>
           </fieldset>
-          <h4>Confirmed blocks</h4>
+          <h4>Response blocks</h4>
           <ol id="profile-blocks"></ol>
+          <section id="block-mapping" hidden aria-labelledby="block-mapping-heading">
+            <h4 id="block-mapping-heading">Edit numbering and printed symbols</h4>
+            <div id="block-mapping-fields" class="editor-fields"></div>
+            <div class="controls">
+              <button id="apply-block-mapping" type="button">Apply numbering and symbols</button>
+              <button id="cancel-block-mapping" type="button">Cancel</button>
+            </div>
+          </section>
           <label><input id="confirm-profile-preview" type="checkbox"> I checked every item ID, symbol and bubble overlay against the blank sheet.</label>
           <div class="controls"><button id="enroll-profile" type="button" class="primary">Save profile revision</button></div>
         </div>

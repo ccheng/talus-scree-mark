@@ -41,8 +41,8 @@ export function manualGrid({ topLeft, topRight, bottomLeft, rows, columns, radiu
   return { rows, columns, rowSpacing, columnSpacing, cells };
 }
 
-function rasterizeRegion(gray, matrix, region) {
-  const scale = Math.min(3, 840 / Math.max(region.width, region.height));
+function rasterizeRegion(gray, matrix, region, maxEdge = 840) {
+  const scale = Math.min(3, maxEdge / Math.max(region.width, region.height));
   const width = Math.max(1, Math.floor(region.width * scale));
   const height = Math.max(1, Math.floor(region.height * scale));
   const values = new Uint8Array(width * height);
@@ -156,6 +156,22 @@ export function proposeGrid(image, pageToSource, region, { rows, columns } = {})
   const complete = best.rows === (rows ?? best.rows) && best.columns === (columns ?? best.columns) &&
     !best.missing.length && !best.conflicts.length;
   return { status: complete ? 'complete' : 'partial', ...best, trials: settings.map((c) => c.length) };
+}
+
+export function pageRingCandidates(gray, pageToSource, page) {
+  const margin = 13;
+  const region = { x: margin, y: margin, width: page.width - 2 * margin, height: page.height - 2 * margin };
+  const raster = rasterizeRegion(gray, pageToSource, region, 1680);
+  const candidates = [];
+  for (const threshold of [.64, .82]) {
+    for (const candidate of ringCandidates(raster, region, raster.background * threshold)) {
+      if (candidate.radius < 2.3 || candidate.radius > 7 || candidates.some((entry) =>
+        Math.hypot(entry.x - candidate.x, entry.y - candidate.y) < 1.5)) continue;
+      candidates.push(candidate);
+      if (candidates.length >= 1800) return candidates;
+    }
+  }
+  return candidates;
 }
 
 function fail(condition, message) {
