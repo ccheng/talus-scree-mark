@@ -36,6 +36,7 @@ const inkCodes = [
 
 function syntheticImage({
   filled = false, incidentalPrint = false, shift = 0, missingRow, extraRow = false, hiddenCell = false,
+  continuation = false, columnShift = 0, pinch = 0,
 } = {}) {
   const width = 1225, height = 1585;
   const pixels = new Uint8ClampedArray(width * height * 4).fill(255);
@@ -50,9 +51,12 @@ function syntheticImage({
   }
   const added = extraRow ? grid.cells.filter(({ row }) => row === 0)
     .map((cell) => ({ ...cell, y: cell.y + grid.rowSpacing / 2, row: -1 })) : [];
+  if (continuation) added.push(...grid.cells.filter(({ row }) => row === 2)
+    .map((cell) => ({ ...cell, y: cell.y + grid.rowSpacing, row: 3 })));
   for (const cell of [...grid.cells, ...added]) {
     if (cell.row === missingRow || (hiddenCell && cell.row === 0 && cell.column === 3)) continue;
-    const xCenter = cell.x + shift;
+    const xCenter = cell.x + shift + (cell.column === 3 ? columnShift : 0) +
+      (cell.column === 1 ? pinch : cell.column === 2 ? -pinch : 0);
     const r = cell.radius + .6;
     paint(xCenter - r, cell.y - r, r * 2, r * 2, (x, y) => {
       const distance = Math.hypot(xCenter - x, cell.y - y);
@@ -180,4 +184,41 @@ test('locally obscured outlines cannot produce a clear blank or a silent single'
   assert.equal(obscured.rawText, null);
   assert.equal(clear.status, 'blank');
   assert.equal(clear.review, false);
+});
+
+test('adjacent extra row and repeated choice displacement fail the same geometry gate', () => {
+  const calibrated = structuredClone(blocks);
+  calibrated[0].bounds.height = 80;
+  const profile = create({ components: calibrated });
+  for (const [caseOptions, metric] of [
+    [{ continuation: true }, 'extraRows'], [{ columnShift: 9 }, 'missingColumns'],
+  ]) {
+    const image = syntheticImage(caseOptions);
+    for (const adjusted of [undefined, corners]) {
+      const result = readProfileSheet(image, profile, { corners: adjusted, batch: authorized(profile) });
+      assert.equal(result.status, 'retake');
+      assert.deepEqual(result.registration.reasons, ['response-geometry']);
+      assert.deepEqual(result.items, []);
+      assert.equal(result.registration.geometry.blocks[0][metric], 1);
+    }
+  }
+  const subtle = readProfileSheet(syntheticImage({ pinch: 1.45 }), profile, { corners, batch: authorized(profile) });
+  assert.equal(subtle.status, 'retake');
+  assert.equal(subtle.registration.geometry.blocks[0].spacingMismatch, true);
+});
+
+test('an adjacent row in a different confirmed response block is not an extra row', () => {
+  const calibrated = structuredClone(blocks);
+  calibrated[0].bounds.height = 80;
+  const nearbyBounds = { x: 175, y: 306, width: 162, height: 16 };
+  const choices = grid.cells.filter(({ row }) => row === 2).map((choice) => ({
+    ...choice, y: choice.y + grid.rowSpacing, symbol: 'ABCD'[choice.column],
+  }));
+  calibrated.push({ id: 'independent-row', kind: 'mc', bounds: nearbyBounds,
+    items: [{ id: 'Q4', kind: 'mc', bounds: nearbyBounds, choices }],
+  });
+  const profile = create({ components: calibrated });
+  const result = readProfileSheet(syntheticImage({ continuation: true }), profile, { corners, batch: authorized(profile) });
+  assert.equal(result.status, 'read');
+  assert.deepEqual(result.items.map(({ id, status }) => [id, status]), [['Q1', 'blank'], ['Q2', 'blank'], ['Q3', 'blank'], ['Q4', 'blank']]);
 });

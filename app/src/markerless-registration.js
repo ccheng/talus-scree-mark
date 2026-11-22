@@ -1,7 +1,7 @@
 import { cross, fitProjective, invertProjective, project } from './projective.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 
-export const markerlessThresholdVersion = 'batch-geometry-v1';
+export const markerlessThresholdVersion = 'batch-geometry-v2';
 const registrationStrategy = 'markerless';
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const failure = (reason, detail = {}) => ({
@@ -283,6 +283,63 @@ function perpendicular(first, last) {
 
 const position = (point, axis) => point.x * axis.x + point.y * axis.y;
 
+function outlineCenter(gray, transform, choice) {
+  const { x, y, radius } = choice;
+  function at(dx, dy) {
+    const point = project(transform, x + radius * dx, y + radius * dy);
+    return point ? grayAt(gray, point.x, point.y) : NaN;
+  }
+  const background = quantile(outlineDirections.map(([dx, dy]) => at(dx * 1.63, dy * 1.63)).filter(Number.isFinite), .65);
+  // An empty hole is a useful witness. Filled answers and ambiguous damage
+  // keep using positional support and the existing mark/review path.
+  if (!(background - at(0, 0) < 30)) return null;
+  const ink = [];
+  let total = 0;
+  let sumX = 0;
+  let sumY = 0;
+  for (let row = -9; row <= 9; row++) {
+    for (let column = -9; column <= 9; column++) {
+      const dx = column / 6;
+      const dy = row / 6;
+      if (Math.hypot(dx, dy) > 1.52) continue;
+      const contrast = background - at(dx, dy);
+      const weight = Math.max(0, Math.min(1, (contrast - 26) / 80));
+      if (!Number.isFinite(weight) || weight === 0) continue;
+      ink.push({ dx, dy, weight });
+      total += weight;
+      sumX += dx * weight;
+      sumY += dy * weight;
+    }
+  }
+  if (total < 12 || total > 114) return null;
+  const dx = sumX / total;
+  const dy = sumY / total;
+  const meanRadius = ink.reduce((sum, cell) => sum + Math.hypot(cell.dx - dx, cell.dy - dy) * cell.weight, 0) / total;
+  if (meanRadius < .74 || meanRadius > 1.25) return null;
+  const deviation = ink.reduce((sum, cell) =>
+    sum + Math.abs(Math.hypot(cell.dx - dx, cell.dy - dy) - meanRadius) * cell.weight, 0) / total;
+  if (deviation > .22) return null;
+  const center = { x: x + dx * radius, y: y + dy * radius, radius };
+  return outlineSupport(gray, transform, center) >= 9 ? center : null;
+}
+
+function recurringLanes(band) {
+  if (!band) return [];
+  const axis = { x: -band.axis.y, y: band.axis.x };
+  const entries = band.groups.flatMap(({ choices }, row) =>
+    choices.map((choice) => ({ choice, row, at: position(choice, axis) }))).sort((a, b) => a.at - b.at);
+  const lanes = [];
+  for (const { choice, row, at } of entries) {
+    const latest = lanes.at(-1);
+    if (latest && Math.abs(at - latest.at) <= choice.radius * .90 && !latest.rows.has(row)) {
+      latest.choices.push(choice);
+      latest.rows.add(row);
+      latest.at = position(averagePoint(latest.choices), axis);
+    } else lanes.push({ at, rows: new Set([row]), choices: [choice] });
+  }
+  return lanes;
+}
+
 function numericalBands(item) {
   const first = averagePoint(item.slots[0].choices);
   const last = averagePoint(item.slots.at(-1).choices);
@@ -317,7 +374,7 @@ function multipleChoiceBands(items) {
   return { axis, groups };
 }
 
-function extraRows(gray, transform, band, bounds, expectedChoices) {
+function extraRows(gray, transform, band, bounds, expectedChoices, neighbors, page) {
   if (!band) return 0;
   const { axis, groups } = band;
   // Use only repeated, enrolled rows to estimate pitch. A decimal in just one
@@ -326,34 +383,64 @@ function extraRows(gray, transform, band, bounds, expectedChoices) {
   const spacing = rows.slice(1).map((row, index) => row.at - rows[index].at);
   const pitch = quantile(spacing, .5);
   if (!Number.isFinite(pitch) || pitch <= .5) return 0;
-  const proposals = [[rows[0], -pitch], [rows.at(-1), pitch]];
+  const proposals = [
+    { row: rows[0], offsets: [-spacing[0], -.80 * spacing[0], -1.20 * spacing[0]], extension: true },
+    { row: rows.at(-1), offsets: [spacing.at(-1), .80 * spacing.at(-1), 1.20 * spacing.at(-1)], extension: true },
+  ];
   for (const [index, gap] of spacing.entries()) {
-    proposals.push([rows[index], gap / 2]);
-    if (gap >= pitch * 1.75) proposals.push([rows[index], pitch]);
+    proposals.push({ row: rows[index], offsets: [gap / 2] });
+    if (gap >= pitch * 1.75) proposals.push({ row: rows[index], offsets: [pitch] });
   }
-  return proposals.filter(([row, delta]) => {
+  return proposals.filter(({ row, offsets, extension }) => offsets.some((delta) => {
     const shifted = row.choices.map(({ x, y, radius }) => ({ x: x + delta * axis.x, y: y + delta * axis.y, radius }));
     const eligible = shifted.filter(({ x, y, radius }) => {
       const margin = 1.6 * radius;
-      return x - margin >= bounds.x && x + margin <= bounds.x + bounds.width &&
-        y - margin >= bounds.y && y + margin <= bounds.y + bounds.height &&
+      const frame = extension ? { x: 0, y: 0, width: page.width, height: page.height } : bounds;
+      const overlapsNeighbor = neighbors.some((region) => x + margin > region.x && x - margin < region.x + region.width &&
+        y + margin > region.y && y - margin < region.y + region.height);
+      return !overlapsNeighbor && x - margin >= frame.x && x + margin <= frame.x + frame.width &&
+        y - margin >= frame.y && y + margin <= frame.y + frame.height &&
         expectedChoices.every((other) => Math.hypot(x - other.x, y - other.y) > 1.15 * (radius + other.radius));
     });
-    const matching = eligible.filter((choice) => outlineSupport(gray, transform, choice) >= 8).length;
+    const matching = eligible.filter((choice) => outlineSupport(gray, transform, choice) >= (extension ? 10 : 8)).length;
     return matching >= Math.max(2, Math.ceil(row.choices.length * .70));
-  }).length;
+  })).length;
 }
 
-function blockGeometry(gray, block, transform) {
+function spacingConflicts(groups, centers) {
+  const differences = groups.flatMap(({ choices }) => {
+    if (choices.length < 2) return [];
+    const axis = perpendicular(choices[0], choices.at(-1));
+    if (!axis) return [];
+    const along = { x: -axis.y, y: axis.x };
+    const ordered = [...choices].sort((a, b) => position(a, along) - position(b, along));
+    return ordered.slice(1).flatMap((b, index) => {
+      const a = ordered[index];
+      if (!centers.get(a) || !centers.get(b)) return [];
+      const radius = (a.radius + b.radius) / 2;
+      return [Math.abs(distance(a, b) - distance(centers.get(a), centers.get(b))) / radius];
+    });
+  });
+  return differences.filter((difference) => difference >= .48).length >= 2 || differences.some((difference) => difference >= .80);
+}
+
+function blockGeometry(gray, profile, block, transform) {
   const choices = block.items.flatMap(choicesFor);
   const support = new Map(choices.map((choice) => [choice, outlineSupport(gray, transform, choice)]));
   const supported = supportCount(choices, support);
+  const neighbors = profile.components.filter((component) => component !== block).map(({ bounds }) => bounds);
   let missingRows = 0;
   let missingSlots = 0;
+  let missingColumns = 0;
   let excess = 0;
+  const spacingGroups = [];
   if (block.kind === 'mc') {
+    const band = multipleChoiceBands(block.items);
     missingRows = block.items.filter(({ choices: row }) => supportCount(row, support) < Math.ceil(row.length / 2)).length;
-    excess = extraRows(gray, transform, multipleChoiceBands(block.items), block.bounds, choices);
+    missingColumns = recurringLanes(band).filter(({ choices: lane }) => lane.length >= 2 &&
+      supportCount(lane, support) < Math.ceil(lane.length / 2)).length;
+    excess = extraRows(gray, transform, band, block.bounds, choices, neighbors, profile.page);
+    spacingGroups.push(...block.items);
   } else {
     for (const item of block.items) {
       missingSlots += item.slots.filter(({ choices: slot }) => supportCount(slot, support) < Math.ceil(slot.length * .65)).length;
@@ -363,12 +450,19 @@ function blockGeometry(gray, block, transform) {
           supportCount(row, support) < Math.ceil(row.length / 2)).length;
       }
       const bounds = block.items.length === 1 ? block.bounds : item.bounds;
-      excess += extraRows(gray, transform, band, bounds, choices);
+      const siblingBounds = block.items.filter((other) => other !== item).map(({ bounds: region }) => region);
+      excess += extraRows(gray, transform, band, bounds, choices, [...neighbors, ...siblingBounds], profile.page);
+      spacingGroups.push(...item.slots, ...(band?.groups ?? []));
     }
   }
+  const basic = supported >= Math.ceil(choices.length * .70) && !missingRows && !missingSlots && !missingColumns && !excess;
+  const centers = basic ? new Map(choices.map((choice) => [choice, outlineCenter(gray, transform, choice)])) : new Map();
+  const spacingMismatch = basic && spacingConflicts(spacingGroups, centers);
+  const relocatedChoices = basic ? choices.filter((choice) => support.get(choice) < 8 && centers.get(choice) &&
+    distance(choice, centers.get(choice)) >= .65 * choice.radius).length : 0;
   return {
-    id: block.id, checked: choices.length, supported, missingRows, missingSlots, extraRows: excess,
-    verified: supported >= Math.ceil(choices.length * .70) && !missingRows && !missingSlots && !excess,
+    id: block.id, checked: choices.length, supported, missingRows, missingSlots, missingColumns, extraRows: excess,
+    spacingMismatch, relocatedChoices, verified: basic && !spacingMismatch && !relocatedChoices,
   };
 }
 
@@ -386,7 +480,7 @@ function inspectOrientation(gray, profile, corners, mirrored) {
   const pageToSource = pageTransform(profile.page, corners);
   const sourceToPage = pageToSource && invertProjective(pageToSource);
   if (!sourceToPage) return null;
-  const blocks = profile.components.map((block) => blockGeometry(gray, block, pageToSource));
+  const blocks = profile.components.map((block) => blockGeometry(gray, profile, block, pageToSource));
   const total = (key) => blocks.reduce((sum, block) => sum + block[key], 0);
   const checked = total('checked');
   const supported = total('supported');

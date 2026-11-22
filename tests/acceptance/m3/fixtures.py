@@ -1,6 +1,7 @@
 """Build independently labeled, wholly synthetic conventional markerless forms."""
 
 import argparse
+from copy import deepcopy
 import json
 from pathlib import Path
 from random import Random
@@ -302,6 +303,21 @@ def generate(out):
                 bubble(draw, {**choice, 'y': choice['y'] + distance_between_rows / 2})
             image, matrix, _ = framed(added_row, 0)
             save('extra-row-inside-block', image, 'must-retake', geometry=matrix)
+
+            continued = marked.copy()
+            draw = ImageDraw.Draw(continued)
+            for choice in components[-1]['items'][-1]['choices']:
+                bubble(draw, {**choice, 'y': choice['y'] + distance_between_rows})
+            image, matrix, _ = framed(continued, 0)
+            save('extra-row-continuation', image, 'must-retake', geometry=matrix)
+
+            changed_columns = deepcopy(components)
+            for item in changed_columns[-1]['items']:
+                item['choices'][1]['x'] += 17
+            incompatible = make_sheet(title, notices, changed_columns)
+            changed_marked, _ = mark_copy(incompatible, changed_columns, 47)
+            image, matrix, _ = framed(changed_marked, 0)
+            save('shifted-choice-column', image, 'must-retake', geometry=matrix)
         save('clipped', marked.crop((0, 0, WIDTH - 180, HEIGHT - 251)), 'must-retake')
         sanitized = marked.copy()
         last = components[-1]['bounds']
