@@ -218,6 +218,18 @@ def build(target):
                          "blocks": [{"kind": block["kind"], "label": block["label"], "bounds": block["region"],
                                      "items": block["items"]} for block in spec["blocks"]]})
         fixture_files.append(key)
+        if slug == "interleaved":
+            # Change the printed identity while retaining every response position.
+            lookalike = {**spec, "title": "Laboratory Data Review", "unit": "Practice form L",
+                         "subtitle": "Record observations for this alternate practice form",
+                         "sections": [("Part I   Reading data", 58, 144),
+                                      ("Part II   Analyzing results", 58, 338),
+                                      ("Part III   Evaluating evidence", 58, 531)]}
+            pdf_path = target / "interleaved-lookalike.pdf"
+            png_path = target / "interleaved-lookalike.png"
+            draw_profile(pdf_path, lookalike, answers)
+            make_png(pdf_path, png_path)
+            fixture_files.extend((pdf_path, png_path))
     manifest = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(fixture_files)}
     write_json(target / "manifest.sha256.json", manifest)
     print(f"Generated {len(fixture_files)} synthetic artifacts across {len(public_specs())} layouts.")

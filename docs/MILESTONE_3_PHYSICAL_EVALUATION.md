@@ -15,9 +15,21 @@ Use the [GitHub Pages preview](https://ccheng.github.io/talus-scree-mark/) with 
 1. Save the blank JPEG/PNG for one mock layout to Files or Photos. Tap **Set up a blank sheet**, select that blank, and name the profile. Verify the page orientation and all four corners, then tap **Use these corners**.
 2. Drag a box around a single MC or NR block and tap **Find bubbles in box**. Compare its detected centers, rows and columns with the printed bubbles. If the suggestion needs rebuilding, use **Place grid across box** or **Adjust grid endpoints, spacing or angle**. Define the grid once, then use **Correct an individual bubble** only for exceptions.
 3. Check the mapping from each bubble to the correct item, choice or NR slot and confirm the block. Add a distinctive printed heading as the first registration feature, then at least three other printed details distributed across the page. Keep features outside names and responses. Review the overlay and save the profile. Select it once, then import or photograph several different mock copies of that form. Confirm the selected revision stays active and every capture has fresh alignment and layout verification.
-4. Try an intentionally similar sheet with a different geometry or printed layout. It must ask for a retake or review when identity cannot be verified. Two assessments can share one geometry, so the scanner cannot infer which assessment or answer key the teacher intends.
+4. Enroll the interleaved blank and verify its corresponding filled sheet reads. Keep that profile pinned, then import the [same-grid lookalike PNG](https://ccheng.github.io/talus-scree-mark/fixtures/m3/interleaved-lookalike.png) or photograph the printed [lookalike PDF](https://ccheng.github.io/talus-scree-mark/fixtures/m3/interleaved-lookalike.pdf). It has identical bubble positions and different printed labels. Expect a retake with no accepted responses. Return to a valid copy and verify it reads using the pinned profile. Assessment and answer-key selection remain separate from the layout check.
 5. Open the app from the Home Screen once while online and wait for **Offline ready**. Turn on airplane mode with Wi-Fi off, close and reopen the app, choose the saved profile, and capture or import a new mock sheet. The saved profile is available offline. Previous scanned pages and results are ephemeral.
 6. Repeat with the MC-only, mixed and interleaved mock forms, then check the M2 anchored example as a compatibility control.
+
+## Optional numeric starting boxes for the interleaved blank
+
+Use these Letter-point regions after confirming the page corners. Enter them in order so the printed heading is checked for identity. Keep the last four as distributed alignment checks. The positions are specific to the supplied interleaved mock.
+
+| Printed feature | Left | Top | Width | Height |
+| --- | ---: | ---: | ---: | ---: |
+| Distinctive heading | 56 | 40 | 128 | 28 |
+| Form label | 461 | 50 | 90 | 15 |
+| Middle section text | 56 | 328 | 124 | 13 |
+| Lower section text | 56 | 521 | 124 | 14 |
+| Footer text | 56 | 746 | 130 | 14 |
 
 ## Printing and setup effort
 

@@ -6,6 +6,7 @@ const messages = {
   'identity-confirmation': 'The printed features do not distinguish the available layouts. Confirm this exact revision before reading.',
   'ambiguous-orientation': 'More than one page orientation fits. Set scan corners to identify the correct orientation.',
   'wrong-profile': 'A different saved profile better matches the printed features.',
+  'legacy-identity-signature': 'This profile needs a refreshed identity feature. Open its blank sheet, revise the profile and replace the identity feature. The saved bubble layout can be reused.',
   'missing-anchor': 'Could not find all four corner markers.',
   'ambiguous-anchor': 'Found conflicting corner markers.',
   'mirrored-registration': 'The reference sheet appears mirrored.',
@@ -153,7 +154,7 @@ export function createRecognitionView({ button, status, results, table, overlay,
       }
       if (result.status === 'retake') {
         const explanation = result.registration.reasons.map((reason) => messages[reason]).filter(Boolean).join(' ');
-        const next = result.registration.canConfirmIdentity ? '' : request
+        const next = result.registration.canConfirmIdentity || result.registration.reasons.includes('legacy-identity-signature') ? '' : request
           ? ' Check the selected profile, retake or set scan corners.'
           : ' Retake the photo or choose a clear image of the reference sheet.';
         setStatus('retake', explanation + next);

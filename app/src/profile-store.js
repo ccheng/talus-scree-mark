@@ -103,12 +103,13 @@ export function profileRecord(profile) {
         }),
       })),
     })),
-    features: profile.features.map(({ id, bounds, samples }) => ({
+    features: profile.features.map(({ id, bounds, samples, identitySamples }) => ({
       id, bounds: copyBounds(bounds),
       samples: samples.map((sample) => {
         if (!Number.isFinite(sample)) throw new Error('Printed feature samples must be numeric.');
         return sample;
       }),
+      ...(identitySamples === undefined ? {} : { identitySamples: [...identitySamples] }),
     })),
     allowManualIdentity: profile.allowManualIdentity === true,
     provenance: { source: 'teacher-confirmed-blank' },

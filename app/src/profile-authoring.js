@@ -8,6 +8,10 @@ const validCount = (value) => Number.isInteger(value) && value >= 1 && value <= 
 export const validBounds = (bounds) => point(bounds) && positive(bounds.width) && positive(bounds.height);
 export const intersects = (a, b) => a.x < b.x + b.width && b.x < a.x + a.width &&
   a.y < b.y + b.height && b.y < a.y + a.height;
+export const printedDetailShape = ({ width, height }) => ({
+  columns: Math.min(64, Math.max(16, Math.round(width / 2))),
+  rows: Math.min(48, Math.max(12, Math.round(height / 2))),
+});
 const contains = (outer, inner) => inner.x >= outer.x && inner.y >= outer.y &&
   inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
 
@@ -226,7 +230,7 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
   }
   fail(Array.isArray(features) && features.length <= 16 && (features.length >= 4 || (features.length === 0 && allowManualIdentity)),
     'Use at least four printed feature regions, or explicitly require manual confirmation on every scan.');
-  const sanitized = features.map(({ id: featureId, bounds, samples }) => {
+  const sanitized = features.map(({ id: featureId, bounds, samples, identitySamples }) => {
     unique(featureId);
     fail(validBounds(bounds) && contains(frame, bounds) && bounds.width >= 6 && bounds.height >= 6 &&
       bounds.width <= 132 && bounds.height <= 132 && !verified.some((component) => intersects(bounds, component.bounds)),
@@ -234,7 +238,17 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
     fail(Array.isArray(samples) && samples.length === 144 && samples.every((sample) => Number.isFinite(sample) && sample >= 0 && sample <= 1) &&
       samples.filter((sample) => sample >= .5).length >= 14 && samples.filter((sample) => sample >= .5).length <= 120,
     'Each printed feature needs distinguishable printed ink and background.');
-    return { id: featureId, bounds: { ...bounds }, samples: [...samples] };
+    if (identitySamples !== undefined) {
+      const { rows, columns } = printedDetailShape(bounds);
+      fail(Array.isArray(identitySamples) && identitySamples.length === rows * columns &&
+        identitySamples.every((sample) => Number.isInteger(sample) && sample >= 0 && sample <= 15) &&
+        identitySamples.some((sample) => sample >= 8) && identitySamples.some((sample) => sample < 8),
+      'The higher-detail printed signature is invalid. Recapture that feature on the blank sheet.');
+    }
+    return {
+      id: featureId, bounds: { ...bounds }, samples: [...samples],
+      ...(identitySamples === undefined ? {} : { identitySamples: [...identitySamples] }),
+    };
   });
   for (const [index, feature] of sanitized.entries()) {
     fail(!sanitized.slice(0, index).some((other) => intersects(feature.bounds, other.bounds)), 'Printed feature regions may not overlap.');

@@ -421,6 +421,7 @@ export function createProfileEditor({ onSave, onClose }) {
   function lists() {
     blocksList.replaceChildren();
     featuresList.replaceChildren();
+    byId('replace-identity-feature').hidden = state.features.length === 0;
     for (const [index, block] of state.blocks.entries()) {
       const move = (delta) => {
         const target = index + delta;
@@ -440,13 +441,20 @@ export function createProfileEditor({ onSave, onClose }) {
       ]));
   }
 
-  function addFeature() {
-    const bounds = inputRegion();
-    if (state.features.length >= 16) throw new TypeError('Use no more than 16 printed features.');
-    const [feature] = capturePrintedFeatures(state.image, state.matrix, [{ id: idFor('feature'), bounds }]);
-    state.features.push(feature);
+  function addFeature(replace = false) {
+    if (!replace && state.features.length >= 16) throw new TypeError('Use no more than 16 printed features.');
+    const bounds = replace && !state.region ? state.features[0]?.bounds : inputRegion();
+    if (!bounds) throw new TypeError('Select a box around the distinctive printed identifier.');
+    const id = (replace && state.features[0]?.id) || idFor('feature');
+    const [feature] = capturePrintedFeatures(state.image, state.matrix, [{ id, bounds }]);
+    if ((replace || !state.features.length) && !feature.identitySamples) {
+      throw new TypeError('Choose a clear printed label with enough detail to distinguish the layout.');
+    }
+    if (replace) state.features[0] = feature;
+    else state.features.push(feature);
     notConfirmed(); lists(); paint();
-    say('Printed feature added. Use clear printed details distributed across the sheet.');
+    say(replace ? 'Identity feature replaced. The response grids are unchanged.' :
+      'Printed feature added. Use clear printed details distributed across the sheet.');
   }
 
   function handle(id, action) {
@@ -478,9 +486,14 @@ export function createProfileEditor({ onSave, onClose }) {
   handle('apply-cell', applyCell);
   handle('confirm-block', confirmBlock);
   handle('add-feature', addFeature);
+  handle('replace-identity-feature', () => addFeature(true));
   handle('cancel-profile-editor', () => { close(); onClose(); });
   handle('enroll-profile', async () => {
     if (!byId('confirm-profile-preview').checked) { say('Confirm the overlay and mappings before saving.'); return; }
+    if (state.features.length && !state.features[0].identitySamples) {
+      say('Use Replace identity feature on the blank sheet before saving this revision.');
+      return;
+    }
     try {
       const profile = createMarkerlessProfile({
         id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,

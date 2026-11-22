@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openServer, projectPath } from '../m1/server.mjs';
 
@@ -246,6 +247,86 @@ try {
     const wrong = family.fixtures.find(({ id }) => id === 'wrong-same-grid');
     const withOverride = await scan(page, profile, family, wrong, { confirmedIdentity: true, corners: pageCorners(normalizeMatrix(wrong.pageToSource)) });
     validateNoAccepted(withOverride, 'Manual identity must not bypass a conflicting available signature');
+  });
+
+  await group('M3.1 independently verified identity under same-grid lookalikes and shared maps', async (page) => {
+    await installAdapters(page);
+    const profiles = [];
+    for (const family of families) profiles.push(await enroll(page, family));
+    const family = families.at(-1);
+    const profile = profiles.at(-1);
+    const alternatives = profiles.slice(0, -1);
+    const results = [];
+    for (const fixture of family.fixtures.filter(({ id, mode }) => id === 'wrong-same-grid' || mode === 'identity-regression')) {
+      const corners = pageCorners(normalizeMatrix(fixture.pageToSource));
+      const paths = [
+        ['automatic', { alternatives }],
+        ['supplied geometry', { alternatives, corners }],
+      ];
+      if (fixture.id !== 'missing-title') paths.push(['manual identity claim', { alternatives, corners, confirmedIdentity: true }]);
+      for (const [path, options] of paths) {
+        const result = await scan(page, profile, family, fixture, options);
+        results.push({ id: fixture.id, path, status: result.status,
+          accepted: result.items.filter(({ review }) => !review).length, reasons: result.registration.reasons });
+      }
+    }
+    console.log(`  Same-grid identity probes ${JSON.stringify(results)}`);
+    assert(results.every(({ status, accepted }) => status === 'retake' && accepted === 0), 'A lookalike authorized a read without independently matched identity');
+
+    const legacyFixture = JSON.parse(await readFile(new URL('legacy-interleaved-signatures.json', import.meta.url), 'utf8'));
+    assert.equal(legacyFixture.fixture, family.blank);
+    assert.equal(legacyFixture.samplesByFeature.length, profile.features.length);
+    const legacy = {
+      ...profile, id: 'legacy-printed-profile', name: 'Saved coarse-only profile',
+      features: profile.features.map(({ id, bounds }, index) => ({
+        id, bounds, samples: [...legacyFixture.samplesByFeature[index]].map((value) => Number.parseInt(value, 16) / 15),
+      })),
+    };
+    const restoredLegacy = await page.evaluate(async (record) => {
+      await window.m3qa.saveProfile(record);
+      return window.m3qa.loadProfile(record.id, record.revision);
+    }, legacy);
+    assert.deepEqual(restoredLegacy, legacy, 'Opening the app must preserve an existing profile record');
+    const editedTitle = family.fixtures.find(({ id }) => id === 'changed-title-only');
+    const oldResult = await scan(page, restoredLegacy, family, editedTitle, {
+      corners: pageCorners(normalizeMatrix(editedTitle.pageToSource)), confirmedIdentity: true,
+    });
+    assert.equal(oldResult.status, 'retake', 'A legacy coarse descriptor cannot authorize a contradictory title');
+    validateNoAccepted(oldResult, 'Legacy descriptor accepted responses from contradictory print');
+
+    const genuine = family.fixtures.find(({ id }) => id === 'standard-4');
+    const equivalent = { ...profile, id: 'shared-reading-map', name: 'Same response map, separate assessment' };
+    const result = await scan(page, profile, family, genuine, { alternatives: [...alternatives, equivalent] });
+    assert.equal(result.status, 'read');
+    assert.equal(result.registration.automatic, true);
+    assert.deepEqual(result.profile, { id: profile.id, revision: profile.revision });
+    for (const expected of genuine.truth) assertObservation(result.items.find(({ id }) => id === expected.id), expected);
+    for (const forbidden of ['assessmentId', 'assessmentVersion', 'answerKeyId', 'grade']) assert(!Object.hasOwn(result, forbidden));
+  });
+
+  await group('M3.1 reads an exact public answer oracle across independent PDF renderers', async (page) => {
+    await installAdapters(page);
+    const reference = resolve(appPath, 'fixtures/m3');
+    const key = JSON.parse(await readFile(resolve(reference, 'mc-only-key.json'), 'utf8'));
+    const blank = await readFile(resolve(reference, 'mc-only-blank.png'), 'base64');
+    const filled = await encoded('cross-renderer-filled.png');
+    const boxes = [[54, 40, 128, 26], [460, 48, 95, 16], [56, 140, 119, 18], [331, 176, 78, 16], [56, 515, 128, 19], [56, 757, 125, 17]];
+    const result = await page.evaluate(async ({ key, blank, filled, boxes }) => {
+      const setup = await window.m3qa.loadImage(blank, 'published-blank-raster');
+      const example = await window.m3qa.loadImage(filled, 'poppler-marked-raster');
+      const regions = boxes.map(([x, y, width, height], index) => ({ id: `feature-${index}`, bounds: { x, y, width, height } }));
+      const features = window.m3qa.capturePrintedFeatures(setup, [2.5, 0, 0, 0, 2.5, 0, 0, 0, 1], regions);
+      const components = key.blocks.map(({ kind, bounds, items }, index) => ({ id: `block-${index}`, kind, bounds, items }));
+      const profile = window.m3qa.createMarkerlessProfile({ id: 'cross-renderer', revision: 1, name: 'Cross renderer',
+        page: { ...key.paper, origin: 'top-left', orientation: 'portrait' }, components, features });
+      return window.m3qa.readProfileSheet(example, profile);
+    }, { key, blank, filled, boxes });
+    assert.equal(result.status, 'read', JSON.stringify(result.registration.reasons));
+    assert.deepEqual(result.items.map(({ id }) => id), key.itemOrder);
+    for (const item of result.items) {
+      const expected = key.expected[item.id];
+      assertObservation(item, { id: item.id, status: expected.state, value: expected.rawText, review: false });
+    }
   });
 
   await group('M3 teacher UI authors an automatic, parametric and individually corrected profile', async (page) => {

@@ -232,6 +232,32 @@ def generate(out):
         negative, _ = mark_copy(wrong, components, 53)
         wrong_frame, wrong_matrix, _ = framed(negative, 0)
         save('wrong-same-grid', wrong_frame, 'must-retake', geometry=wrong_matrix)
+        if family_id == 'interleaved':
+            changed_title = marked.copy()
+            draw = ImageDraw.Draw(changed_title)
+            draw.rectangle((71, 76, 755, 147), fill=PAPER)
+            write(draw, (74, 78), 'Energy transfers', 53, True)
+
+            missing_title = marked.copy()
+            ImageDraw.Draw(missing_title).rectangle((71, 76, 755, 147), fill=PAPER)
+
+            changed_labels = marked.copy()
+            draw = ImageDraw.Draw(changed_labels)
+            replacement_lines = [
+                ((74, 233), 'Describe your observations', 26, True, (70, 225, 725, 286)),
+                ((78, 326), 'Enter a response below', 27, False, (75, 315, 643, 363)),
+                ((737, 327), 'Follow the prompts in sequence', 24, False, (720, 315, 1218, 363)),
+                ((81, 1475), 'Hand in this sheet separately', 25, True, (74, 1467, 800, 1519)),
+                ((836, 1480), 'Keep the rest of the packet.', 21, False, (818, 1467, 1216, 1519)),
+            ]
+            for position, text, size, bold, cover in replacement_lines:
+                draw.rectangle(cover, fill=PAPER)
+                write(draw, position, text, size, bold)
+
+            for case, page in [('changed-title-only', changed_title), ('missing-title', missing_title),
+                               ('same-title-changed-labels', changed_labels)]:
+                image, matrix, orientation = framed(page, 0)
+                save(case, image, 'identity-regression', geometry=matrix, orientation=orientation)
         save('clipped', marked.crop((0, 0, WIDTH - 180, HEIGHT - 251)), 'must-retake')
         sanitized = marked.copy()
         last = components[-1]['bounds']

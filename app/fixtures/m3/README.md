@@ -8,7 +8,7 @@ These fictional US Letter forms are for M3 profile setup and scan checks. The na
 | Mixed, 16 MC items followed by four NR grids | [PDF](mixed-blank.pdf) · [PNG](mixed-blank.png) | [PDF](mixed-filled.pdf) · [PNG](mixed-filled.png) | [Key](mixed-key.json) |
 | Interleaved, 17 MC items and three NR grids | [PDF](interleaved-blank.pdf) · [PNG](interleaved-blank.png) | [PDF](interleaved-filled.pdf) · [PNG](interleaved-filled.png) | [Key](interleaved-key.json) |
 
-Use each blank image to create and confirm its profile. Scan the corresponding marked image using that profile. The interleaved example contains a five-choice MC block and an intentionally blank NR response. The keys preserve item order, exact four-position NR strings, and nulls for individual blank slots. Coordinates are US Letter points measured from the top-left. The keys are fixture oracles and are independent of app profile storage.
+Use each blank image to create and confirm its profile. The interleaved [same-grid lookalike PDF](interleaved-lookalike.pdf) and [PNG](interleaved-lookalike.png) retain the response geometry but change the printed identity. Verify the interleaved profile rejects this form. Scan the corresponding marked image using that profile. The interleaved example contains a five-choice MC block and an intentionally blank NR response. The keys preserve item order, exact four-position NR strings, and nulls for individual blank slots. Coordinates are US Letter points measured from the top-left. The keys are fixture oracles and are independent of app profile storage.
 
 To regenerate the examples with Python 3.12:
 

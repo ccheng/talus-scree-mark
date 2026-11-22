@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="fa0b4679e741e4448fbc0039">
+  <meta name="scree-release" content="36a6aae3c30bda2326174cf1">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -119,8 +119,9 @@
             <div class="controls">
               <button id="preview-region" type="button">Preview box</button>
               <button id="add-feature" type="button">Add printed feature</button>
+              <button id="replace-identity-feature" type="button" hidden>Replace identity feature</button>
             </div>
-            <p class="hint">First choose a distinctive version or form label. Add at least three other fixed printed features spread across the page. Exclude name fields and answer areas.</p>
+            <p class="hint">First choose a box that includes the whole distinctive version or form label. Add at least three other fixed printed features spread across the page. Exclude name fields and answer areas.</p>
             <ol id="profile-features"></ol>
             <label><input id="allow-manual-identity" type="checkbox"> This form has no usable printed identifiers. Require manual corners and identity confirmation for every scan.</label>
           </fieldset>
