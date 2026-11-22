@@ -1,7 +1,7 @@
 import { cross, fitProjective, invertProjective, project } from './projective.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 
-export const markerlessThresholdVersion = 'printed-features-v2';
+export const markerlessThresholdVersion = 'printed-features-v3';
 const registrationStrategy = 'markerless';
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const failure = (reason, detail = {}) => ({
@@ -193,24 +193,35 @@ export function pageTransform(page, corners) {
   return fitProjective(pagePoints(page), corners);
 }
 
+const subcellOffsets = [.17, .5, .83];
+
 function featureSamples(gray, matrix, bounds, dx = 0, dy = 0) {
   const values = [];
+  // Integrate ink across each descriptor cell. A single raster sample can
+  // flip when a thin printed stroke moves between PDF renderers.
+  const cellWidth = bounds.width / 12;
+  const cellHeight = bounds.height / 12;
   for (let row = 0; row < 12; row++) {
     for (let column = 0; column < 12; column++) {
-      const x = bounds.x + dx + (column + .5) * bounds.width / 12;
-      const y = bounds.y + dy + (row + .5) * bounds.height / 12;
-      const point = project(matrix, x, y);
-      const sample = point ? grayAt(gray, point.x, point.y) : NaN;
-      if (!Number.isFinite(sample)) return null;
-      values.push(sample);
+      let total = 0;
+      for (const oy of subcellOffsets) {
+        for (const ox of subcellOffsets) {
+          const point = project(matrix,
+            bounds.x + dx + (column + ox) * cellWidth,
+            bounds.y + dy + (row + oy) * cellHeight);
+          const sample = point ? grayAt(gray, point.x, point.y) : NaN;
+          if (!Number.isFinite(sample)) return null;
+          total += sample;
+        }
+      }
+      values.push(total / 9);
     }
   }
   const bright = quantile(values, .82);
   const dark = quantile(values, .12);
   if (bright - dark < 32) return null;
-  const mid = (bright + dark) / 2;
-  const samples = values.map((value) => Number(value < mid));
-  const area = samples.reduce((sum, value) => sum + value, 0);
+  const samples = values.map((value) => Math.round(15 * Math.max(0, Math.min(1, (bright - value) / (bright - dark)))) / 15);
+  const area = samples.filter((value) => value >= .5).length;
   return area >= 14 && area <= 120 ? samples : null;
 }
 
@@ -227,12 +238,12 @@ export function capturePrintedFeatures(image, pageToSource, regions) {
 function similarity(reference, candidate) {
   if (!candidate) return 0;
   let overlap = 0;
-  let union = 0;
+  let energy = 0;
   for (let i = 0; i < reference.length; i++) {
-    overlap += reference[i] & candidate[i];
-    union += reference[i] | candidate[i];
+    overlap += reference[i] * candidate[i];
+    energy += reference[i] ** 2 + candidate[i] ** 2;
   }
-  return overlap / union;
+  return 2 * overlap / energy;
 }
 
 function locateFeature(gray, matrix, feature, radius = 12) {
@@ -258,22 +269,65 @@ function locateFeature(gray, matrix, feature, radius = 12) {
   return {
     id: feature.id, center, observed, score: best.score, margin: best.score - rival,
     displacement: Math.hypot(best.x, best.y),
-    found: Boolean(observed) && best.score >= .66 && (best.score >= .90 || best.score - rival >= .075),
+    found: Boolean(observed) && best.score >= .80 && (best.score >= .88 || best.score - rival >= .045),
   };
 }
 
 function identify(gray, profile, matrix) {
-  const checks = profile.features.map((feature) => locateFeature(gray, matrix, feature));
+  const identityCheck = locateFeature(gray, matrix, profile.features[0]);
+  if (identityCheck.score < .80) {
+    return { score: identityCheck.score, checks: [identityCheck], usable: [], verified: false };
+  }
+  const checks = [identityCheck, ...profile.features.slice(1).map((feature) => locateFeature(gray, matrix, feature))];
   const usable = checks.filter((check) => check.found);
   const score = checks.reduce((sum, item) => sum + item.score, 0) / checks.length;
-  const identity = checks[0]?.score >= .77 && checks[0]?.found;
-  return { score, checks, usable, verified: identity && usable.length >= Math.max(4, Math.ceil(checks.length * .8)) && score >= .73 };
+  const identity = checks[0]?.score >= .87 && checks[0]?.found;
+  return { score, checks, usable, verified: identity && usable.length >= Math.max(4, Math.ceil(checks.length * .8)) && score >= .83 };
+}
+
+const outlineDirections = Array.from({ length: 12 }, (_, index) => {
+  const angle = index * Math.PI / 6;
+  return [Math.cos(angle), Math.sin(angle)];
+});
+
+function printedGeometry(gray, profile, matrix) {
+  const bubbles = profile.components.flatMap(({ items }) => items.flatMap((item) =>
+    item.kind === 'mc' ? item.choices : item.slots.flatMap(({ choices }) => choices)));
+  const partitions = new Map();
+  for (const bubble of bubbles) {
+    const key = Math.floor(4 * bubble.x / profile.page.width) + 4 * Math.floor(4 * bubble.y / profile.page.height);
+    const group = partitions.get(key) ?? [];
+    group.push(bubble);
+    partitions.set(key, group);
+  }
+  const checks = [...partitions.values()].flatMap((group) =>
+    [group[0], group[Math.floor(group.length / 2)], group.at(-1)].filter((choice, index, choices) =>
+      choices.indexOf(choice) === index));
+  const supported = checks.filter(({ x, y, radius }) => {
+    let sectors = 0;
+    for (const [dx, dy] of outlineDirections) {
+      function sample(multiplier) {
+        const p = project(matrix, x + dx * radius * multiplier, y + dy * radius * multiplier);
+        return p ? grayAt(gray, p.x, p.y) : NaN;
+      }
+      if (sample(1.55) - Math.min(sample(.91), sample(1.08)) >= 26) sectors++;
+    }
+    return sectors >= 9;
+  });
+  return {
+    checked: checks.length,
+    supported: supported.length,
+    verified: checks.length > 0 && supported.length >= Math.ceil(checks.length * .7),
+  };
 }
 
 function robustRefinement(gray, profile, candidate, result) {
   const notes = result.usable;
-  if (notes.every(({ displacement }) => displacement <= 1.2)) {
-    return { matrix: candidate, checks: result.checks };
+  const originalGeometry = printedGeometry(gray, profile, candidate);
+  // Paper edges supply one fit. Printed outlines verify that fit without
+  // mistaking a renderer-specific shift in a text glyph for page movement.
+  if (originalGeometry.verified) {
+    return { matrix: candidate, checks: result.checks, geometry: originalGeometry };
   }
   // Topology of the blank is fixed. Hold at least one printed feature out of the adjusted fit.
   if (notes.length < 5) return null;
@@ -307,7 +361,8 @@ function robustRefinement(gray, profile, candidate, result) {
   const validation = checks.filter(({ found, fitPoint }) => found && !fitPoint);
   if (!validation.length || validation.some(({ displacement }) => displacement > 1.55)) return null;
   const closed = identify(gray, profile, fit.model);
-  return closed.verified ? { matrix: fit.model, checks } : null;
+  const geometry = printedGeometry(gray, profile, fit.model);
+  return closed.verified && geometry.verified ? { matrix: fit.model, checks, geometry } : null;
 }
 
 function rotations(corners, mirrored) {
@@ -385,6 +440,6 @@ export function registerMarkerless(image, profile, options = {}) {
   return {
     status: 'registered', strategy: registrationStrategy, reasons: [], pageToSource, sourceToPage,
     identity: automatic ? 'printed-features' : 'teacher-confirmed', automatic,
-    cornerPath, corners: measured, checks: adjusted.checks,
+    cornerPath, corners: measured, checks: adjusted.checks, geometry: adjusted.geometry,
   };
 }

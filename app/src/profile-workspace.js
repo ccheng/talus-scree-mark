@@ -252,5 +252,9 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
 
   window.addEventListener('focus', () => refresh());
   refresh();
-  return { acceptImage, scanOptions, resetCapture, reset, registered, actions, get editing() { return editor.active; } };
+  return {
+    acceptImage, scanOptions, resetCapture, reset, registered, actions,
+    cancelBlank() { pendingBlank = false; },
+    get editing() { return editor.active; },
+  };
 }

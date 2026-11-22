@@ -120,6 +120,7 @@ choose.addEventListener('click', () => {
 });
 picker.addEventListener('cancel', () => {
   pickerPending = false;
+  workspace.cancelBlank();
   updatePreview();
 });
 picker.addEventListener('change', async () => {

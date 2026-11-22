@@ -218,10 +218,19 @@ try {
     const family = families[0];
     const fixture = family.fixtures[0];
     const profile = profiles[0];
-    const twin = { ...profile, id: 'same-structure-other-assessment', name: 'Other assessment' };
+    const sameMap = { ...profile, id: 'same-map-other-assessment', name: 'Other assessment' };
     const knownCorners = pageCorners(normalizeMatrix(fixture.pageToSource));
+    const layoutOnly = await scan(page, profile, family, fixture, { alternatives: [sameMap], corners: knownCorners });
+    assert.equal(layoutOnly.status, 'read');
+    assert.deepEqual(layoutOnly.profile, { id: profile.id, revision: profile.revision });
+    for (const expected of fixture.truth) assertObservation(layoutOnly.items.find(({ id }) => id === expected.id), expected);
+    for (const forbidden of ['assessmentId', 'answerKeyId', 'assessmentVersion', 'grade']) assert(!Object.hasOwn(layoutOnly, forbidden));
+
+    const twin = { ...structuredClone(profile), id: 'same-print-conflicting-map', name: 'Same print with a different response map' };
+    const [firstChoice, secondChoice] = twin.components[0].items[0].choices;
+    [firstChoice.symbol, secondChoice.symbol] = [secondChoice.symbol, firstChoice.symbol];
     const unsuitable = await scan(page, profile, family, fixture, { alternatives: [twin], corners: knownCorners });
-    assert.notEqual(unsuitable.status, 'read', 'Indistinguishable known layouts cannot auto-verify');
+    assert.notEqual(unsuitable.status, 'read', 'Indistinguishable print with conflicting maps cannot auto-verify');
     validateNoAccepted(unsuitable, 'Indistinguishable layout auto-read');
     assert(unsuitable.registration.reasons.includes('identity-confirmation'));
     const result = await scan(page, profile, family, fixture, { alternatives: [twin], corners: knownCorners, confirmedIdentity: true });

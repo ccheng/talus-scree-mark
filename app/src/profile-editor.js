@@ -1,6 +1,6 @@
 import { capturePrintedFeatures, pageTransform, proposePageCorners } from './markerless-registration.js';
 import { createMarkerlessProfile, manualGrid, proposeGrid, validBounds } from './profile-authoring.js';
-import { project } from './projective.js';
+import { cross, project } from './projective.js';
 
 const byId = (id) => document.getElementById(id);
 const value = (id) => byId(id).value;
@@ -82,6 +82,7 @@ export function createProfileEditor({ onSave, onClose }) {
     canvas.width = background.width;
     canvas.height = background.height;
     canvas.dataset.zoom = String(state.zoom);
+    canvas.dataset.pan = String(state.pan);
     const ctx = canvas.getContext('2d');
     ctx.drawImage(background, 0, 0);
     const logical = state.matrix ? page() : state.image;
@@ -130,6 +131,9 @@ export function createProfileEditor({ onSave, onClose }) {
   }
 
   function confirmCorners() {
+    const ordered = state.corners.length === 4 && state.corners.every((point, index, corners) =>
+      cross(point, corners[(index + 1) % 4], corners[(index + 2) % 4]) > 0);
+    if (!ordered) return say('Place the corners clockwise in sheet order, starting at top left.');
     const matrix = pageTransform(page(), state.corners);
     if (!matrix) return say('The corners do not form a usable page. Place them again.');
     state.matrix = matrix;
@@ -315,12 +319,15 @@ export function createProfileEditor({ onSave, onClose }) {
     const orders = [...new Set(state.grid.cells.map((cell) => cell.order))].sort((a, b) => a - b);
     const groups = orders.map((order) => available.filter((cell) => cell.order === order));
     const choices = (cells) => cells.map(({ symbol, x, y, radius }) => ({ symbol, x, y, radius }));
+    const preserved = state.grid.existingIds;
+    const preserveIds = preserved && prefix === preserved.prefix && start === preserved.first;
+    const itemId = (index) => (preserveIds ? preserved.ids[index] : undefined) ?? `${prefix}${start + index}`;
     const items = kind === 'mc'
       ? groups.map((cells, index) => ({
-        id: `${prefix}${start + index}`, kind, bounds: smallerBounds(cells, bounds), choices: choices(cells),
+        id: itemId(index), kind, bounds: smallerBounds(cells, bounds), choices: choices(cells),
       }))
-      : [{ id: `${prefix}${start}`, kind, bounds, slots: groups.map((cells, index) => ({
-        id: `${prefix}${start}.${index + 1}`, choices: choices(cells),
+      : [{ id: itemId(0), kind, bounds, slots: groups.map((cells, index) => ({
+        id: `${itemId(0)}.${index + 1}`, choices: choices(cells),
       })) }];
     const block = { id: state.editing ?? idFor('block'), kind, bounds, items };
     const next = state.blocks.filter(({ id }) => id !== block.id);
@@ -348,21 +355,55 @@ export function createProfileEditor({ onSave, onClose }) {
     show(`Confirmed ${items.length} ${kind.toUpperCase()} item${items.length === 1 ? '' : 's'}. Draw the next block or save the profile.`);
   }
 
+  function restoreExisting(block) {
+    const mc = block.kind === 'mc';
+    const grouped = mc ? block.items.map(({ choices }) => choices) : block.items[0].slots.map(({ choices }) => choices);
+    const symbols = mc ? grouped.reduce((longest, choices) => choices.length > longest.length ? choices : longest, []).map(({ symbol }) => symbol) :
+      [...new Set(grouped.flatMap((choices) => choices.map(({ symbol }) => symbol)))];
+    const rows = mc ? grouped.length : symbols.length;
+    const columns = mc ? symbols.length : 4;
+    const items = block.items.map(({ id }) => id);
+    const numberSuffix = /^(.*?)([0-9]+)$/.exec(items[0]);
+    const prefix = numberSuffix?.[1] ?? items[0];
+    const first = Number(numberSuffix?.[2] ?? 1);
+    const radius = grouped.flat()[0].radius;
+    const [topLeft, topRight, bottomLeft] = defaultAxes(block.bounds, radius);
+    const fallback = manualGrid({ topLeft, topRight, bottomLeft, rows, columns, radius });
+    fallback.cells = fallback.cells.map((cell) => {
+      const order = mc ? cell.row : cell.column;
+      const symbolIndex = mc ? cell.column : cell.row;
+      const choice = mc ? grouped[order][symbolIndex] : grouped[order].find(({ symbol }) => symbol === symbols[symbolIndex]);
+      return { ...cell, ...choice, symbol: choice?.symbol ?? symbols[symbolIndex], order, omit: !choice };
+    });
+    fallback.existingIds = { ids: items, prefix, first };
+    byId('block-kind').value = block.kind;
+    byId('grid-axis').value = 'rows';
+    byId('grid-symbols').value = symbols.join(',');
+    byId('grid-rows').value = String(rows);
+    byId('grid-columns').value = String(columns);
+    byId('item-prefix').value = prefix;
+    byId('item-start').value = String(first);
+    byId('reverse-grid-order').checked = false;
+    byId('decimal-slots').value = mc ? '' : grouped.flatMap((choices, index) =>
+      choices.some(({ symbol }) => symbol === '.') ? [index + 1] : []).join(',');
+    setEndpoints(topLeft, topRight, bottomLeft, radius);
+    state.grid = fallback;
+  }
+
   function chooseDraft(block) {
-    const saved = state.drafts.get(block.id);
-    if (!saved) {
-      setRegion(block.bounds);
-      say('This existing block can be recreated in the same position, then the old block can be removed.');
-      return;
-    }
     state.editing = block.id;
-    for (const [id, content] of Object.entries(saved.fields)) byId(id).value = content;
-    byId('reverse-grid-order').checked = saved.reverse;
-    byId('decimal-slots-label').hidden = block.kind !== 'nr';
-    state.grid = structuredClone(saved.grid);
-    setRegion(block.bounds);
-    updateCellSelector();
-    show('Edit the box, grid or individual bubbles, then confirm this block again.');
+    try {
+      const saved = state.drafts.get(block.id);
+      if (saved) {
+        for (const [id, content] of Object.entries(saved.fields)) byId(id).value = content;
+        byId('reverse-grid-order').checked = saved.reverse;
+        state.grid = structuredClone(saved.grid);
+      } else restoreExisting(block);
+      byId('decimal-slots-label').hidden = block.kind !== 'nr';
+      setRegion(block.bounds);
+      updateCellSelector();
+      show('Edit the box, grid or individual bubbles, then confirm this block again.');
+    } catch (error) { state.editing = null; say(error.message); }
   }
 
   function listEntry(list, caption, actions) {
@@ -416,6 +457,12 @@ export function createProfileEditor({ onSave, onClose }) {
   }
   handle('editor-zoom-out', () => { state.zoom = Math.max(1, state.zoom - 1); paint(); });
   handle('editor-zoom-in', () => { state.zoom = Math.min(3, state.zoom + 1); paint(); });
+  handle('editor-pan', () => {
+    state.pan = !state.pan;
+    byId('editor-pan').setAttribute('aria-pressed', String(state.pan));
+    paint();
+    say(state.pan ? 'Drag to pan the preview.' : 'Tap corners or drag a region on the sheet.');
+  });
   handle('reset-blank-corners', resetCorners);
   handle('apply-blank-corners', confirmCorners);
   handle('preview-region', () => { inputRegion(); say('Box previewed.'); });
@@ -460,7 +507,7 @@ export function createProfileEditor({ onSave, onClose }) {
   });
 
   canvas.addEventListener('pointerdown', (event) => {
-    if (!state || event.button !== 0) return;
+    if (!state || state.pan || event.button !== 0) return;
     state.drag = pointAt(event);
     canvas.setPointerCapture(event.pointerId);
   });
@@ -498,13 +545,14 @@ export function createProfileEditor({ onSave, onClose }) {
 
   function open(image, prior) {
     state = {
-      image, prior, matrix: null, zoom: 1, blocks: structuredClone(prior?.components ?? []),
+      image, prior, matrix: null, zoom: 1, pan: false, blocks: structuredClone(prior?.components ?? []),
       features: structuredClone(prior?.features ?? []), drafts: new Map(),
     };
     byId('profile-name').value = prior?.name ?? '';
     byId('profile-orientation').value = prior?.page.orientation ?? (image.width > image.height ? 'landscape' : 'portrait');
     byId('allow-manual-identity').checked = prior?.allowManualIdentity ?? false;
     panel.hidden = false;
+    byId('editor-pan').setAttribute('aria-pressed', 'false');
     resetCorners();
     const corners = proposePageCorners(image);
     state.corners = corners ?? [];

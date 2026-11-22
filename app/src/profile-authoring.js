@@ -231,8 +231,8 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
     fail(validBounds(bounds) && contains(frame, bounds) && bounds.width >= 6 && bounds.height >= 6 &&
       bounds.width <= 132 && bounds.height <= 132 && !verified.some((component) => intersects(bounds, component.bounds)),
     'Printed features must be small on-page regions outside all response blocks.');
-    fail(Array.isArray(samples) && samples.length === 144 && samples.every((sample) => sample === 0 || sample === 1) &&
-      samples.reduce((sum, sample) => sum + sample, 0) >= 14 && samples.reduce((sum, sample) => sum + sample, 0) <= 120,
+    fail(Array.isArray(samples) && samples.length === 144 && samples.every((sample) => Number.isFinite(sample) && sample >= 0 && sample <= 1) &&
+      samples.filter((sample) => sample >= .5).length >= 14 && samples.filter((sample) => sample >= .5).length <= 120,
     'Each printed feature needs distinguishable printed ink and background.');
     return { id: featureId, bounds: { ...bounds }, samples: [...samples] };
   });
