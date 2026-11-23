@@ -2,13 +2,13 @@
 
 Talus Scree Mark is a planned iPhone-first web app for photographing, reading and grading paper answer sheets. It will support multiple-choice bubbles, four-position numerical-response bubbles, optional local handwriting recognition and teacher review. Capture, recognition, grading and storage will run on the device, with explicit local export.
 
-The accepted Milestone 0 foundation provides the project documentation and a synthetic fixture test harness. Milestone 1 is accepted and merged. Its offline shell supports temporary camera capture and JPEG/PNG preview. Milestone 2 is accepted for functional reference-sheet alignment and bubble recognition. The representative physical benchmark moves to M3.
+Milestones 0 through 3 are accepted. The app supports offline capture and import, coded and markerless registration, saved layout profiles, and MC and NR bubble recognition. See the [handoff](HANDOFF.md) and the [M4 proposal](docs/MILESTONE_4_PROPOSAL.md).
 
 ## Run locally
 
 Use Node.js 24 LTS. Run `npm test` for the foundation and capture unit tests, `npm run check:release` to verify the shell asset digests, and `npm start` to open [the local app](http://127.0.0.1:4173/talus-scree-mark/). Run `npm run build` after editing the shell. To regenerate the checked-in reference assets, install Poppler's `pdftoppm` and run `npm run build:reference`, then rebuild the shell. The app and its unit tests use no third-party npm packages.
 
-For physical iPhone testing, use the [GitHub Pages development preview](https://ccheng.github.io/talus-scree-mark/) once published and follow the [iPhone acceptance checklist](docs/MILESTONE_1_IPHONE_CHECKLIST.md). Use mock data only.
+For physical iPhone testing, use the [synthetic development preview](https://ccheng.github.io/talus-scree-mark/development/) or [stable preview](https://ccheng.github.io/talus-scree-mark/) and follow the [iPhone acceptance checklist](docs/MILESTONE_1_IPHONE_CHECKLIST.md). Use mock data only.
 
 ## Project documents
 
@@ -30,5 +30,3 @@ For physical iPhone testing, use the [GitHub Pages development preview](https://
 - [Contributor instructions](AGENTS.md)
 
 Use only synthetic or explicitly approved anonymized fixtures. Keep student papers, answers and recognition results on the device and out of the repository, issues and pull requests.
-
-M3 is accepted. See the [handoff](HANDOFF.md) for its acceptance record and the [M4 proposal](docs/MILESTONE_4_PROPOSAL.md) for the next scope decision.
