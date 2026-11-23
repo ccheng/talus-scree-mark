@@ -450,15 +450,16 @@ try {
     await firstNumber.fill('4');
     await page.locator('#apply-block-renumber').click();
     await page.locator('#editor-status').filter({ hasText: /duplicate|unique|already/i }).waitFor();
-    assert.match(await firstMc.textContent(), /MC1, MC2, MC3/);
+    assert.match(await firstMc.textContent(), /MC1–MC3/);
     assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), []);
     await firstNumber.fill('24');
     await page.locator('#apply-block-renumber').click();
-    await firstMc.filter({ hasText: 'MC24, MC25, MC26' }).waitFor();
+    await firstMc.filter({ hasText: 'MC24–MC26' }).waitFor();
     await page.locator('#enroll-profile').click();
     await editor.waitFor({ state: 'hidden' });
     const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
     const after = profile.components.find(({ kind }) => kind === 'mc');
+    assert.deepEqual(after.items.map(({ id }) => id), ['MC24', 'MC25', 'MC26']);
     const geometry = ({ items }) => items.map(({ bounds, choices }) => ({ bounds, choices }));
     assert.deepEqual(geometry(after), geometry(originalFirstMc), 'Changing item IDs moved printed bubbles');
     const savedNumerical = profile.components.filter(({ kind }) => kind === 'nr').flatMap(({ items }) => items);
