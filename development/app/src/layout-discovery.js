@@ -100,7 +100,7 @@ function writingBoxes(gray, matrix, grid) {
   const { cells, y } = grid.rows[0];
   const sample = (x, top) => inkAt(gray, matrix, x, top) < 150;
   const hits = [];
-  for (let line = y - 38; line <= y - 5; line += .55) {
+  for (let line = y - 38 - grid.spacing; line <= y - 5; line += .55) {
     const horizontal = cells.every(({ x }) =>
       [-.23, -.12, 0, .12, .23].filter((u) => sample(x + u * grid.pitch, line)).length >= 4);
     if (horizontal) hits.push(line);
@@ -146,6 +146,27 @@ function publicCell(symbol, { x, y, radius }) {
   return { symbol, x, y, radius };
 }
 
+function excludePrintedLabels(rings) {
+  // Small outlined characters inside, or immediately above, repeated
+  // larger bubbles are labels. Check the same offset across the row before
+  // discarding an above-bubble candidate from the geometry search.
+  const contained = (small, large) => large.radius >= small.radius * 1.65 &&
+    distance(small, large) < large.radius - small.radius * .5;
+  return rings.filter((ring) => {
+    if (rings.some((candidate) => contained(ring, candidate))) return false;
+    const above = (small, large) => large.radius >= small.radius * 1.75 &&
+      Math.abs(small.x - large.x) < large.radius * .45 && large.y - small.y > large.radius &&
+      large.y - small.y < large.radius * 2.35;
+    const anchor = rings.find((candidate) => above(ring, candidate));
+    if (!anchor) return true;
+    const offset = anchor.y - ring.y;
+    const labels = rings.filter((candidate) => Math.abs(candidate.y - ring.y) < 1.3 &&
+      Math.abs(candidate.radius - ring.radius) < .85 && rings.some((bubble) =>
+        above(candidate, bubble) && Math.abs(bubble.y - candidate.y - offset) < 1.3));
+    return labels.length < 3;
+  });
+}
+
 function inspectBlankLayout(image, page, corners) {
   if (!Array.isArray(corners) || corners.length !== 4 || !corners.every((corner, index) =>
     cross(corner, corners[(index + 1) % 4], corners[(index + 2) % 4]) > 0)) {
@@ -154,8 +175,9 @@ function inspectBlankLayout(image, page, corners) {
   const matrix = pageTransform(page, corners);
   if (!matrix) return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
   const gray = toGrayImage(image);
-  const rings = pageRingCandidates(gray, matrix, page);
-  if (rings.length >= 1800) return { status: 'review', corners, components: [], issues: ['too-many-candidates'] };
+  const candidates = pageRingCandidates(gray, matrix, page, { printedCenters: true });
+  if (candidates.length >= 1800) return { status: 'review', corners, components: [], issues: ['too-many-candidates'] };
+  const rings = excludePrintedLabels(candidates);
   const { output, used } = latticesOf(rings);
   const observedGrids = output.map((grid) => {
     const boxHints = grid.columns === 4 && grid.rows.length >= 8 ? writingBoxes(gray, matrix, grid) : [];

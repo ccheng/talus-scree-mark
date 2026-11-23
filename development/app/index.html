@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="504721e82030f49427bd47c9">
+  <meta name="scree-release" content="c965759ad8a972823ea741fa">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -125,7 +125,7 @@
         <div id="profile-grid-controls" hidden>
           <fieldset>
             <legend>Response region</legend>
-            <p>Draw a box around one bubble block or enter its bounds in Letter points. Exclude names, headings and other non-response areas.</p>
+            <p>Drag across the preview to select one response block, or enter its bounds in Letter points. Leave names and headings outside the region.</p>
             <div class="editor-fields">
               <label>Left <input id="region-x" type="number" step="any"></label>
               <label>Top <input id="region-y" type="number" step="any"></label>
@@ -190,6 +190,16 @@
           </fieldset>
           <h4>Response blocks</h4>
           <ol id="profile-blocks"></ol>
+          <section id="renumber-block" hidden aria-labelledby="renumber-block-heading">
+            <h4 id="renumber-block-heading">Renumber response block</h4>
+            <div class="editor-fields">
+              <label>First item number <input id="block-first-number" inputmode="numeric" type="number" min="1" step="1"></label>
+            </div>
+            <div class="controls">
+              <button id="apply-block-renumber" type="button">Apply item numbers</button>
+              <button id="cancel-block-renumber" type="button">Cancel</button>
+            </div>
+          </section>
           <section id="block-mapping" hidden aria-labelledby="block-mapping-heading">
             <h4 id="block-mapping-heading">Edit numbering and printed symbols</h4>
             <div id="block-mapping-fields" class="editor-fields"></div>

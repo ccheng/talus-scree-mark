@@ -87,7 +87,8 @@ export function loadProfile(id, revision) {
 }
 
 const copyBounds = ({ x, y, width, height }) => ({ x, y, width, height });
-const copyChoices = (choices) => choices.map(({ symbol, x, y, radius }) => ({ symbol, x, y, radius }));
+const copyChoices = (choices, preserveInk = false) => choices.map(({ symbol, x, y, radius, blankInk }) =>
+  ({ symbol, x, y, radius, ...(preserveInk && blankInk !== undefined ? { blankInk } : {}) }));
 
 export function profileRecord(profile) {
   const { width, height, units, origin, orientation } = profile.page;
@@ -99,7 +100,7 @@ export function profileRecord(profile) {
       items: items.map(({ id, kind, bounds, choices, slots }) => ({
         id, kind, bounds: copyBounds(bounds),
         ...(kind === 'mc' ? { choices: copyChoices(choices) } : {
-          slots: slots.map(({ id, choices }) => ({ id, choices: copyChoices(choices) })),
+          slots: slots.map(({ id, choices }) => ({ id, choices: copyChoices(choices, true) })),
         }),
       })),
     })),

@@ -1,5 +1,6 @@
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 import { project } from './projective.js';
+import { maximumPrintedBlankInk } from './marks.js';
 
 const maxGridSide = 64;
 const point = (value) => value && Number.isFinite(value.x) && Number.isFinite(value.y);
@@ -58,7 +59,7 @@ function rasterizeRegion(gray, matrix, region, maxEdge = 840) {
   return { width, height, values, scale, background: quantile(samples, .75) };
 }
 
-function ringCandidates(raster, region, threshold) {
+function ringCandidates(raster, region, threshold, printedCenters = false) {
   const { width, height, values, scale } = raster;
   const visited = new Uint8Array(values.length);
   const queue = new Int32Array(values.length);
@@ -93,8 +94,24 @@ function ringCandidates(raster, region, threshold) {
     const fill = count / (w * h);
     const cx = (left + right) / 2;
     const cy = (top + bottom) / 2;
-    if (radius < 1.5 || radius > 8 || w / h < .70 || w / h > 1.43 || fill < .14 || fill > .78 ||
-        values[Math.round(cy) * width + Math.round(cx)] < threshold) continue;
+    if (radius < 1.5 || radius > 8 || w / h < .70 || w / h > 1.43 || fill < .14 || fill > .78) continue;
+    const lightAt = (x, y) => values[Math.round(y) * width + Math.round(x)] >= threshold;
+    if (!lightAt(cx, cy)) {
+      if (!printedCenters) continue;
+      // A printed numeral can pass through the center of a valid circle.
+      // Keep a candidate only when its perimeter remains circular and some
+      // paper is still visible around the glyph.
+      let visibleInterior = 0;
+      let circumference = 0;
+      for (let i = 0; i < 12; i++) {
+        const angle = i * Math.PI / 6;
+        const dx = Math.cos(angle) * (w - 1) / 2;
+        const dy = Math.sin(angle) * (h - 1) / 2;
+        if (lightAt(cx + .55 * dx, cy + .55 * dy)) visibleInterior++;
+        if ([.76, .87, .98].some((step) => !lightAt(cx + step * dx, cy + step * dy))) circumference++;
+      }
+      if (visibleInterior < 5 || circumference < 9) continue;
+    }
     candidates.push({ x: region.x + cx / scale, y: region.y + cy / scale, radius });
   }
   return candidates;
@@ -142,12 +159,12 @@ function fitLattice(candidates, rowCount, columnCount) {
   return { rows: rows.length, columns: columns.length, cells, missing, conflicts, radius, candidates: candidates.length };
 }
 
-export function proposeGrid(image, pageToSource, region, { rows, columns } = {}) {
+export function proposeGrid(image, pageToSource, region, { rows, columns, printedCenters = false } = {}) {
   if (!validBounds(region) || (rows !== undefined && !validCount(rows)) || (columns !== undefined && !validCount(columns))) {
     throw new TypeError('Draw a region and choose valid row and column counts.');
   }
   const raster = rasterizeRegion(toGrayImage(image), pageToSource, region);
-  const settings = [.65, .82].map((ratio) => ringCandidates(raster, region, raster.background * ratio));
+  const settings = [.65, .82].map((ratio) => ringCandidates(raster, region, raster.background * ratio, printedCenters));
   const fits = settings.map((candidates) => fitLattice(candidates, rows, columns)).filter(Boolean);
   const quality = (fit) => fit.cells.length - fit.conflicts.length * 2 - (fit.missing.length * .2);
   fits.sort((a, b) => quality(b) - quality(a));
@@ -159,13 +176,13 @@ export function proposeGrid(image, pageToSource, region, { rows, columns } = {})
 }
 
 export function pageRingCandidates(gray, pageToSource, page, {
-  minRadius = 2.3, maxRadius = 7, margin = 13, limit = 1800,
+  minRadius = 2.3, maxRadius = 7, margin = 13, limit = 1800, printedCenters = false,
 } = {}) {
   const region = { x: margin, y: margin, width: page.width - 2 * margin, height: page.height - 2 * margin };
   const raster = rasterizeRegion(gray, pageToSource, region, 1680);
   const candidates = [];
   for (const threshold of [.64, .82]) {
-    for (const candidate of ringCandidates(raster, region, raster.background * threshold)) {
+    for (const candidate of ringCandidates(raster, region, raster.background * threshold, printedCenters)) {
       if (candidate.radius < minRadius || candidate.radius > maxRadius || candidates.some((entry) =>
         Math.hypot(entry.x - candidate.x, entry.y - candidate.y) < 1.5)) continue;
       candidates.push(candidate);
@@ -200,14 +217,16 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
     const symbols = new Set();
     fail(Array.isArray(raw) && raw.length >= (kind === 'mc' ? 2 : 1) && raw.length <= 13, 'An item or slot has an unsupported number of symbols.');
     for (const entry of raw) {
-      const { symbol, x, y, radius } = entry ?? {};
+      const { symbol, x, y, radius, blankInk } = entry ?? {};
       fail(typeof symbol === 'string' && (kind === 'mc' ? /^[A-Z0-9]{1,5}$/ : /^[0-9.\-+]$/).test(symbol) &&
         !symbols.has(symbol), 'Each choice in an item or slot needs a unique supported symbol.');
       const bubbleBounds = { x: x - radius, y: y - radius, width: 2 * radius, height: 2 * radius };
       fail(point({ x, y }) && positive(radius) && radius <= 22 && contains(bounds, bubbleBounds),
         'A bubble center or radius is outside its assigned region.');
       symbols.add(symbol);
-      const bubble = { symbol, x, y, radius };
+      fail(blankInk === undefined || (kind === 'nr' && Number.isFinite(blankInk) && blankInk >= 0 &&
+        blankInk <= maximumPrintedBlankInk), 'A numerical bubble has an invalid blank ink baseline.');
+      const bubble = { symbol, x, y, radius, ...(blankInk === undefined ? {} : { blankInk }) };
       allBubbles.push(bubble);
       result.push(bubble);
     }
@@ -276,4 +295,19 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
     components: verified, features: sanitized, allowManualIdentity: Boolean(allowManualIdentity),
     provenance: { source: 'teacher-confirmed-blank' },
   };
+}
+
+export function renumberProfileBlock(page, components, blockId, first) {
+  const block = components.find(({ id }) => id === blockId);
+  fail(block && Number.isSafeInteger(first) && first > 0 && Number.isSafeInteger(first + block.items.length - 1),
+    'Enter a positive first item number.');
+  const prefix = block.kind === 'mc' ? 'MC' : 'NR';
+  const items = block.items.map((item, index) => {
+    const id = prefix + (first + index);
+    if (item.kind === 'mc') return { ...item, id };
+    return { ...item, id, slots: item.slots.map((slot, position) => ({ ...slot, id: `${id}.${position + 1}` })) };
+  });
+  const updated = components.map((component) => component === block ? { ...block, items } : component);
+  createMarkerlessProfile({ id: 'draft', name: 'Draft', revision: 1, page, components: updated });
+  return updated;
 }
