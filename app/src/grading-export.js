@@ -84,6 +84,27 @@ function validateTemplate(template) {
   }), 'Invalid template mapping.');
 }
 
+const unresolvedStatuses = ['unreadable', 'ambiguous', 'multiple'];
+
+function consistentObservation(item, raw) {
+  if (raw?.kind !== item.kind || typeof raw.review !== 'boolean') return false;
+  const unresolved = unresolvedStatuses.includes(raw.status);
+  if (unresolved && (!raw.review || raw.rawText !== null)) return false;
+  if (item.kind === 'mc') {
+    if (unresolved || raw.status === 'blank') return raw.rawText === null && (raw.symbol ?? null) === null;
+    return raw.status === 'single' && item.choices.includes(raw.rawText) &&
+      (raw.symbol === undefined || raw.symbol === raw.rawText);
+  }
+  if (!Array.isArray(raw.slots) || raw.slots.length !== 4 || !raw.slots.every((slot, index) =>
+    slot && (slot.symbol === null || item.slots[index].includes(slot.symbol)) &&
+    (slot.status === undefined || (slot.symbol === null
+      ? ['blank', ...unresolvedStatuses].includes(slot.status) : slot.status === 'single')))) return false;
+  const hasUnresolved = raw.slots.some(({ status }) => unresolvedStatuses.includes(status));
+  if (unresolved) return hasUnresolved;
+  const literal = raw.slots.map(({ symbol }) => symbol ?? ' ').join('');
+  return !hasUnresolved && raw.rawText === literal && raw.status === (literal === '    ' ? 'blank' : 'single');
+}
+
 export async function parseBackup(source) {
   const backup = JSON.parse(source);
   requireValid(backup?.format === format && backup.version === version, 'Unsupported Scree Mark backup format or version.');
@@ -104,11 +125,8 @@ export async function parseBackup(source) {
     'Invalid saved scan.');
     unique(scan.observation.items, 'observation');
     requireValid(scan.observation.items.length === scan.template.items.length &&
-      scan.template.items.every((item) => scan.observation.items.some((raw) =>
-        raw.id === item.id && raw.kind === item.kind && typeof raw.review === 'boolean' &&
-        ['single', 'blank', 'unreadable', 'ambiguous', 'multiple'].includes(raw.status) &&
-        (raw.rawText === null || typeof raw.rawText === 'string') &&
-        (item.kind !== 'nr' || Array.isArray(raw.slots) && raw.slots.length === 4))), 'Invalid recognition evidence.');
+      scan.template.items.every((item) => consistentObservation(item,
+        scan.observation.items.find(({ id }) => id === item.id))), 'Invalid or inconsistent recognition evidence.');
     const key = scan.keyId === null ? null : keys.get(scan.keyId);
     requireValid(scan.keyId === null || key && sameTemplate(scan.template, key.template), 'Incompatible or missing answer key.');
     if (scan.regrades !== undefined) {

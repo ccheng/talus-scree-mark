@@ -43,9 +43,12 @@ async function snapshot(page) {
 }
 
 async function download(page, control, file) {
-  await page.locator(control).click();
   const link = page.locator(`#grading-download a[download="${file}"]`);
+  const prior = await link.count() ? await link.getAttribute('href') : null;
+  await page.locator(control).click();
   await link.waitFor();
+  await page.waitForFunction(({ file, prior }) =>
+    document.querySelector(`#grading-download a[download="${file}"]`)?.getAttribute('href') !== prior, { file, prior });
   const event = page.waitForEvent('download');
   await link.click();
   const transfer = await event;
@@ -139,6 +142,22 @@ try {
     await appStatus(page).filter({ hasText: /result and source photograph saved locally/i }).waitFor();
     const { keys: initialKeys, scans: [original] } = await snapshot(page);
     assert(original.bytes > 1000);
+    const samePixels = await page.evaluate(async ({ path, id }) => {
+      const scans = (await (await import(path)).loadGrading()).scans;
+      const source = document.getElementById('sheet-canvas');
+      const saved = await createImageBitmap(scans.find((scan) => scan.id === id).photo);
+      try {
+        if (saved.width !== source.width || saved.height !== source.height) return false;
+        const restored = document.createElement('canvas');
+        restored.width = saved.width;
+        restored.height = saved.height;
+        restored.getContext('2d').drawImage(saved, 0, 0);
+        const imageBytes = (canvas) => canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+        const working = imageBytes(source);
+        return imageBytes(restored).every((value, index) => value === working[index]);
+      } finally { saved.close(); }
+    }, { path: source('grading-store.js'), id: original.id });
+    assert(samePixels, 'The retained PNG did not reproduce the exact recognition pixels');
     assert.equal(original.observation.items.find(({ id }) => id === 'MC1').rawText, 'B');
     assert.equal(original.observation.items.find(({ id }) => id === 'NR1').rawText, '004 ');
     assert.deepEqual(original.history.map(({ kind }) => kind), ['correct', 'undo', 'correct', 'award']);
@@ -210,7 +229,8 @@ try {
     const noPhoto = JSON.parse(backupWithDeletedPhoto).scans.find(({ id }) => id === original.id);
     assert.equal(noPhoto.photoStatus, 'deleted');
     assert.equal(noPhoto.photo, null);
-    assert.deepEqual(noPhoto.observation, original.observation);
+    // JSON serializes negative zero as zero; its numerical transform is unchanged.
+    assert.deepEqual(noPhoto.observation, JSON.parse(JSON.stringify(original.observation)));
 
     await page.reload();
     const saved = page.locator('#grading-saved');
@@ -258,6 +278,18 @@ try {
     await page.locator('#grading-saved').selectOption(deletedImage.id);
     await page.getByText('Source photograph and review history', { exact: true }).click();
     assert.match(await page.locator('#grading-photo-status').textContent(), /deleted/i);
+    await waitGrade(page, '2/5 · 0 pending · final');
+    await page.locator('#grading-item').selectOption('MC1');
+    await page.locator('#grading-answer').fill('B');
+    await page.locator('#grading-correct').click();
+    await appStatus(page).filter({ hasText: /review updated locally/i }).waitFor();
+    await waitGrade(page, '3/5 · 0 pending · final');
+    const exportedAgain = JSON.parse(await download(page, '#grading-json', 'scree-backup.json'));
+    const corrected = exportedAgain.scans.find(({ id }) => id === deletedImage.id);
+    assert.deepEqual(corrected.observation, deletedImage.observation);
+    assert.equal(corrected.history.length, deletedImage.history.length + 1);
+    assert.equal(corrected.grade.items.find(({ id }) => id === 'MC1').effective, 'B');
+    assert.equal(corrected.photo, null);
     await page.getByText('Result and batch actions', { exact: true }).click();
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#grading-delete-batch').click();
