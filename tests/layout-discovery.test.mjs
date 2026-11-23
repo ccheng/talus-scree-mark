@@ -13,6 +13,7 @@ const page = { width: 612, height: 792, units: 'pt', origin: 'top-left', orienta
 
 function syntheticBlank({
   missing = false, marks = false, numeric = false, digitInk = false, tallBoxes = false, mcRadius = 3.4, answer, rival,
+  upperDecimal = false, numericPitch = 24, missingDigit,
 } = {}) {
   const width = 1225, height = 1585;
   const pixels = new Uint8ClampedArray(width * height * 4).fill(255);
@@ -40,7 +41,7 @@ function syntheticBlank({
   }
   if (numeric) {
     for (let pos = 0; pos < 4; pos++) {
-      const x = 367 + pos * 24;
+      const x = 367 + pos * numericPitch;
       const halfWidth = tallBoxes ? 12 : 8;
       const left = x - halfWidth, right = x + halfWidth;
       const top = tallBoxes ? 388 : 413;
@@ -57,8 +58,10 @@ function syntheticBlank({
           paint(x - 2.5, y - 2.5, x + 2.5, y + 2.5, (px, py) => Math.hypot(px - x, py - y) < 2.5, rival.level);
         }
       }
-      for (let digit = 0; digit < 10; digit++) numericChoice(String(digit), 447 + digit * 10);
-      if (pos === 1 || pos === 2) numericChoice('.', 547);
+      for (let digit = 0; digit < 10; digit++) {
+        if (digit !== missingDigit) numericChoice(String(digit), 447 + digit * 10);
+      }
+      if (pos === 1 || pos === 2) numericChoice('.', upperDecimal ? 437 : 547);
     }
   }
   return { id: 'synthetic-layout', width, height, pixels };
@@ -81,6 +84,22 @@ test('discovers a whole-sheet MC grid and a boxed NR grid with lower decimal pos
     { batch: { profileId: 'layout', revision: 1 } });
   assert.equal(result.status, 'read');
   assert.deepEqual(result.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null, '7   ']);
+});
+
+test('wide upper-decimal NR requires all ten observed digit rows', () => {
+  const options = { numeric: true, upperDecimal: true, numericPitch: 37.5, tallBoxes: true };
+  const complete = discoverBlankLayout(syntheticBlank(options), page);
+  assert.equal(complete.status, 'proposed');
+  const [item] = complete.components.find(({ kind }) => kind === 'nr').items;
+  assert.deepEqual(item.slots.map(({ choices }) => choices.map(({ symbol }) => symbol).join('')), [
+    '0123456789', '.0123456789', '.0123456789', '0123456789',
+  ]);
+  for (const missingDigit of [0, 9]) {
+    const incomplete = discoverBlankLayout(syntheticBlank({ ...options, missingDigit }), page);
+    assert.equal(incomplete.status, 'review');
+    assert(incomplete.issues.includes('unusual-nr-grid'));
+    assert(!incomplete.components.some(({ kind }) => kind === 'nr'));
+  }
 });
 
 test('a missing bubble in a repeated row is exposed for teacher review', () => {

@@ -35,6 +35,8 @@ Recognizing the customized blank as a completed sheet also exposed dense printed
 
 The supplied originals and any local rasters of them are excluded from GitHub. The public preview provides synthetic analogues. For an original PDF, first render or save its page as an image on-device. The camera-style fixture is a simulated perspective, blur and compression test. Physical capture, touch interaction and Safari/PWA storage checks still require the iPhone.
 
-### Remaining acceptance blocker
+### Focused discovery correction
 
-The clean document analogue passed all 18 observations. On the simulated camera analogue, the independent test found that a heading row could still enter the right MC proposal. The proposal then contained 19 rather than 18 items, with shifted MC identifiers and an incorrect pending count. The four NR blocks were discovered. Inspect the overlays before confirming each profile and do not use the automatic camera proposal if it contains an extra row. This candidate is available for synthetic testing, with M4 acceptance open.
+The previous simulated-camera build admitted a choice-heading row after an extrapolated spacing score selected a two-row suffix ahead of the complete observed three-row run. Lattice selection now compares directly observed cells first and uses repeated spacing to break ties. The two genuine right-column groups then join across the printed gap without pulling in the heading.
+
+The previously passing M3 four-box form also exposed that ranking error. The Alberta path discarded its 37.43 pt upper decimal pair because it used a separate 30 pt pitch ceiling. The generic path then chose the nine-row suffix over the complete ten-row run. The Alberta path now shares the generic 45 pt ceiling. The digit-row spacing checks and requirement for all ten complete rows remain in force. The negative control removes the first or final digit row and checks that neither result can be proposed as complete.
