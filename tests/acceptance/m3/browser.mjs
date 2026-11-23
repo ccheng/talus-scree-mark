@@ -570,6 +570,22 @@ try {
     assert.notEqual(await canvas.getAttribute('data-dragging-region'), 'true');
     assert(Math.abs(Number(await region.inputValue()) - (.32 - .13) * pageShape.width) < 4);
     assert(Math.abs(Number(await page.locator('#region-height').inputValue()) - (.32 - .15) * pageShape.height) < 4);
+    const selectedRegion = await region.inputValue();
+    const rectified = await canvas.evaluate((element) => element.toDataURL());
+    const blocks = await page.locator('#profile-blocks').innerText();
+    await page.locator('#reset-blank-corners').click();
+    assert.equal(await page.locator('#enroll-profile').isDisabled(), true);
+    await canvas.scrollIntoViewIfNeeded();
+    const raw = await canvas.boundingBox();
+    assert(raw);
+    await dispatch('touchStart', [{ x: raw.x + 4, y: raw.y + 4 }]);
+    await dispatch('touchMove', [{ x: raw.x + 25, y: raw.y + 25 }]);
+    await dispatch('touchEnd', []);
+    await page.locator('#cancel-blank-corners').click();
+    assert.equal(await canvas.evaluate((element) => element.toDataURL()), rectified);
+    assert.equal(await region.inputValue(), selectedRegion);
+    assert.equal(await page.locator('#profile-blocks').innerText(), blocks);
+    assert.equal(await page.locator('#enroll-profile').isEnabled(), true);
   }, { isMobile: true, hasTouch: true });
 
   await group('Automatic discovery exposes incomplete geometry and permits explicit correction', async (page) => {

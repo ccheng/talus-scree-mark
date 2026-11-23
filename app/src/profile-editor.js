@@ -136,10 +136,17 @@ export function createProfileEditor({ onSave, onClose }) {
   }
 
   function show(message) {
+    const placingCorners = Boolean(state.cornerEdit);
+    byId('cancel-blank-corners').hidden = !placingCorners;
+    byId('profile-orientation').disabled = placingCorners;
+    byId('reset-blank-corners').disabled = state.saving || Boolean(state.discoveryWorker);
+    byId('review-discovery').hidden = placingCorners || discoveryStatus.dataset.status !== 'review' ||
+      !state.discoveryIssues.length || state.discoveryIssues.includes('frame-aspect');
+    saveTemplate.disabled = !state.matrix || state.saving || conflictingResponseIds(state.blocks).size > 0;
     byId('profile-grid-controls').hidden = !state.matrix;
     byId('apply-blank-corners').disabled = state.corners.length !== 4 || Boolean(state.matrix);
-    byId('discover-layout').hidden = Boolean(state.prior || state.discoveryWorker || state.blocks.length);
-    byId('clear-discovery').hidden = Boolean(state.prior) || !state.blocks.length;
+    byId('discover-layout').hidden = Boolean(placingCorners || state.prior || state.discoveryWorker || state.blocks.length);
+    byId('clear-discovery').hidden = placingCorners || Boolean(state.prior) || !state.blocks.length;
     if (message) say(message);
     paint();
   }
@@ -218,12 +225,41 @@ export function createProfileEditor({ onSave, onClose }) {
     show('Tap the blank page corners in sheet order. Existing regions still use the same sheet coordinates.');
   }
 
+  function beginCornerEdit() {
+    if (!state.cornerEdit) state.cornerEdit = { corners: state.corners, matrix: state.matrix };
+    state.matrix = null;
+    state.drag = null;
+    state.cornerDrag = -1;
+    state.corners = proposePageCorners(state.image) ?? insetCorners(state.image);
+    sourceOnCanvas(background, state.image);
+    show('Drag the numbered handles, then use these corners or cancel.');
+  }
+
+  function cancelCornerEdit() {
+    if (!state.cornerEdit) return;
+    const { corners, matrix } = state.cornerEdit;
+    state.cornerEdit = null;
+    state.corners = corners;
+    state.matrix = matrix;
+    state.drag = null;
+    state.cornerDrag = -1;
+    if (matrix) {
+      rectifiedOnCanvas(background, state.image, matrix, page(), canvas.dataset.pose === 'virtual-corners');
+    }
+    show(matrix ? 'Restored the previous corners and response adjustments.' : 'Corner placement canceled.');
+  }
+
   function confirmCorners() {
     const ordered = state.corners.length === 4 && state.corners.every((point, index, corners) =>
       cross(point, corners[(index + 1) % 4], corners[(index + 2) % 4]) > 0);
     if (!ordered) return say('Place the corners clockwise in sheet order, starting at top left.');
     const matrix = pageTransform(page(), state.corners);
     if (!matrix) return say('The corners do not form a usable page. Place them again.');
+    if (state.cornerEdit) {
+      state.cornerEdit = null;
+      delete canvas.dataset.pose;
+      delete discoveryStatus.dataset.pose;
+    }
     state.matrix = matrix;
     rectifiedOnCanvas(background, state.image, matrix, page());
     show('Draw a box around one answer block.');
@@ -729,12 +765,8 @@ export function createProfileEditor({ onSave, onClose }) {
     paint();
     say(state.pan ? 'Drag to pan the preview.' : 'Tap corners or drag a region on the sheet.');
   });
-  handle('reset-blank-corners', resetCorners);
-  byId('reset-blank-corners').addEventListener('click', () => {
-    if (!state) return;
-    state.corners = proposePageCorners(state.image) ?? insetCorners(state.image);
-    show('Drag the numbered handles to the matching corners, then use these corners.');
-  });
+  handle('reset-blank-corners', beginCornerEdit);
+  handle('cancel-blank-corners', cancelCornerEdit);
   handle('apply-blank-corners', confirmCorners);
   handle('discover-layout', () => findLayout(state.corners.length === 4));
   handle('clear-discovery', () => {
@@ -773,7 +805,7 @@ export function createProfileEditor({ onSave, onClose }) {
   handle('confirm-block', confirmBlock);
   handle('cancel-profile-editor', () => { close(); onClose(); });
   handle('enroll-profile', async () => {
-    if (state.saving || conflictingResponseIds(state.blocks).size) return;
+    if (!state.matrix || state.saving || conflictingResponseIds(state.blocks).size) return;
     if (state.discoveryWorker || state.discoveryIssues?.length) {
       say('Resolve the outstanding layout review before saving.');
       return;
