@@ -12,6 +12,7 @@ const { families, orientationControl, discoveryControl, fourBoxControl } = JSON.
 assert(families.length === 3 && families.every(({ fixtures }) => fixtures.filter(({ mode }) => mode === 'standard').length >= 8));
 const poses = JSON.parse(await readFile(new URL('pose-oracles.json', fixtureFolder), 'utf8'));
 const interleavedCrop = JSON.parse(await readFile(new URL('interleaved-crop-oracles.json', fixtureFolder), 'utf8'));
+const alberta = JSON.parse(await readFile(new URL('alberta-oracles.json', fixtureFolder), 'utf8'));
 const cropAttachment = fileURLToPath(new URL('./inputs/cropped-interleaved-blank.jpeg', import.meta.url));
 const encoded = (file) => readFile(new URL(file, fixtureFolder), 'base64');
 const server = await openServer(appPath);
@@ -420,6 +421,95 @@ try {
     assertDiscoveredMapping(profile, oracleInPoints);
     await confirmAndRead(page, fixtureFilePath(fixture.filled), 'four-writing-boxes-marked.jpg', 'image/jpeg', fixture.truth);
   });
+
+  await group('Alberta printed numerical labels, blank and decimal readings, and geometry-preserving renumber', async (page) => {
+    await installAdapters(page);
+    const proposal = await page.evaluate(async ({ input, shape }) => {
+      const blank = await window.m3qa.loadImage(input, 'alberta-printed-blank');
+      return window.m3qa.discoverBlankLayout(blank, shape);
+    }, { input: await encoded(alberta.blank), shape: pageShape });
+    assert.equal(proposal.status, 'proposed', proposal.issues.join(', '));
+    const numerical = proposal.diagnostics.filter(({ kind }) => kind === 'nr');
+    assert.deepEqual(numerical.map(({ writingBoxes, mappingReview }) => [writingBoxes.length, mappingReview]), Array.from({ length: 4 }, () => [4, true]));
+    for (const { items } of proposal.components.filter(({ kind }) => kind === 'nr')) {
+      const [item] = items;
+      assert.deepEqual(item.slots.map(({ choices }) => choices.map(({ symbol }) => symbol).join('')), [
+        '0123456789', '.0123456789', '.0123456789', '0123456789',
+      ]);
+    }
+    const originalFirstMc = proposal.components.find(({ kind }) => kind === 'mc');
+    assert.deepEqual(originalFirstMc.items.map(({ id }) => id), ['MC1', 'MC2', 'MC3']);
+    await selectImage(page, fixtureFilePath(alberta.blank), 'printed-blank.png', 'image/png', '#setup-profile');
+    const editor = page.locator('#profile-editor');
+    await editor.waitFor();
+    await page.locator('#profile-name').fill('Alberta printed response QA');
+    await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    const firstMc = page.locator('#profile-blocks [data-block-kind="mc"]').first();
+    await firstMc.getByRole('button', { name: /Renumber block/i }).click();
+    const firstNumber = page.locator('#block-first-number');
+    await firstNumber.fill('4');
+    await page.locator('#apply-block-renumber').click();
+    await page.locator('#editor-status').filter({ hasText: /duplicate|unique|already/i }).waitFor();
+    assert.match(await firstMc.textContent(), /MC1, MC2, MC3/);
+    assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), []);
+    await firstNumber.fill('24');
+    await page.locator('#apply-block-renumber').click();
+    await firstMc.filter({ hasText: 'MC24, MC25, MC26' }).waitFor();
+    await page.locator('#enroll-profile').click();
+    await editor.waitFor({ state: 'hidden' });
+    const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
+    const after = profile.components.find(({ kind }) => kind === 'mc');
+    const geometry = ({ items }) => items.map(({ bounds, choices }) => ({ bounds, choices }));
+    assert.deepEqual(geometry(after), geometry(originalFirstMc), 'Changing item IDs moved printed bubbles');
+    const savedNumerical = profile.components.filter(({ kind }) => kind === 'nr').flatMap(({ items }) => items);
+    assert(savedNumerical.every(({ slots }) => slots.every(({ choices }) => choices
+      .filter(({ symbol }) => symbol !== '.').every(({ blankInk }) => Number.isFinite(blankInk)))));
+    const oracle = { blocks: alberta.components.map(scaleComponent), itemOrder: alberta.components.flatMap(({ items }) => items.map(({ id }) => id)) };
+    assertDiscoveredMapping(profile, oracle);
+
+    const beforeMarks = await page.evaluate(async ({ input, profile }) => {
+      const image = await window.m3qa.loadImage(input, 'alberta-labeled-blank');
+      return window.m3qa.readProfileSheet(image, profile, { batch: { profileId: profile.id, revision: profile.revision } });
+    }, { input: await encoded(alberta.blank), profile });
+    const clean = oracle.itemOrder.map((id) => ({ id, status: 'blank', value: id.startsWith('NR') ? '    ' : null, review: false }));
+    assertExactRead(beforeMarks, clean, 'Printed glyphs alone must read as blank');
+    assert(beforeMarks.items.some(({ slots }) => slots?.some(({ choices }) => choices.some(({ rawScore, score }) => rawScore > .11 && score <= .105))),
+      'The printed-only validation must actually exercise baseline subtraction');
+    const marked = oracle.itemOrder.map((id) => alberta.truth[id]);
+    await confirmAndRead(page, fixtureFilePath(alberta.marked), 'printed-marked.png', 'image/png', marked);
+    const uncertain = page.locator('#recognition-results [data-item-id="NR4"]');
+    assert.equal(await uncertain.getAttribute('data-review'), 'true');
+    assert.equal(await uncertain.locator('[data-raw-text]').count(), 0);
+    console.log('  Four writing boxes and 42 labeled bubbles in each of four numerical blocks; both decimal positions and printed-only blanks match the literal oracle.');
+  });
+
+  await group('Touch dragging paints a live template region and commits sheet coordinates', async (page, context) => {
+    const fixture = resolve(appPath, 'fixtures/m3/mixed-blank.png');
+    await selectImage(page, fixture, 'region-practice.png', 'image/png', '#setup-profile');
+    await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    const canvas = page.locator('#profile-canvas');
+    await canvas.scrollIntoViewIfNeeded();
+    const bounds = await canvas.boundingBox();
+    assert(bounds);
+    const first = { x: bounds.x + bounds.width * .13, y: bounds.y + bounds.height * .15 };
+    const last = { x: bounds.x + bounds.width * .32, y: bounds.y + bounds.height * .32 };
+    const region = page.locator('#region-width');
+    const oldWidth = await region.inputValue();
+    await canvas.evaluate((element) => { window.originalTemplateCanvas = element.toDataURL(); });
+    const touch = await context.newCDPSession(page);
+    async function dispatch(type, touchPoints) {
+      await touch.send('Input.dispatchTouchEvent', { type, touchPoints });
+    }
+    await dispatch('touchStart', [first]);
+    await dispatch('touchMove', [last]);
+    assert.equal(await canvas.getAttribute('data-dragging-region'), 'true');
+    assert(await canvas.evaluate((element) => element.toDataURL() !== window.originalTemplateCanvas), 'Canvas did not repaint during touch move');
+    assert.equal(await region.inputValue(), oldWidth, 'The live touch should precede committing the fields');
+    await dispatch('touchEnd', []);
+    assert.notEqual(await canvas.getAttribute('data-dragging-region'), 'true');
+    assert(Math.abs(Number(await region.inputValue()) - (.32 - .13) * pageShape.width) < 4);
+    assert(Math.abs(Number(await page.locator('#region-height').inputValue()) - (.32 - .15) * pageShape.height) < 4);
+  }, { isMobile: true, hasTouch: true });
 
   await group('Automatic discovery exposes incomplete geometry and permits explicit correction', async (page) => {
     const fixture = discoveryControl;

@@ -1,22 +1,25 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { discoverBlankLayout } from '../app/src/layout-discovery.js';
-import { createMarkerlessProfile } from '../app/src/profile-authoring.js';
+import { createMarkerlessProfile, renumberProfileBlock } from '../app/src/profile-authoring.js';
+import { measureNumericalBlankInk, readBubbleRegions } from '../app/src/marks.js';
+import { toGrayImage } from '../app/src/omr-image.js';
+import { profileRecord } from '../app/src/profile-store.js';
 import { readProfileSheet } from '../app/src/profile-omr.js';
 import { pageTransform } from '../app/src/markerless-registration.js';
 import { invertProjective, project } from '../app/src/projective.js';
 
 const page = { width: 612, height: 792, units: 'pt', origin: 'top-left', orientation: 'portrait' };
 
-function syntheticBlank({ missing = false, marks = false, numeric = false } = {}) {
+function syntheticBlank({ missing = false, marks = false, numeric = false, digitInk = false, answer, rival } = {}) {
   const width = 1225, height = 1585;
   const pixels = new Uint8ClampedArray(width * height * 4).fill(255);
-  function paint(x0, y0, x1, y1, contains) {
+  function paint(x0, y0, x1, y1, contains, level = 22) {
     for (let y = Math.floor(y0 * 2); y <= y1 * 2; y++) {
       for (let x = Math.floor(x0 * 2); x <= x1 * 2; x++) {
         if (!contains(x / 2, y / 2)) continue;
         const start = 4 * (y * width + x);
-        pixels[start] = pixels[start + 1] = pixels[start + 2] = 22;
+        pixels[start] = pixels[start + 1] = pixels[start + 2] = Math.min(pixels[start], level);
       }
     }
   }
@@ -37,8 +40,19 @@ function syntheticBlank({ missing = false, marks = false, numeric = false } = {}
       const x = 367 + pos * 24;
       const left = x - 8, right = x + 8, top = 413, bottom = 426;
       paint(left, top, right, bottom, (px, py) => px - left < 1 || right - px < 1 || py - top < 1 || bottom - py < 1);
-      for (let digit = 0; digit < 10; digit++) ring(x, 447 + digit * 10, marks && pos === 0 && digit === 7);
-      if (pos === 1 || pos === 2) ring(x, 547);
+      function numericChoice(symbol, y) {
+        ring(x, y, (marks && pos === 0 && symbol === '7') || answer?.[pos] === symbol);
+        if (digitInk && symbol !== '.') {
+          // Compact interior strokes leave a real circle separate from the glyph.
+          paint(x - 1.7, y - 1.7, x + 1.7, y + 1.7, (px, py) =>
+            Math.abs(px - x) <= .44 || (Math.abs(py - y) < .45 && px < x), 50);
+        }
+        if (rival?.position === pos && rival.symbol === symbol) {
+          paint(x - 2.5, y - 2.5, x + 2.5, y + 2.5, (px, py) => Math.hypot(px - x, py - y) < 2.5, rival.level);
+        }
+      }
+      for (let digit = 0; digit < 10; digit++) numericChoice(String(digit), 447 + digit * 10);
+      if (pos === 1 || pos === 2) numericChoice('.', 547);
     }
   }
   return { id: 'synthetic-layout', width, height, pixels };
@@ -220,4 +234,56 @@ test('a known profile can fit virtual corners when only margins are cropped', ()
   assert.equal(clipped.registration.diagnostics.responseGeometry.status, 'failed');
   assert(clipped.registration.diagnostics.pagePose.discarded.reason);
   assert.deepEqual(clipped.items, []);
+});
+
+test('printed numerical centers supply a blank baseline without masking marks or reviews', () => {
+  const blank = syntheticBlank({ numeric: true, digitInk: true });
+  const proposal = discoverBlankLayout(blank, page);
+  assert.equal(proposal.status, 'proposed');
+  const matrix = pageTransform(page, proposal.corners);
+  const components = measureNumericalBlankInk(toGrayImage(blank), matrix, proposal.components);
+  const [mc, nr] = components;
+  assert.deepEqual(mc, proposal.components[0]);
+  assert(nr.items[0].slots.every(({ choices }) => choices.filter(({ blankInk }) => blankInk !== undefined).length === 10));
+  const profile = createMarkerlessProfile({ id: 'digit-baseline', revision: 1, name: 'Synthetic', page, components });
+  const persisted = profileRecord(profile);
+  const [item] = persisted.components[1].items;
+  assert.deepEqual(item.slots, nr.items[0].slots);
+  const inspect = (image) => readBubbleRegions(toGrayImage(image), matrix, [item])[0];
+  assert.equal(inspect(blank).rawText, '    ');
+  for (const answer of ['0.25', '23.7']) {
+    const found = inspect(syntheticBlank({ numeric: true, digitInk: true, answer }));
+    assert.equal(found.rawText, answer);
+    assert.equal(found.review, false);
+  }
+  for (const [level, expected] of [[195, 'ambiguous'], [22, 'multiple']]) {
+    const found = inspect(syntheticBlank({ numeric: true, digitInk: true, answer: '1842',
+      rival: { position: 1, symbol: '.', level } }));
+    assert.equal(found.status, expected);
+    assert.equal(found.rawText, null);
+    assert.equal(found.review, true);
+  }
+  const older = readBubbleRegions(toGrayImage(blank), matrix, proposal.components[1].items)[0];
+  assert.notEqual(older.status, 'blank');
+  assert.equal('blankInk' in proposal.components[0].items[0].choices[0], false);
+});
+
+test('block renumbering changes saved IDs, preserves mappings and rejects cross-block collisions', () => {
+  const blank = syntheticBlank({ numeric: true, digitInk: true });
+  const proposal = discoverBlankLayout(blank, page);
+  const components = measureNumericalBlankInk(toGrayImage(blank), pageTransform(page, proposal.corners), proposal.components);
+  const [mc, nr] = components;
+  const first = renumberProfileBlock(page, components, mc.id, 24);
+  assert.deepEqual(first[0].items.map(({ id }) => id), ['MC24', 'MC25', 'MC26', 'MC27', 'MC28', 'MC29']);
+  assert.deepEqual(first[0].items.map(({ id, ...item }) => item), mc.items.map(({ id, ...item }) => item));
+  const final = renumberProfileBlock(page, first, nr.id, 7);
+  assert.equal(final[1].items[0].id, 'NR7');
+  assert.deepEqual(final[1].items[0].slots.map(({ id }) => id), ['NR7.1', 'NR7.2', 'NR7.3', 'NR7.4']);
+  assert.deepEqual(final[1].items[0].slots.map(({ choices }) => choices), nr.items[0].slots.map(({ choices }) => choices));
+  assert.equal(components[0].items[0].id, 'MC1');
+  const moved = ({ y, ...bounds }) => ({ ...bounds, y: y + 350 });
+  const other = { ...mc, id: 'other-mc', bounds: moved(mc.bounds), items: mc.items.map((item, index) => ({
+    ...item, id: `MC${24 + index}`, bounds: moved(item.bounds), choices: item.choices.map(moved),
+  })) };
+  assert.throws(() => renumberProfileBlock(page, [...components, other], mc.id, 24), /identifiers must be unique/);
 });

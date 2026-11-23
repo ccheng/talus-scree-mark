@@ -1,6 +1,8 @@
 import { pageTransform, proposePageCorners } from './markerless-registration.js';
-import { createMarkerlessProfile, manualGrid, proposeGrid, validBounds } from './profile-authoring.js';
+import { createMarkerlessProfile, manualGrid, proposeGrid, renumberProfileBlock, validBounds } from './profile-authoring.js';
 import { cross, project } from './projective.js';
+import { measureNumericalBlankInk } from './marks.js';
+import { toGrayImage } from './omr-image.js';
 
 const byId = (id) => document.getElementById(id);
 const value = (id) => byId(id).value;
@@ -9,6 +11,14 @@ const write = (id, next) => { byId(id).value = Number.isFinite(next) ? Number(ne
 const coordinates = (x, y) => ({ x, y });
 const idFor = (prefix) => prefix + '-' + crypto.randomUUID().slice(0, 8);
 const cornerLabels = ['Top left', 'Top right', 'Bottom right', 'Bottom left'];
+function itemLabel({ items }) {
+  const ids = items.map(({ id }) => id);
+  const start = /^(.*?)([0-9]+)$/.exec(ids[0]);
+  const consecutive = start && ids.every((id, index) => id === start[1] + (Number(start[2]) + index));
+  return consecutive && ids.length > 1 ? `${ids[0]}–${ids.at(-1)}` : ids.join(', ');
+}
+const dragBox = (start, end) => ({ x: Math.min(start.x, end.x), y: Math.min(start.y, end.y),
+  width: Math.abs(start.x - end.x), height: Math.abs(start.y - end.y) });
 
 export function insetCorners({ width, height }) {
   return [
@@ -92,6 +102,7 @@ export function createProfileEditor({ onSave, onClose }) {
   const discoveryStatus = byId('discovery-status');
   const mappingPanel = byId('block-mapping');
   const mappingFields = byId('block-mapping-fields');
+  const renumberPanel = byId('renumber-block');
   const say = (msg) => { status.textContent = msg; };
   let state;
   let nextJob = 0;
@@ -153,11 +164,12 @@ export function createProfileEditor({ onSave, onClose }) {
       if (name) ctx.fillText(name, point.x + radius + 1, point.y - radius);
     }
     if (!state.matrix) {
+      canvas.dataset.draggingRegion = 'false';
       paintCornerMarkers(ctx, logical, state.corners, canvas.getBoundingClientRect().width, state.cornerDrag);
       return;
     }
-    for (const [index, block] of state.blocks.entries()) {
-      box(block.bounds, '#287651', `Block ${index + 1}`);
+    for (const block of state.blocks) {
+      box(block.bounds, '#287651', itemLabel(block));
       for (const item of block.items) {
         if (item.kind === 'mc') {
           for (const choice of item.choices) dot(choice, choice.radius + .75, '#287651', `${item.id} ${choice.symbol}`);
@@ -172,6 +184,13 @@ export function createProfileEditor({ onSave, onClose }) {
       }
     }
     if (state.region) box(state.region, '#245c8e');
+    const draggingRegion = Boolean(state.drag && !state.endpoints);
+    canvas.dataset.draggingRegion = String(draggingRegion);
+    if (draggingRegion) {
+      ctx.setLineDash([6, 4]);
+      box(dragBox(state.drag.start, state.drag.current), '#245c8e');
+      ctx.setLineDash([]);
+    }
     for (const cell of (state.grid?.cells ?? [])) {
       if (!cell.omit) dot(cell, cell.radius + 1, cell.missing ? '#c05224' : '#245c8e', cell.symbol || '?');
     }
@@ -185,6 +204,8 @@ export function createProfileEditor({ onSave, onClose }) {
     state.discoveryIssues = [];
     discoveryMessage('idle');
     state.matrix = null;
+    state.drag = null;
+    state.cornerDrag = -1;
     state.corners = [];
     state.grid = null;
     state.region = null;
@@ -354,7 +375,7 @@ export function createProfileEditor({ onSave, onClose }) {
   function detect() {
     const region = inputRegion();
     const { rows, columns } = counts();
-    const proposal = proposeGrid(state.image, state.matrix, region, { rows, columns });
+    const proposal = proposeGrid(state.image, state.matrix, region, { rows, columns, printedCenters: value('block-kind') === 'nr' });
     if (!proposal.cells.length) throw new TypeError('No reliable bubble lattice was found. Adjust the box or place the grid manually.');
     const known = new Map(proposal.cells.map((cell) => [`${cell.row}/${cell.column}`, cell]));
     const absent = new Map(proposal.missing.map((cell) => [`${cell.row}/${cell.column}`, cell]));
@@ -530,21 +551,60 @@ export function createProfileEditor({ onSave, onClose }) {
 
   function listEntry(list, caption, actions) {
     const item = document.createElement('li');
-    item.append(caption);
-    for (const [label, run] of actions) {
+    const title = document.createElement('strong');
+    title.textContent = caption;
+    const controls = document.createElement('div');
+    controls.className = 'block-actions';
+    for (const [label, run, action] of actions) {
       const button = document.createElement('button');
-      button.type = 'button'; button.textContent = label;
+      button.type = 'button';
+      button.textContent = label;
+      if (action) button.dataset.action = action;
       button.addEventListener('click', run);
-      item.append(button);
+      controls.append(button);
     }
+    item.append(title, controls);
     list.append(item);
     return item;
   }
 
   function closeMapping() {
     mappingPanel.hidden = true;
+    renumberPanel.hidden = true;
     mappingFields.replaceChildren();
-    if (state) state.mappingBlock = null;
+    if (state) {
+      state.mappingBlock = null;
+      state.renumberBlock = null;
+    }
+  }
+
+  function startRenumber(block) {
+    if (state.grid || state.editing) return say('Confirm or cancel the open geometry edits first.');
+    closeMapping();
+    state.renumberBlock = block.id;
+    byId('renumber-block-heading').textContent = `Renumber ${itemLabel(block)}`;
+    const first = byId('block-first-number');
+    first.value = /[0-9]+$/.exec(block.items[0].id)?.[0] ?? '1';
+    renumberPanel.hidden = false;
+    first.focus();
+  }
+
+  function saveRenumber() {
+    const block = state.blocks.find(({ id }) => id === state.renumberBlock);
+    if (!block) return;
+    try {
+      state.blocks = renumberProfileBlock(page(), state.blocks, block.id, number('block-first-number'));
+    } catch (error) {
+      if (error.message.startsWith('Block, item, and slot identifiers must be unique')) {
+        throw new TypeError('That numbering is already used by another response. Choose a different first item number.');
+      }
+      throw error;
+    }
+    state.drafts.delete(block.id);
+    closeMapping();
+    lists();
+    paint();
+    say('Item numbers updated. Confirm and save the template to keep them.');
   }
 
   function editMapping(block) {
@@ -615,9 +675,9 @@ export function createProfileEditor({ onSave, onClose }) {
         [state.blocks[index], state.blocks[target]] = [state.blocks[target], state.blocks[index]];
         lists(); paint();
       };
-      const caption = block.items.map(({ id }) => id).join(', ') +
-        (block.kind === 'nr' ? ' · Check printed symbols in each position.' : '');
+      const caption = itemLabel(block) + (block.kind === 'nr' ? ' · Numerical response' : ' · Multiple choice');
       const row = listEntry(blocksList, caption, [
+        ['Renumber block', () => startRenumber(block), 'renumber-block'],
         ['Edit numbering and symbols', () => editMapping(block)],
         ['Edit block', () => chooseDraft(block)],
         ...(index ? [['Move up', () => move(-1)]] : []),
@@ -673,6 +733,8 @@ export function createProfileEditor({ onSave, onClose }) {
   });
   handle('apply-block-mapping', saveMapping);
   handle('cancel-block-mapping', closeMapping);
+  handle('apply-block-renumber', saveRenumber);
+  handle('cancel-block-renumber', closeMapping);
   handle('preview-region', () => { inputRegion(); say('Box previewed.'); });
   handle('detect-grid', detect);
   handle('manual-grid', makeDefault);
@@ -691,14 +753,16 @@ export function createProfileEditor({ onSave, onClose }) {
       say('Resolve the outstanding layout review before saving.');
       return;
     }
-    if (state.grid || state.editing || state.mappingBlock) {
+    if (state.grid || state.editing || state.mappingBlock || state.renumberBlock) {
       say('Apply or cancel the open block edits before saving.');
       return;
     }
     try {
+      const components = state.prior || !state.blocks.some(({ kind }) => kind === 'nr') ? state.blocks :
+        measureNumericalBlankInk(toGrayImage(state.image), state.matrix, state.blocks);
       const profile = createMarkerlessProfile({
         id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,
-        name: value('profile-name'), page: page(), components: state.blocks,
+        name: value('profile-name'), page: page(), components,
       });
       byId('enroll-profile').disabled = true;
       await onSave(profile);
@@ -719,20 +783,26 @@ export function createProfileEditor({ onSave, onClose }) {
   });
 
   canvas.addEventListener('pointerdown', (event) => {
-    if (!state || state.pan || event.button !== 0) return;
-    state.drag = pointAt(event);
-    if (!state.matrix) state.cornerDrag = nearestCorner(canvas, state.image, state.corners, state.drag);
+    if (!state || state.pan || state.drag || (event.pointerType !== 'touch' && event.button !== 0)) return;
+    const start = pointAt(event);
+    state.drag = { start, current: start, pointerId: event.pointerId };
+    if (!state.matrix) {
+      state.cornerDrag = nearestCorner(canvas, state.image, state.corners, start);
+      state.drag.originalCorner = state.corners[state.cornerDrag];
+    }
     canvas.setPointerCapture(event.pointerId);
+    paint();
   });
   canvas.addEventListener('pointermove', (event) => {
-    if (!state?.drag || state.matrix || !(state.cornerDrag >= 0)) return;
-    state.corners[state.cornerDrag] = pointAt(event);
+    if (state?.drag?.pointerId !== event.pointerId) return;
+    state.drag.current = pointAt(event);
+    if (!state.matrix && state.cornerDrag >= 0) state.corners[state.cornerDrag] = state.drag.current;
     paint();
   });
   canvas.addEventListener('pointerup', (event) => {
-    if (!state?.drag) return;
+    if (state?.drag?.pointerId !== event.pointerId) return;
     const end = pointAt(event);
-    const start = state.drag;
+    const { start } = state.drag;
     state.drag = null;
     if (!state.matrix) {
       if (state.cornerDrag >= 0) state.corners[state.cornerDrag] = end;
@@ -753,14 +823,21 @@ export function createProfileEditor({ onSave, onClose }) {
       paint();
       return;
     }
-    const width = Math.abs(start.x - end.x);
-    const height = Math.abs(start.y - end.y);
-    if (width >= 2 && height >= 2) {
-      setRegion({ x: Math.min(start.x, end.x), y: Math.min(start.y, end.y), width, height });
-      say('Box set. Find bubbles or place a grid.');
-    }
+    const region = dragBox(start, end);
+    if (region.width >= 2 && region.height >= 2) {
+      setRegion(region);
+      say('Region selected. Find bubbles or place a grid.');
+    } else paint();
   });
-  canvas.addEventListener('pointercancel', () => { if (state) { state.drag = null; state.cornerDrag = -1; } });
+  function cancelDrag(event) {
+    if (state?.drag?.pointerId !== event.pointerId) return;
+    if (!state.matrix && state.cornerDrag >= 0) state.corners[state.cornerDrag] = state.drag.originalCorner;
+    state.drag = null;
+    state.cornerDrag = -1;
+    paint();
+  }
+  canvas.addEventListener('pointercancel', cancelDrag);
+  canvas.addEventListener('lostpointercapture', cancelDrag);
 
   function open(image, prior) {
     stopDiscovery();

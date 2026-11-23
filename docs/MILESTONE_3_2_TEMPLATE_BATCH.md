@@ -50,3 +50,11 @@ Start from the [synthetic preview](https://ccheng.github.io/talus-scree-mark/) a
 5. Clip a required block and verify that the app withholds every answer. Place two complete matching mock sheets in frame and verify the app asks you to capture one sheet and returns zero answers. After a valid read, reopen offline in airplane mode and scan another synthetic sheet.
 
 Record the device, iOS version, preview build and any touch or navigation difficulty. Desktop mobile-viewport acceptance and synthetic alignment results are reported separately from this physical check.
+
+## Final template-authoring iPhone check
+
+1. Import the Alberta-style synthetic blank and inspect the whole-sheet proposal. Verify four writing boxes, digits 0–9 in all four columns, and decimal bubbles above columns 2 and 3 only.
+2. Select a discovered block whose starting number differs from the printed form and use **Renumber block**. Verify the new item numbers and unchanged bubble positions. Try a number range already in use and verify the conflict is identified. Save and reopen the profile.
+3. In advanced calibration, drag a response region and verify the rectangle follows your finger before release. Check the distinct controls for bubble detection, grid placement, and mapping edits.
+4. Scan the Alberta-style blank, marked and ambiguous fixtures with the saved profile. Confirm printed digits alone read as blank, decimal positions and corrected IDs match the key, and ambiguous marks are held for review.
+5. Recheck the original interleaved template with the cropped blank. Record device, build and any differences from the expected observations.
