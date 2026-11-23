@@ -25,3 +25,7 @@ Recognition acceptance reports must include counts and denominators, independent
 - Cold-launch offline after complete cache and test denied/interrupted installation, interrupted update, previous compatible shell, missing optional CNN, reopening data and local CSV/JSON export. Record injected quota/eviction separately from actual observed OS behavior.
 - Use request interception or equivalent observation while online as well as offline to detect attempted requests during camera/import, recognition, review, grading, storage and export. Inspect URL, payload, logs, caches, storage and export with synthetic inputs. Restrict expected network activity to explicit static resource delivery and updates.
 - Record reference device, iOS build, Safari/PWA mode, cold/warm timings, interruptions and test date. Treat unperformed physical checks as open release gates where required.
+
+## Permanent recognition regression
+
+Preserve the M1 and M2 Node and Chromium checks on application changes. Keep at least one frozen M2 reference revision, printable/profile digest, known-answer input and literal expected result, alongside geometry, review, rejection, offline and privacy cases. Later fixture generation or layout revisions must not replace the compatibility oracle. See the [M3 specification](docs/MILESTONE_3_SPECIFICATION.md) for the markerless and variable-layout extension.

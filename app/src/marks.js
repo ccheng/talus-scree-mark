@@ -55,7 +55,37 @@ function observeBubble(image, matrix, option) {
   if (!usable) return { symbol, score: null, quality, evidence };
   const darkness = coreSamples.reduce((sum, sample) =>
     sum + Math.max(0, Math.min(1, (background - sample) / contrast)), 0);
-  return { symbol, score: darkness / coreSamples.length, quality, evidence };
+  const rawScore = darkness / coreSamples.length;
+  if (option.blankInk === undefined) return { symbol, score: rawScore, quality, evidence };
+  // Measure the added fill against the paper area the printed glyph leaves.
+  const score = Math.max(0, (rawScore - option.blankInk) / (1 - option.blankInk));
+  return { symbol, score, quality, evidence, rawScore, blankInk: option.blankInk };
+}
+
+export const maximumPrintedBlankInk = .55;
+
+export function measureNumericalBlankInk(image, matrix, components) {
+  return components.map((block) => block.kind === 'mc' ? block : {
+    ...block,
+    items: block.items.map((item) => {
+      const slots = item.slots.map(({ choices }) => choices.map(({ blankInk: _, ...choice }) => {
+        const { score } = observeBubble(image, matrix, choice);
+        return score >= .035 && score <= maximumPrintedBlankInk ? Number(score.toFixed(3)) : null;
+      }));
+      // A printed grid has ink in many different digits and positions. A
+      // stray mark or an isolated printed dot must never become a baseline.
+      const printedSlots = item.slots.filter(({ choices }, position) => choices.filter(({ symbol }, choice) =>
+        /^[0-9]$/.test(symbol) && slots[position][choice] !== null).length >= 6).length;
+      if (printedSlots < 3) return item;
+      return { ...item, slots: item.slots.map(({ choices, ...slot }, position) => ({
+        ...slot,
+        choices: choices.map((choice, index) => {
+          const blankInk = slots[position][index];
+          return blankInk === null ? choice : { ...choice, blankInk };
+        }),
+      })) };
+    }),
+  });
 }
 
 function observeGroup(image, matrix, choices) {
@@ -63,7 +93,8 @@ function observeGroup(image, matrix, choices) {
   const ranked = scores.filter(({ score }) => score !== null).sort((a, b) => b.score - a.score);
   const best = ranked[0];
   const runner = ranked[1];
-  const margin = best && runner ? best.score - runner.score : null;
+  const rivalFill = runner?.score ?? 0;
+  const margin = best ? best.score - rivalFill : null;
   const evidence = { choices: scores, margin };
 
   if (ranked.length !== scores.length) {
@@ -75,10 +106,10 @@ function observeGroup(image, matrix, choices) {
   if (best.score <= thresholds.maximumBlankFill) {
     return { status: 'blank', symbol: null, review: false, reasons: [], ...evidence };
   }
-  if (best.score >= thresholds.minimumClearFill && runner.score <= thresholds.maximumRivalFill && margin >= thresholds.minimumSeparation) {
+  if (best.score >= thresholds.minimumClearFill && rivalFill <= thresholds.maximumRivalFill && margin >= thresholds.minimumSeparation) {
     return { status: 'single', symbol: best.symbol, review: false, reasons: [], ...evidence };
   }
-  const reason = runner.score > thresholds.maximumRivalFill ? 'competing-mark' : 'weak-mark';
+  const reason = rivalFill > thresholds.maximumRivalFill ? 'competing-mark' : 'weak-mark';
   return { status: 'ambiguous', symbol: null, review: true, reasons: [reason], ...evidence };
 }
 

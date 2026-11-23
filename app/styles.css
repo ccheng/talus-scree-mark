@@ -115,3 +115,61 @@ figcaption { color: var(--muted); margin-top: .45rem; font-size: .87rem; text-al
 .reference-panel ul { margin-top: .4rem; padding-inline-start: 1.3rem; }
 .reference-panel a { color: #245c8e; }
 :where(summary, a):focus-visible { outline: 3px solid #385d97; outline-offset: 3px; }
+
+.profile-card {
+  margin: 1rem 0 0;
+  padding: .8rem;
+  border: 1px solid var(--line);
+  border-radius: .7rem;
+}
+.profile-card h3 { margin: 0 0 .55rem; }
+.profile-card h4 { margin: .8rem 0 0; }
+.profile-card .controls { margin: .6rem 0; }
+.profile-card .hint { margin-bottom: .6rem; }
+.profile-card fieldset { margin: .7rem 0; min-width: 0; border: 1px solid var(--line); }
+.profile-card legend { font-weight: 650; }
+.editor-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: .4rem .8rem;
+  margin: .5rem 0;
+}
+.editor-fields label { display: flex; flex-direction: column; }
+.profile-card input:not([type="checkbox"]), .profile-card select {
+  min-width: 0;
+  max-width: 100%;
+  padding: .35rem;
+  margin: .12rem 0 .35rem;
+  border: 1px solid #728678;
+  border-radius: .32rem;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+}
+.profile-card input:focus-visible, .profile-card select:focus-visible { outline: 3px solid #385d97; outline-offset: 1px; }
+.profile-card li { margin: .25rem 0; }
+.profile-card li button { min-height: 2rem; margin: .2rem .25rem; }
+.block-actions { display: flex; flex-wrap: wrap; align-items: start; }
+#numbering-conflicts, [data-numbering-conflict="true"] > strong { color: #922a17; }
+.profile-viewport { max-height: 60vh; overflow: auto; background: #e7ebe4; }
+.profile-viewport canvas {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  touch-action: none;
+  cursor: crosshair;
+}
+.scan-registration { margin-top: .8rem; }
+.profile-viewport canvas[data-zoom="2"] { width: 150%; }
+.profile-viewport canvas[data-zoom="3"] { width: 225%; }
+
+.profile-viewport canvas[data-pan="true"] { touch-action: auto; cursor: grab; }
+.profile-viewport canvas[data-zoom="1"], #scan-corner-canvas {
+  max-width: 100%;
+  max-height: 52vh;
+  width: auto;
+  height: auto;
+  margin-inline: auto;
+}
