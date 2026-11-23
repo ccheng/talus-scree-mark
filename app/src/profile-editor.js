@@ -1,5 +1,5 @@
 import { pageTransform, proposePageCorners } from './markerless-registration.js';
-import { createMarkerlessProfile, manualGrid, proposeGrid, renumberProfileBlock, validBounds } from './profile-authoring.js';
+import { conflictingResponseIds, createMarkerlessProfile, manualGrid, proposeGrid, renumberProfileBlock, validBounds } from './profile-authoring.js';
 import { cross, project } from './projective.js';
 import { measureNumericalBlankInk } from './marks.js';
 import { toGrayImage } from './omr-image.js';
@@ -103,6 +103,8 @@ export function createProfileEditor({ onSave, onClose }) {
   const mappingPanel = byId('block-mapping');
   const mappingFields = byId('block-mapping-fields');
   const renumberPanel = byId('renumber-block');
+  const conflictStatus = byId('numbering-conflicts');
+  const saveTemplate = byId('enroll-profile');
   const say = (msg) => { status.textContent = msg; };
   let state;
   let nextJob = 0;
@@ -592,19 +594,13 @@ export function createProfileEditor({ onSave, onClose }) {
   function saveRenumber() {
     const block = state.blocks.find(({ id }) => id === state.renumberBlock);
     if (!block) return;
-    try {
-      state.blocks = renumberProfileBlock(page(), state.blocks, block.id, number('block-first-number'));
-    } catch (error) {
-      if (error.message.startsWith('Block, item, and slot identifiers must be unique')) {
-        throw new TypeError('That numbering is already used by another response. Choose a different first item number.');
-      }
-      throw error;
-    }
+    state.blocks = renumberProfileBlock(page(), state.blocks, block.id, number('block-first-number'), { draft: true });
     state.drafts.delete(block.id);
     closeMapping();
     lists();
     paint();
-    say('Item numbers updated. Confirm and save the template to keep them.');
+    say(conflictStatus.hidden ? 'Item numbers updated. Confirm and save the template to keep them.' :
+      'Item numbers updated in this draft. Resolve the duplicate numbers before saving.');
   }
 
   function editMapping(block) {
@@ -668,6 +664,10 @@ export function createProfileEditor({ onSave, onClose }) {
   }
 
   function lists() {
+    const conflicts = conflictingResponseIds(state.blocks);
+    conflictStatus.hidden = conflicts.size === 0;
+    conflictStatus.textContent = conflicts.size ? `Duplicate identifiers in this draft: ${[...conflicts].join(', ')}. Renumber an affected block before saving.` : '';
+    saveTemplate.disabled = Boolean(conflicts.size || state.saving);
     blocksList.replaceChildren();
     for (const [index, block] of state.blocks.entries()) {
       const move = (delta) => {
@@ -688,6 +688,8 @@ export function createProfileEditor({ onSave, onClose }) {
       ]);
       row.dataset.profileBlock = block.id;
       row.dataset.blockKind = block.kind;
+      row.dataset.numberingConflict = String(conflicts.has(block.id) || block.items.some(({ id, slots }) =>
+        conflicts.has(id) || slots?.some((slot) => conflicts.has(slot.id))));
     }
   }
 
@@ -749,6 +751,7 @@ export function createProfileEditor({ onSave, onClose }) {
   handle('confirm-block', confirmBlock);
   handle('cancel-profile-editor', () => { close(); onClose(); });
   handle('enroll-profile', async () => {
+    if (state.saving || conflictingResponseIds(state.blocks).size) return;
     if (state.discoveryWorker || state.discoveryIssues?.length) {
       say('Resolve the outstanding layout review before saving.');
       return;
@@ -764,10 +767,15 @@ export function createProfileEditor({ onSave, onClose }) {
         id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,
         name: value('profile-name'), page: page(), components,
       });
-      byId('enroll-profile').disabled = true;
-      await onSave(profile);
-    } catch (error) { say(error.message); }
-    finally { byId('enroll-profile').disabled = false; }
+      const draft = state;
+      draft.saving = true;
+      saveTemplate.disabled = true;
+      try { await onSave(profile); }
+      finally {
+        draft.saving = false;
+        if (state === draft) saveTemplate.disabled = conflictingResponseIds(draft.blocks).size > 0;
+      }
+    } catch (error) { if (state) say(error.message); }
   });
   byId('profile-orientation').addEventListener('change', () => { if (state) resetCorners(); });
   byId('cell-selector').addEventListener('change', selectCell);

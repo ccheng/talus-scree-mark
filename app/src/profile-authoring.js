@@ -297,7 +297,20 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
   };
 }
 
-export function renumberProfileBlock(page, components, blockId, first) {
+export function conflictingResponseIds(components) {
+  const seen = new Set();
+  const duplicates = new Set();
+  for (const block of components) {
+    const identifiers = [block.id, ...block.items.flatMap((item) => [item.id, ...(item.slots ?? []).map(({ id }) => id)])];
+    for (const id of identifiers) {
+      if (seen.has(id)) duplicates.add(id);
+      seen.add(id);
+    }
+  }
+  return duplicates;
+}
+
+export function renumberProfileBlock(page, components, blockId, first, { draft = false } = {}) {
   const block = components.find(({ id }) => id === blockId);
   fail(block && Number.isSafeInteger(first) && first > 0 && Number.isSafeInteger(first + block.items.length - 1),
     'Enter a positive first item number.');
@@ -308,6 +321,6 @@ export function renumberProfileBlock(page, components, blockId, first) {
     return { ...item, id, slots: item.slots.map((slot, position) => ({ ...slot, id: `${id}.${position + 1}` })) };
   });
   const updated = components.map((component) => component === block ? { ...block, items } : component);
-  createMarkerlessProfile({ id: 'draft', name: 'Draft', revision: 1, page, components: updated });
+  if (!draft) createMarkerlessProfile({ id: 'draft', name: 'Draft', revision: 1, page, components: updated });
   return updated;
 }

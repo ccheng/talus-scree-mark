@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { discoverBlankLayout } from '../app/src/layout-discovery.js';
-import { createMarkerlessProfile, renumberProfileBlock } from '../app/src/profile-authoring.js';
+import { conflictingResponseIds, createMarkerlessProfile, renumberProfileBlock } from '../app/src/profile-authoring.js';
 import { measureNumericalBlankInk, readBubbleRegions } from '../app/src/marks.js';
 import { toGrayImage } from '../app/src/omr-image.js';
 import { profileRecord } from '../app/src/profile-store.js';
@@ -11,7 +11,9 @@ import { invertProjective, project } from '../app/src/projective.js';
 
 const page = { width: 612, height: 792, units: 'pt', origin: 'top-left', orientation: 'portrait' };
 
-function syntheticBlank({ missing = false, marks = false, numeric = false, digitInk = false, answer, rival } = {}) {
+function syntheticBlank({
+  missing = false, marks = false, numeric = false, digitInk = false, tallBoxes = false, mcRadius = 3.4, answer, rival,
+} = {}) {
   const width = 1225, height = 1585;
   const pixels = new Uint8ClampedArray(width * height * 4).fill(255);
   function paint(x0, y0, x1, y1, contains, level = 22) {
@@ -23,22 +25,26 @@ function syntheticBlank({ missing = false, marks = false, numeric = false, digit
       }
     }
   }
-  function ring(x, y, filled = false) {
-    paint(x - 4, y - 4, x + 4, y + 4, (px, py) => {
+  function ring(x, y, filled = false, radius = 3.4) {
+    const spread = radius + .6;
+    paint(x - spread, y - spread, x + spread, y + spread, (px, py) => {
       const d = Math.hypot(x - px, y - py);
-      return Math.abs(d - 3.4) < .57 || (filled && d < 3.4);
+      return Math.abs(d - radius) < .57 || (filled && d < radius);
     });
   }
   for (let row = 0; row < 6; row++) {
     for (let column = 0; column < 4; column++) {
       if (missing && row === 2 && column === 3) continue;
-      ring(92 + column * 24, 202 + row * 19, marks && row === 0 && column === 1);
+      ring(92 + column * 24, 202 + row * 19, marks && row === 0 && column === 1, mcRadius);
     }
   }
   if (numeric) {
     for (let pos = 0; pos < 4; pos++) {
       const x = 367 + pos * 24;
-      const left = x - 8, right = x + 8, top = 413, bottom = 426;
+      const halfWidth = tallBoxes ? 12 : 8;
+      const left = x - halfWidth, right = x + halfWidth;
+      const top = tallBoxes ? 388 : 413;
+      const bottom = tallBoxes ? 422 : 426;
       paint(left, top, right, bottom, (px, py) => px - left < 1 || right - px < 1 || py - top < 1 || bottom - py < 1);
       function numericChoice(symbol, y) {
         ring(x, y, (marks && pos === 0 && symbol === '7') || answer?.[pos] === symbol);
@@ -286,4 +292,38 @@ test('block renumbering changes saved IDs, preserves mappings and rejects cross-
     ...item, id: `MC${24 + index}`, bounds: moved(item.bounds), choices: item.choices.map(moved),
   })) };
   assert.throws(() => renumberProfileBlock(page, [...components, other], mc.id, 24), /identifiers must be unique/);
+});
+
+test('blank discovery keeps tall shared writing boxes and larger adjacent MC outlines', () => {
+  const blank = syntheticBlank({ numeric: true, digitInk: true, tallBoxes: true, mcRadius: 7.15 });
+  const proposal = discoverBlankLayout(weakEdgePhoto(blank, 154), page);
+  assert.equal(proposal.status, 'proposed', JSON.stringify(proposal.issues));
+  const [mc, nr] = proposal.components;
+  assert.equal(mc.items.length, 6);
+  assert(mc.items.every(({ choices }) => choices.length === 4));
+  assert.equal(proposal.diagnostics[1].writingBoxes.length, 4);
+  assert(proposal.diagnostics[1].writingBoxes.every(({ height }) => height > 29));
+  assert.deepEqual(nr.items[0].slots.map(({ choices }) => choices.length), [10, 11, 11, 10]);
+});
+
+test('draft ranges can swap by holding duplicates until the next edit', () => {
+  const proposal = discoverBlankLayout(syntheticBlank({ numeric: true }), page);
+  const [mc, nr] = proposal.components;
+  const offset = ({ y, ...fields }) => ({ ...fields, y: y + 350 });
+  const second = { ...mc, id: 'second-mc', bounds: offset(mc.bounds), items: mc.items.map((item, i) => ({
+    ...item, id: `MC${7 + i}`, bounds: offset(item.bounds), choices: item.choices.map(offset),
+  })) };
+  const source = [mc, nr, second];
+  const draft = renumberProfileBlock(page, source, mc.id, 7, { draft: true });
+  assert.deepEqual([...conflictingResponseIds(draft)], second.items.map(({ id }) => id));
+  const validate = (components) => createMarkerlessProfile({ id: 'swap', name: 'Synthetic', revision: 1, page, components });
+  assert.throws(() => validate(draft), /identifiers must be unique/);
+  const updated = renumberProfileBlock(page, draft, second.id, 1, { draft: true });
+  assert.equal(conflictingResponseIds(updated).size, 0);
+  const stored = profileRecord(validate(updated));
+  assert.deepEqual(stored.components[0].items.map(({ id }) => id), second.items.map(({ id }) => id));
+  assert.deepEqual(stored.components[2].items.map(({ id }) => id), mc.items.map(({ id }) => id));
+  assert.deepEqual(stored.components[0].items.map(({ choices }) => choices), mc.items.map(({ choices }) => choices));
+  assert.deepEqual(stored.components[2].items.map(({ choices }) => choices), second.items.map(({ choices }) => choices));
+  assert.equal(source[0].items[0].id, 'MC1');
 });

@@ -13,6 +13,7 @@ assert(families.length === 3 && families.every(({ fixtures }) => fixtures.filter
 const poses = JSON.parse(await readFile(new URL('pose-oracles.json', fixtureFolder), 'utf8'));
 const interleavedCrop = JSON.parse(await readFile(new URL('interleaved-crop-oracles.json', fixtureFolder), 'utf8'));
 const alberta = JSON.parse(await readFile(new URL('alberta-oracles.json', fixtureFolder), 'utf8'));
+const albertaPhoto = JSON.parse(await readFile(new URL('alberta-photo-oracles.json', fixtureFolder), 'utf8'));
 const cropAttachment = fileURLToPath(new URL('./inputs/cropped-interleaved-blank.jpeg', import.meta.url));
 const encoded = (file) => readFile(new URL(file, fixtureFolder), 'base64');
 const server = await openServer(appPath);
@@ -449,12 +450,15 @@ try {
     const firstNumber = page.locator('#block-first-number');
     await firstNumber.fill('4');
     await page.locator('#apply-block-renumber').click();
-    await page.locator('#editor-status').filter({ hasText: /duplicate|unique|already/i }).waitFor();
-    assert.match(await firstMc.textContent(), /MC1–MC3/);
+    await page.locator('#numbering-conflicts').waitFor();
+    assert.match(await firstMc.textContent(), /MC4–MC6/);
+    assert(await page.locator('#enroll-profile').isDisabled());
     assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), []);
+    await firstMc.getByRole('button', { name: /Renumber block/i }).click();
     await firstNumber.fill('24');
     await page.locator('#apply-block-renumber').click();
     await firstMc.filter({ hasText: 'MC24–MC26' }).waitFor();
+    await page.locator('#numbering-conflicts').waitFor({ state: 'hidden' });
     await page.locator('#enroll-profile').click();
     await editor.waitFor({ state: 'hidden' });
     const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
@@ -483,6 +487,62 @@ try {
     assert.equal(await uncertain.locator('[data-raw-text]').count(), 0);
     console.log('  Four writing boxes and 42 labeled bubbles in each of four numerical blocks; both decimal positions and printed-only blanks match the literal oracle.');
   });
+
+  await group('Photographed Alberta layout supports a direct block swap without saving duplicate IDs', async (page) => {
+    await installAdapters(page);
+    const proposed = await page.evaluate(async ({ input, shape }) => {
+      const blank = await window.m3qa.loadImage(input, 'alberta-phone-blank');
+      return window.m3qa.discoverBlankLayout(blank, shape);
+    }, { input: await encoded(albertaPhoto.blank), shape: pageShape });
+    assert.equal(proposed.status, 'proposed', proposed.issues.join(', '));
+    const written = proposed.diagnostics.filter(({ kind }) => kind === 'nr');
+    assert.deepEqual(written.map(({ writingBoxes }) => writingBoxes.length), [4, 4, 4, 4]);
+    assert(proposed.components.filter(({ kind }) => kind === 'nr').every(({ items: [item] }) =>
+      item.slots.map(({ choices }) => choices.length).join(',') === '10,11,11,10'));
+
+    await selectImage(page, fixtureFilePath(albertaPhoto.blank), 'camera-template.jpg', 'image/jpeg', '#setup-profile');
+    const editor = page.locator('#profile-editor');
+    await editor.waitFor();
+    await page.locator('#profile-name').fill('Phone Alberta swapped blocks');
+    await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    const mc = page.locator('#profile-blocks [data-block-kind="mc"]');
+    assert.equal(await mc.count(), 2);
+    assert.match(await mc.nth(0).textContent(), /MC1–MC3/);
+    assert.match(await mc.nth(1).textContent(), /MC4–MC6/);
+    const conflicts = page.locator('#numbering-conflicts');
+    const save = page.locator('#enroll-profile');
+    async function renumber(block, start) {
+      await mc.nth(block).getByRole('button', { name: /Renumber block/i }).click();
+      await page.locator('#block-first-number').fill(String(start));
+      await page.locator('#apply-block-renumber').click();
+    }
+    await renumber(0, 4);
+    await conflicts.waitFor();
+    assert.match(await conflicts.textContent(), /MC4/);
+    assert.match(await mc.nth(0).textContent(), /MC4–MC6/);
+    assert.match(await mc.nth(1).textContent(), /MC4–MC6/);
+    assert.equal(await page.locator('#profile-blocks [data-numbering-conflict="true"]').count(), 2);
+    assert(await save.isDisabled());
+    assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), []);
+    await renumber(1, 1);
+    await conflicts.waitFor({ state: 'hidden' });
+    assert(await save.isEnabled());
+    await save.click();
+    await editor.waitFor({ state: 'hidden' });
+    const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
+    const blocks = profile.components.filter(({ kind }) => kind === 'mc');
+    assert.deepEqual(blocks.map(({ items }) => items.map(({ id }) => id)), [['MC4', 'MC5', 'MC6'], ['MC1', 'MC2', 'MC3']]);
+    const geometry = (entries) => entries.filter(({ kind }) => kind === 'mc').map(({ items }) =>
+      items.map(({ bounds, choices }) => ({ bounds, choices })));
+    assert.deepEqual(geometry(profile.components), geometry(proposed.components));
+    assertDiscoveredMapping(profile, { blocks: albertaPhoto.components.map(scaleComponent), itemOrder: albertaPhoto.truth.map(({ id }) => id) });
+    await page.reload();
+    const selector = page.locator('#profile-selector');
+    const revision = `${profile.id}@${profile.revision}`;
+    await selector.locator(`option[value="${revision}"]`).waitFor({ state: 'attached' });
+    await selector.selectOption(revision);
+    await confirmAndRead(page, fixtureFilePath(albertaPhoto.marked), 'camera-marked.jpg', 'image/jpeg', albertaPhoto.truth);
+  }, { isMobile: true, hasTouch: true });
 
   await group('Touch dragging paints a live template region and commits sheet coordinates', async (page, context) => {
     const fixture = resolve(appPath, 'fixtures/m3/mixed-blank.png');
