@@ -58,7 +58,7 @@ export function sourceOnCanvas(canvas, image) {
   source.width = source.height = 1;
 }
 
-function rectifiedOnCanvas(canvas, image, matrix, page) {
+function rectifiedOnCanvas(canvas, image, matrix, page, virtual = false) {
   const factor = 840 / Math.max(page.width, page.height);
   canvas.width = Math.round(factor * page.width);
   canvas.height = Math.round(factor * page.height);
@@ -72,7 +72,7 @@ function rectifiedOnCanvas(canvas, image, matrix, page) {
       const ty = Math.round(target?.y);
       const index = (y * output.width + x) * 4;
       if (!target || tx < 0 || ty < 0 || tx >= image.width || ty >= image.height) {
-        output.data[index] = output.data[index + 1] = output.data[index + 2] = 255;
+        output.data[index] = output.data[index + 1] = output.data[index + 2] = virtual ? 235 : 255;
       } else {
         const at = (ty * image.width + tx) * 4;
         output.data[index] = source[at]; output.data[index + 1] = source[at + 1]; output.data[index + 2] = source[at + 2];
@@ -180,6 +180,8 @@ export function createProfileEditor({ onSave, onClose }) {
 
   function resetCorners() {
     stopDiscovery();
+    delete canvas.dataset.pose;
+    delete discoveryStatus.dataset.pose;
     state.discoveryIssues = [];
     discoveryMessage('idle');
     state.matrix = null;
@@ -222,7 +224,7 @@ export function createProfileEditor({ onSave, onClose }) {
         return;
       }
       state.corners = result.corners;
-      const matrix = pageTransform(page(), state.corners);
+      const matrix = result.poseDiagnostics?.transform ?? pageTransform(page(), state.corners);
       if (!matrix) {
         discoveryMessage('needs-corners', 'Place the page corners before finding response blocks.');
         show();
@@ -237,12 +239,15 @@ export function createProfileEditor({ onSave, onClose }) {
       state.discoveryDiagnostics = result.diagnostics;
       state.discoveryIssues = result.issues;
       discoveryStatus.dataset.pose = result.pagePose ?? 'page-boundary';
+      canvas.dataset.pose = discoveryStatus.dataset.pose;
       closeMapping();
-      rectifiedOnCanvas(background, state.image, matrix, page());
+      rectifiedOnCanvas(background, state.image, matrix, page(), result.pagePose === 'virtual-corners');
       lists();
       const count = state.blocks.length;
       const instructions = result.pagePose === 'uncertain'
         ? 'The page does not line up with the photo frame. Adjust the corner handles before saving a template.'
+        : result.pagePose === 'virtual-corners'
+        ? `Aligned ${count} response blocks from visible bubbles. Check the full layout, numbering and symbol order in the overlay.`
         : count
         ? `Found ${count} response block${count === 1 ? '' : 's'}. Check the page orientation, numbering and symbol order in the overlay.`
         : 'No complete response blocks were found. Place the expected blocks manually.';

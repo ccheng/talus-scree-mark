@@ -1,4 +1,4 @@
-import { pageTransform, proposePageCorners, proposeWeakPageCorners } from './markerless-registration.js';
+import { checkProvisionalBlankPose, pageTransform, proposePageCorners, proposeWeakPageCorners } from './markerless-registration.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 import { createMarkerlessProfile, intersects, pageRingCandidates } from './profile-authoring.js';
 import { cross, project } from './projective.js';
@@ -243,6 +243,30 @@ function inspectBlankLayout(image, page, corners) {
   return { status: issues.length ? 'review' : 'proposed', corners, components, issues, diagnostics };
 }
 
+
+function provisionalBlank(image, page, first) {
+  // With no physical edges the exact paper origin is unobservable. Use a
+  // same-aspect local coordinate frame and verify the visible layout against it.
+  const scale = Math.min((image.width - 1) / page.width, (image.height - 1) / page.height);
+  const left = (image.width - 1 - scale * page.width) / 2;
+  const top = (image.height - 1 - scale * page.height) / 2;
+  const corners = [{ x: left, y: top }, { x: left + scale * page.width, y: top },
+    { x: left + scale * page.width, y: top + scale * page.height }, { x: left, y: top + scale * page.height }];
+  const found = inspectBlankLayout(image, page, corners);
+  const signatures = ({ components }) => JSON.stringify(components.map(({ kind, items }) =>
+    [kind, items.map((item) => item.kind === 'mc' ? item.choices.map(({ symbol }) => symbol) :
+      item.slots.map(({ choices }) => choices.map(({ symbol }) => symbol)))]));
+  const coverage = new Set(found.components.map(({ bounds }) =>
+    [bounds.x + bounds.width / 2 > page.width / 2, bounds.y + bounds.height / 2 > page.height / 2].join()));
+  if (found.status !== 'proposed' || coverage.size < 3 || signatures(first) !== signatures(found)) {
+    return { discarded: { reason: 'incomplete-or-inconsistent-visible-lattices', blocks: found.diagnostics ?? [] } };
+  }
+  const evidence = checkProvisionalBlankPose(toGrayImage(image), { page, components: found.components }, corners);
+  if (evidence.discarded) return evidence;
+  return { proposal: { ...found, corners: evidence.corners, pagePose: 'virtual-corners',
+    poseDiagnostics: { ...evidence, frame: 'provisional', discarded: { reason: 'frame-aspect', corners: first.corners } } } };
+}
+
 export function discoverBlankLayout(image, page, suppliedCorners) {
   const provisional = suppliedCorners ?? proposePageCorners(image);
   const first = inspectBlankLayout(image, page, provisional);
@@ -258,6 +282,12 @@ export function discoverBlankLayout(image, page, suppliedCorners) {
     const recovered = inspectBlankLayout(image, page, faint);
     if (recovered.status === 'proposed') return { ...recovered, pagePose: 'faint-boundary' };
   }
-  if (first.issues.includes('frame-aspect')) return { ...first, components: [], diagnostics: [], pagePose: 'uncertain' };
+  if (first.issues.includes('frame-aspect')) {
+    const recovery = first.issues.length === 1 ? provisionalBlank(image, page, first) :
+      { discarded: { reason: 'provisional-frame-has-incomplete-lattices', blocks: first.diagnostics ?? [] } };
+    if (recovery.proposal) return recovery.proposal;
+    return { ...first, components: [], diagnostics: [], pagePose: 'uncertain',
+      poseDiagnostics: { discarded: recovery.discarded } };
+  }
   return first;
 }
