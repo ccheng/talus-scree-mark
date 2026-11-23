@@ -191,12 +191,23 @@ export function outlinePoseProposals(gray, profile, axisRatio = 1, shear = 0, ou
     const holdout = witnesses.filter((_, index) => index % 3 === 0);
     const training = witnesses.filter((_, index) => index % 3 !== 0);
     const trained = fit(training);
-    if (!trained || holdout.some(({ ring, choice }) => {
+    if (!trained) return [];
+    const residuals = holdout.map(({ ring, choice }) => {
       const estimate = project(trained, choice.x, choice.y);
-      return !estimate || distance(ring, estimate) > Math.max(.9, magnification * choice.radius * .48);
-    })) return [];
+      return estimate ? distance(ring, estimate) : Infinity;
+    });
+    if (residuals.some((residual, index) => residual > Math.max(.9, magnification * holdout[index].choice.radius * .48))) return [];
     const final = fit(witnesses);
     if (!final) return [];
-    return [{ transform: final.map((value, index) => index < 6 ? value / scale : value), mirrored }];
+    const coverage = (points) => {
+      const x = points.map(({ choice }) => choice.x);
+      const y = points.map(({ choice }) => choice.y);
+      return { width: (Math.max(...x) - Math.min(...x)) / page.width, height: (Math.max(...y) - Math.min(...y)) / page.height };
+    };
+    return [{
+      transform: final.map((value, index) => index < 6 ? value / scale : value), mirrored,
+      witnesses: { fit: training.length, heldOut: holdout.length, maxHeldOutErrorPx: Math.max(...residuals) / scale,
+        fitCoverage: coverage(training), heldOutCoverage: coverage(holdout) },
+    }];
   });
 }

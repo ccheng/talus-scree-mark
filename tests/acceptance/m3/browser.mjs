@@ -11,6 +11,8 @@ const fixtureFolder = new URL('./fixtures/', import.meta.url);
 const { families, orientationControl, discoveryControl, fourBoxControl } = JSON.parse(await readFile(new URL('oracles.json', fixtureFolder), 'utf8'));
 assert(families.length === 3 && families.every(({ fixtures }) => fixtures.filter(({ mode }) => mode === 'standard').length >= 8));
 const poses = JSON.parse(await readFile(new URL('pose-oracles.json', fixtureFolder), 'utf8'));
+const interleavedCrop = JSON.parse(await readFile(new URL('interleaved-crop-oracles.json', fixtureFolder), 'utf8'));
+const cropAttachment = fileURLToPath(new URL('./inputs/cropped-interleaved-blank.jpeg', import.meta.url));
 const encoded = (file) => readFile(new URL(file, fixtureFolder), 'base64');
 const server = await openServer(appPath);
 const target = server.origin + projectPath;
@@ -576,6 +578,113 @@ try {
     await verifyRead(second.filled, 'verified');
     console.log(`  390×844 Chromium touch emulation: three complete exact scans of ${truth.length} answers each, two staged retakes with zero answers.`);
   }, { isMobile: true, hasTouch: true });
+
+  await group('Exact attached interleaved crop, virtual alignment, marked overlays and missing response safety', async (page) => {
+    await installAdapters(page);
+    const source = resolve(appPath, 'fixtures/m3');
+    const key = JSON.parse(await readFile(resolve(source, 'interleaved-key.json'), 'utf8'));
+    const blankTruth = key.itemOrder.map((id) => ({ id, status: 'blank', value: key.expected[id].kind === 'nr' ? '    ' : null, review: false }));
+    const filledTruth = key.itemOrder.map((id) => ({ id, status: key.expected[id].state, value: key.expected[id].rawText, review: false }));
+    const editor = page.locator('#profile-editor');
+    const overlay = page.locator('#recognition-overlay');
+    const status = page.locator('#recognition-status');
+    const stage = (name) => page.locator(`#scan-diagnostics [data-stage="${name}"]`);
+    const settled = status.and(page.locator('[data-status="read"], [data-status="retake"], [data-status="error"]'));
+
+    async function enrollBlank(path, name, mimeType) {
+      await selectImage(page, path, name, mimeType, '#setup-profile');
+      await editor.waitFor();
+      await page.locator('#profile-name').fill(name);
+      const proposal = page.locator('#discovery-status:is([data-status="proposed"], [data-status="review"], [data-status="needs-corners"])');
+      await proposal.waitFor();
+      assert.equal(await proposal.getAttribute('data-status'), 'proposed', await proposal.textContent());
+      await page.locator('#enroll-profile').click();
+      await editor.waitFor({ state: 'hidden' });
+      const profiles = await page.evaluate(() => window.m3qa.listProfiles());
+      const profile = profiles.find((value) => value.name === name);
+      assertDiscoveredMapping(profile, key);
+      return profile;
+    }
+
+    const original = await enrollBlank(resolve(source, 'interleaved-blank.png'), 'Cropped regression original', 'image/png');
+    const attached = { id: 'attachment', complete: true, ...interleavedCrop.attachment };
+    const cases = [attached, ...interleavedCrop.filled];
+    for (const fixture of cases) {
+      const base64 = fixture === attached
+        ? await readFile(cropAttachment, 'base64')
+        : await encoded(fixture.file);
+      const result = await page.evaluate(async ({ base64, fixture, profile }) => {
+        const image = await window.m3qa.loadImage(base64, fixture.id);
+        return window.m3qa.readProfileSheet(image, profile, { batch: { profileId: profile.id, revision: profile.revision } });
+      }, { base64, fixture, profile: original });
+      if (!fixture.complete) {
+        assertRetake(result, fixture.id);
+        assert(result.registration.reasons.some((reason) => ['response-geometry', 'clipped-content'].includes(reason)), result.registration.reasons.join(', '));
+        assert.equal(result.registration.diagnostics.responseGeometry.status, 'failed', fixture.id);
+        continue;
+      }
+      assertExactRead(result, fixture === attached ? blankTruth : filledTruth, fixture.id);
+      const residuals = geometryErrors({ components: key.blocks }, fixture.pageToSource, result.registration.pageToSource);
+      const maximum = Math.max(...residuals);
+      assert(maximum <= .75, `${fixture.id} maximum projection error ${maximum.toFixed(3)} local radii`);
+      assert.equal(result.registration.diagnostics.orientation.status, 'verified', fixture.id);
+      assert.equal(result.registration.diagnostics.responseGeometry.status, 'verified', fixture.id);
+      if (fixture.id === 'attachment' || fixture.id === 'attachment-measured') {
+        assert.equal(result.registration.diagnostics.pagePose.status, 'recovered');
+        assert(result.registration.diagnostics.pagePose.corners.some(({ x, y }) => x < 0 || y < 0 || x > fixture.width || y > fixture.height), 'Expected a virtual page corner beyond the image');
+      }
+      console.log(`  Interleaved ${fixture.id}: ${result.items.length} exact; max projection ${maximum.toFixed(3)} local radii.`);
+    }
+
+    async function capture(path, file, mimeType, expected, truth) {
+      await selectImage(page, path, file, mimeType);
+      await settled.waitFor();
+      assert.equal(await status.getAttribute('data-status'), expected, await status.textContent());
+      if (truth) await assertReadRows(page, truth);
+    }
+    await page.locator('#scan-completed').click();
+    await capture(resolve(source, 'interleaved-filled.png'), 'plain.png', 'image/png', 'read', filledTruth);
+    await page.locator('#scan-next').click();
+    await capture(cropAttachment, 'mock-blank.jpeg', 'image/jpeg', 'read', blankTruth);
+    assert.equal(await stage('page-pose').getAttribute('data-status'), 'recovered');
+    await page.locator('#scan-next').click();
+    const measured = interleavedCrop.filled.find(({ id }) => id === 'attachment-measured');
+    await capture(fixtureFilePath(measured.file), 'marked.jpeg', 'image/jpeg', 'read', filledTruth);
+    assert(await overlay.isVisible());
+    const witnessIds = ['MC1', 'MC16', 'NR1', 'NR2'];
+    const witnesses = key.blocks.flatMap(({ items }) => items).filter(({ id }) => witnessIds.includes(id)).flatMap((item) => {
+      const choices = item.kind === 'mc' ? [item.choices] : item.slots.map(({ choices }) => choices);
+      const answers = item.kind === 'mc' ? [key.expected[item.id].rawText] : key.expected[item.id].slots;
+      return choices.flatMap((options, index) => {
+        const selection = options.find(({ symbol }) => symbol === answers[index]);
+        if (!selection) return [];
+        const { x, y, radius } = selection;
+        const center = point(measured.pageToSource, x, y);
+        return [{ ...center, radius: distance(center, point(measured.pageToSource, x + radius, y)) }];
+      });
+    });
+    const painted = await overlay.evaluate((canvas, witnesses) => {
+      const context = canvas.getContext('2d');
+      return witnesses.map(({ x, y, radius }) => {
+        const half = Math.ceil(radius * 1.85);
+        const pixels = context.getImageData(Math.round(x) - half, Math.round(y) - half, 2 * half + 1, 2 * half + 1);
+        let colors = 0;
+        for (let i = 0; i < pixels.data.length; i += 4) {
+          const pixel = i / 4;
+          const gap = Math.hypot(pixel % pixels.width - half, Math.floor(pixel / pixels.width) - half);
+          if (gap >= radius * .55 && gap <= radius * 1.8 && pixels.data[i + 3] > 127) colors++;
+        }
+        return colors > 12;
+      });
+    }, witnesses);
+    assert(painted.every(Boolean), `Marked overlay was displaced at ${painted.filter((value) => !value).length} of ${witnesses.length} observed centers`);
+    await page.locator('#scan-next').click();
+    const clipped = interleavedCrop.filled.find(({ complete }) => !complete);
+    await capture(fixtureFilePath(clipped.file), 'clipped.jpeg', 'image/jpeg', 'retake');
+    assert.equal(await page.locator('#recognition-results [data-item-id]').count(), 0);
+    assert.equal(await overlay.isVisible(), false);
+    assert.equal(await stage('response-geometry').getAttribute('data-status'), 'failed');
+  });
 
   await group('M3.2 confirmed-batch successive scans, invalidation, privacy and offline validation', async (page, context) => {
     await installAdapters(page);

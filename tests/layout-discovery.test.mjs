@@ -188,3 +188,36 @@ test('two separate complete sheets retake even when manual corners identify eith
   assert.deepEqual(result.items.map(({ id, rawText, status }) => [id, rawText, status]),
     expected.items.map(({ id, rawText, status }) => [id, rawText, status]));
 });
+
+test('a known profile can fit virtual corners when only margins are cropped', () => {
+  const proposal = discoverBlankLayout(syntheticBlank({ numeric: true }), page);
+  const profile = createMarkerlessProfile({
+    id: 'margin-crop', revision: 1, name: 'Synthetic', page, components: proposal.components,
+  });
+  const batch = { profileId: profile.id, revision: profile.revision };
+  const source = syntheticBlank({ numeric: true, marks: true });
+  function crop(width) {
+    const height = 1450;
+    const pixels = new Uint8ClampedArray(width * height * 4);
+    for (let y = 0; y < height; y++) {
+      const start = ((y + 112) * source.width + 18) * 4;
+      pixels.set(source.pixels.subarray(start, start + width * 4), y * width * 4);
+    }
+    return { id: 'cropped', width, height, pixels };
+  }
+  const visible = readProfileSheet(crop(1160), profile, { batch });
+  assert.equal(visible.status, 'read');
+  assert.equal(visible.registration.cornerPath, 'virtual-corners');
+  const { pagePose, responseGeometry } = visible.registration.diagnostics;
+  assert(pagePose.corners.some(({ y }) => y < -1));
+  assert(pagePose.witnesses.heldOut >= 4);
+  assert.equal(pagePose.transform.length, 9);
+  assert(responseGeometry.blocks.every(({ verified }) => verified));
+  assert.deepEqual(visible.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null, '7   ']);
+
+  const clipped = readProfileSheet(crop(830), profile, { batch });
+  assert.equal(clipped.status, 'retake');
+  assert.equal(clipped.registration.diagnostics.responseGeometry.status, 'failed');
+  assert(clipped.registration.diagnostics.pagePose.discarded.reason);
+  assert.deepEqual(clipped.items, []);
+});

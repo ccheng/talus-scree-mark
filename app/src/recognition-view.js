@@ -30,6 +30,15 @@ function drawOverlay(canvas, image, registration, items) {
   const width = Math.max(2, Math.min(image.width, image.height) / 260);
   const matrix = registration.pageToSource;
   context.lineWidth = width;
+  const pose = registration.diagnostics?.pagePose;
+  if (pose?.virtual && pose.corners.length === 4) {
+    context.strokeStyle = '#4b5571';
+    context.setLineDash([width * 4, width * 3]);
+    context.beginPath();
+    pose.corners.forEach(({ x, y }, index) => index === 0 ? context.moveTo(x, y) : context.lineTo(x, y));
+    context.closePath();
+    context.stroke();
+  }
   for (const item of items) {
     const { x, y, width: regionWidth, height } = item.bounds;
     const corners = [[x, y], [x + regionWidth, y], [x + regionWidth, y + height], [x, y + height]]
@@ -120,6 +129,8 @@ export function createRecognitionView({ button, status, results, table, overlay,
     for (const row of diagnostics.children) {
       row.textContent = '';
       delete row.dataset.status;
+      delete row.dataset.path;
+      delete row.dataset.discarded;
     }
   }
 
@@ -132,10 +143,17 @@ export function createRecognitionView({ button, status, results, table, overlay,
       row.textContent = detail;
     };
     const pose = stages.pagePose;
-    const poseText = pose.status === 'recovered' ? 'recovered from faint edges and fitted bubble centers'
+    const poseText = pose.status === 'recovered' ? (pose.virtual
+      ? 'recovered from bubble outlines; estimated corners extend beyond the photo'
+      : 'recovered from fitted bubble centers')
       : pose.status === 'verified' ? (pose.path === 'manual-corners' ? 'checked using your corner positions' : 'located from the page edges')
-      : pose.status === 'unchecked' ? 'not checked' : 'uncertain. Adjust corners or retake the photo.';
+      : pose.status === 'unchecked' ? 'not checked'
+      : pose.discarded?.reason === 'clipped-content' ? 'a bubble fit did not keep every required response region in frame'
+      : 'uncertain. Adjust corners or retake the photo.';
     stage('page-pose', pose.status, `Page pose — ${poseText}`);
+    const poseRow = diagnostics.querySelector('[data-stage="page-pose"]');
+    if (pose.path) poseRow.dataset.path = pose.path;
+    if (pose.discarded?.reason) poseRow.dataset.discarded = pose.discarded.reason;
     const orientation = stages.orientation.status;
     stage('orientation', orientation, `Orientation — ${{
       verified: 'verified', ambiguous: 'ambiguous. Move the numbered corners to identify the upright sheet.',

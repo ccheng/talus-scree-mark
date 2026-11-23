@@ -35,6 +35,7 @@ jobs:
           python -m pip install Pillow==11.3.0
           python tests/acceptance/m3/fixtures.py
           python tests/acceptance/m3/pose-fixtures.py
+          python tests/acceptance/m3/interleaved-crop-fixtures.py
           if ! command -v pdftoppm; then
             sudo apt-get update
             sudo apt-get install -y poppler-utils
