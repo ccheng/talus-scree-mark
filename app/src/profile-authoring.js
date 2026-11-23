@@ -59,7 +59,7 @@ function rasterizeRegion(gray, matrix, region, maxEdge = 840) {
   return { width, height, values, scale, background: quantile(samples, .75) };
 }
 
-function ringCandidates(raster, region, threshold, printedCenters = false) {
+function ringCandidates(raster, region, threshold, printedCenters = false, maxRadius = 8) {
   const { width, height, values, scale } = raster;
   const visited = new Uint8Array(values.length);
   const queue = new Int32Array(values.length);
@@ -94,7 +94,7 @@ function ringCandidates(raster, region, threshold, printedCenters = false) {
     const fill = count / (w * h);
     const cx = (left + right) / 2;
     const cy = (top + bottom) / 2;
-    if (radius < 1.5 || radius > 8 || w / h < .70 || w / h > 1.43 || fill < .14 || fill > .78) continue;
+    if (radius < 1.5 || radius > maxRadius || w / h < .70 || w / h > 1.43 || fill < .14 || fill > .78) continue;
     const lightAt = (x, y) => values[Math.round(y) * width + Math.round(x)] >= threshold;
     if (!lightAt(cx, cy)) {
       if (!printedCenters) continue;
@@ -177,15 +177,20 @@ export function proposeGrid(image, pageToSource, region, { rows, columns, printe
 
 export function pageRingCandidates(gray, pageToSource, page, {
   minRadius = 2.3, maxRadius = 7, margin = 13, limit = 1800, printedCenters = false,
+  region = { x: margin, y: margin, width: page.width - 2 * margin, height: page.height - 2 * margin },
+  fineOutlines = false,
 } = {}) {
-  const region = { x: margin, y: margin, width: page.width - 2 * margin, height: page.height - 2 * margin };
-  const raster = rasterizeRegion(gray, pageToSource, region, 1680);
+  const raster = rasterizeRegion(gray, pageToSource, region, fineOutlines ? 2200 : 1680);
   const candidates = [];
   for (const threshold of [.64, .82]) {
-    for (const candidate of ringCandidates(raster, region, raster.background * threshold, printedCenters)) {
-      if (candidate.radius < minRadius || candidate.radius > maxRadius || candidates.some((entry) =>
-        Math.hypot(entry.x - candidate.x, entry.y - candidate.y) < 1.5)) continue;
-      candidates.push(candidate);
+    for (const candidate of ringCandidates(raster, region, raster.background * threshold, printedCenters, maxRadius)) {
+      if (candidate.radius < minRadius || candidate.radius > maxRadius) continue;
+      const index = candidates.findIndex((entry) => Math.hypot(entry.x - candidate.x, entry.y - candidate.y) < 1.5);
+      if (index >= 0) {
+        // A stronger threshold can find the full outline where the first
+        // pass only saw a smaller glyph or a faint fragment at its center.
+        if (fineOutlines && candidate.radius > candidates[index].radius) candidates[index] = candidate;
+      } else candidates.push(candidate);
       if (candidates.length >= limit) return candidates;
     }
   }

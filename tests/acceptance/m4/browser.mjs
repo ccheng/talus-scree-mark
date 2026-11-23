@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { openServer, projectPath } from '../m1/server.mjs';
 
 const { chromium } = await import(process.env.TALUS_TEST_PLAYWRIGHT_PATH || 'playwright');
@@ -13,6 +13,10 @@ const source = (file) => new URL(`src/${file}`, target).href;
 const { shellAssets } = await import(pathToFileURL(resolve(appPath, 'precache.generated.js')).href);
 const shell = Object.keys(shellAssets).map((path) => path.replace(/^\.\//, ''));
 const staticUrls = new Set([target, ...[...shell, 'sw.js', 'precache.generated.js'].map((path) => new URL(path, target).href)]);
+const portfolioFolder = new URL('./fixtures/', import.meta.url);
+const portfolio = JSON.parse(await readFile(new URL('portfolio-oracles.json', portfolioFolder), 'utf8'));
+const portfolioFile = (file) => fileURLToPath(new URL(file, portfolioFolder));
+const paper = { width: 612, height: 792, orientation: 'portrait', units: 'pt', origin: 'top-left' };
 const browser = await chromium.launch({ executablePath: process.env.TALUS_TEST_CHROMIUM, headless: true });
 let failures = 0;
 let backupWithDeletedPhoto;
@@ -78,6 +82,136 @@ async function group(name, check) {
 }
 
 try {
+  for (const form of portfolio) {
+    await group(`M4 supplied geometry analogue (${form.variant}) discovers, persists and grades all 18 items`, async (page) => {
+      const diagnostics = await page.evaluate(async ({ url, original, paper }) => {
+        const bytes = Uint8Array.from(atob(original), (byte) => byte.charCodeAt(0));
+        const bitmap = await createImageBitmap(new Blob([bytes]));
+        const canvas = document.createElement('canvas');
+        const width = canvas.width = bitmap.width;
+        const height = canvas.height = bitmap.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bitmap, 0, 0);
+        bitmap.close();
+        return (await import(url)).discoverBlankLayout({ width, height, pixels: ctx.getImageData(0, 0, width, height) }, paper).diagnostics;
+      }, { url: source('layout-discovery.js'), original: await readFile(portfolioFile(form.blank), 'base64'), paper });
+      assert.deepEqual(diagnostics.filter(({ kind }) => kind === 'nr').map(({ writingBoxes }) => writingBoxes.length), [4, 4, 4, 4]);
+      await chooseImage(page, '#setup-profile', portfolioFile(form.blank));
+      const editor = page.locator('#profile-editor');
+      await editor.waitFor();
+      const label = `Synthetic top layout ${form.variant}`;
+      await page.locator('#profile-name').fill(label);
+      const proposal = page.locator('#discovery-status:is([data-status="proposed"], [data-status="review"], [data-status="needs-corners"])');
+      await proposal.waitFor();
+      assert.equal(await proposal.getAttribute('data-status'), 'proposed', await proposal.textContent());
+      assert.equal(await page.locator('#profile-blocks [data-block-kind="mc"]').count(), 2);
+      assert.equal(await page.locator('#profile-blocks [data-block-kind="nr"]').count(), 4);
+      await page.locator('#enroll-profile').click();
+      await editor.waitFor({ state: 'hidden' });
+      const profiles = await page.evaluate(async (module) => (await import(module)).listProfiles(), source('profile-store.js'));
+      assert.equal(profiles.length, 1);
+      const [profile] = profiles;
+      const all = profile.components.flatMap(({ items }) => items);
+      assert.deepEqual(all.filter(({ kind }) => kind === 'mc').map(({ id }) => id), Array.from({ length: 14 }, (_, i) => `MC${i + 1}`));
+      assert.deepEqual(all.filter(({ kind }) => kind === 'nr').map(({ id }) => id), ['NR1', 'NR2', 'NR3', 'NR4']);
+      assert(profile.components.every(({ bounds }) => bounds.y + bounds.height < form.writtenAreas[0].y));
+
+      const expected = new Map(form.blocks.flatMap(({ items }) => items.map((item) => [item.id, item])));
+      for (const item of all) {
+        const { kind, choices, slots } = expected.get(item.id);
+        assert.equal(item.kind, kind);
+        const actual = kind === 'mc' ? [item.choices] : item.slots.map(({ choices }) => choices);
+        const expectedSets = kind === 'mc' ? [choices] : slots.map(({ choices }) => choices);
+        assert.equal(actual.length, expectedSets.length);
+        for (const [n, set] of actual.entries()) {
+          assert.deepEqual(set.map(({ symbol }) => symbol), expectedSets[n].map(({ symbol }) => symbol), item.id);
+          for (const [index, choice] of set.entries()) {
+            const center = expectedSets[n][index];
+            const offset = Math.hypot(choice.x - center.x, choice.y - center.y) / center.radius;
+            assert(offset <= .65, `${item.id} ${choice.symbol} shifted ${offset.toFixed(3)} local radii`);
+          }
+        }
+      }
+
+      await page.reload();
+      const selector = page.locator('#profile-selector');
+      const id = `${profile.id}@${profile.revision}`;
+      await selector.locator(`option[value="${id}"]`).waitFor({ state: 'attached' });
+      await selector.selectOption(id);
+      await page.locator('#grading-edit-key').click();
+      const key = page.locator('#grading-key-panel');
+      for (const [item, value] of Object.entries(form.key)) {
+        const field = key.locator(`[name="${item}"]`);
+        if (item.startsWith('MC')) await field.selectOption(value);
+        else await field.fill(value);
+      }
+      await key.getByRole('button', { name: 'Save new key revision' }).click();
+      await appStatus(page).filter({ hasText: /new revision/i }).waitFor();
+      await page.locator('#scan-completed').click();
+      const recognitionRows = () => page.locator('#recognition-results [data-item-id]').evaluateAll((elements) => elements.map((row) => ({
+        id: row.dataset.itemId, state: row.dataset.status, review: row.dataset.review === 'true',
+        rawText: row.querySelector('[data-raw-text]')?.dataset.rawText ?? null,
+      })));
+      await recognize(page, portfolioFile(form.blank));
+      const blankRows = await recognitionRows();
+      assert.equal(blankRows.length, 18);
+      for (const { id, kind } of form.truth) {
+        assert.deepEqual(blankRows.find((row) => row.id === id), { id, state: 'blank', review: false,
+          rawText: kind === 'nr' ? '    ' : null });
+      }
+      await waitGrade(page, '0/6 · 0 pending · final');
+      await page.locator('#scan-next').click();
+      await recognize(page, portfolioFile(form.marked));
+      const rows = await recognitionRows();
+      assert.equal(rows.length, 18);
+      for (const { kind, ...literal } of form.truth) assert.deepEqual(rows.find(({ id }) => id === literal.id), literal);
+      await waitGrade(page, '3/6 · 1 pending · provisional');
+      await page.locator('#grading-save').click();
+      await appStatus(page).filter({ hasText: /result and source photograph saved locally/i }).waitFor();
+      const [saved] = (await snapshot(page)).scans;
+      assert.deepEqual(saved.template.items.map(({ id }) => id), all.map(({ id }) => id));
+      assert.equal(saved.grade.items.find(({ id }) => id === 'NR3').status, 'pending');
+    });
+  }
+
+  await group('M4 selected-box fallback preserves one Alberta grid without absorbing adjacent responses', async (page) => {
+    const form = portfolio.find(({ variant }) => variant === 'document');
+    await chooseImage(page, '#setup-profile', portfolioFile(form.blank));
+    const editor = page.locator('#profile-editor');
+    await editor.waitFor();
+    await page.locator('#profile-name').fill('Synthetic selected-box template');
+    await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    await page.locator('#clear-discovery').click();
+    await page.locator('#block-kind').selectOption('nr');
+    await page.locator('#item-start').fill('2');
+    async function detect(region) {
+      for (const [field, value] of Object.entries(region)) await page.locator(`#region-${field}`).fill(String(value));
+      await page.locator('#detect-grid').click();
+    }
+    await detect({ x: 306, y: 101, width: 280, height: 177 });
+    await page.locator('#editor-status').filter({ hasText: /one.*(question|response|grid)|narrow/i }).waitFor();
+    assert.equal(await page.locator('#profile-blocks > li').count(), 0);
+    const expected = form.blocks.find(({ id }) => id === 'numeric-2');
+    await detect({ x: 380, y: 101, width: 62, height: 177 });
+    await page.locator('#editor-status').filter({ hasText: /42 printed NR bubbles/i }).waitFor();
+    await page.locator('#confirm-block').click();
+    await page.locator('#profile-blocks [data-block-kind="nr"]').waitFor();
+    await page.locator('#enroll-profile').click();
+    await editor.waitFor({ state: 'hidden' });
+    const [saved] = await page.evaluate(async (module) => (await import(module)).listProfiles(), source('profile-store.js'));
+    const [numerical] = saved.components;
+    assert.equal(saved.components.length, 1);
+    assert.equal(numerical.items[0].id, 'NR2');
+    assert.deepEqual(numerical.items[0].slots.map(({ choices }) => choices.map(({ symbol }) => symbol).join('')),
+      expected.items[0].slots.map(({ choices }) => choices.map(({ symbol }) => symbol).join('')));
+    await page.locator('#scan-completed').click();
+    await recognize(page, portfolioFile(form.marked));
+    const [result] = await page.locator('#recognition-results [data-item-id]').all();
+    assert.equal(await page.locator('#recognition-results [data-item-id]').count(), 1);
+    assert.equal(await result.getAttribute('data-item-id'), 'NR2');
+    assert.equal(await result.locator('[data-raw-text]').getAttribute('data-raw-text'), '23.7');
+  });
+
   await group('M4 offline setup, key revisions, review, rescan, photo retention and export through the app', async (page, context) => {
     const requests = [];
     context.on('request', (request) => requests.push({ method: request.method(), url: request.url(), body: request.postData() }));

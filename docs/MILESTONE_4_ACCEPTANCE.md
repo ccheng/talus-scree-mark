@@ -16,3 +16,25 @@ The Product Owner approved the consolidated M4 requirements. Where the earlier p
 4. Export the selected batch as CSV and make a JSON backup. Tap the generated download links and save them to Files. Inspect CSV status and numeric totals.
 5. With the backup safely downloaded, delete the test results and restore the JSON file. Reopen the restored record and photo, correct it, regrade, then export again. Try restoring the same file a second time and verify existing records are intact.
 6. Delete one photograph while keeping its result. Verify that its grade, history and key remain. Confirm the stable M3 preview is separate.
+
+## Alberta discovery correction
+
+The tighter supplied form has an NR horizontal pitch of about 14.0 pt and an outer radius near 5.1 pt. The ratio is about 2.75, below the legacy three-radius spacing rule. The baseline selected cross-question grids and rejected the overlapping proposal. The customized PDF has pitches around 14.3–15 pt, a digit-row pitch near 11.85 pt and taller writing boxes. At the original sampling resolution, its first printed digit row did not survive intact as outer-ring candidates. The baseline proposed four nine-row MC grids in the NR area.
+
+The Alberta path detects the two upper decimal outlines and ten successive four-column rows before general lattice selection. It estimates the horizontal pitch and digit-row spacing independently, uses higher-resolution outline evidence, and treats the writing boxes as supporting evidence. Generic MC grouping uses repeated spacing across blank group gaps to prefer true rows over letter-shaped heading candidates. The app retains independent proposals when other regions conflict and marks the layout for review. A manually selected Alberta box uses the same detection. If it covers multiple NR questions, draw a tighter box around one, including both decimal bubbles. Individual grid correction remains available.
+
+Recognizing the customized blank as a completed sheet also exposed dense printed zeros above the old blank-ink limit. The saved reference now allows a higher baseline only when the same digit repeatedly has dense ink across its slots. Mark-confidence and post-registration block verification thresholds are unchanged.
+
+### iPhone retest
+
+1. Open the synthetic development landing page in Safari and save the two blank and marked pairs to Files. Use a different profile name for each layout.
+2. Import one blank. Review the proposal for MC1–9 on the left, MC10–14 on the right, four separate NR blocks, and no response overlay on either written area. Each NR block has decimal bubbles only in slots 2 and 3.
+3. Save the profile, close and reopen the app, then select that profile again. Import the blank as a completed sheet once and check for clear blanks. Enter the six-item key on the development landing page and scan the corresponding marked sheet. Check the four NR observations `0.25`, `23.7`, `004 ` and four blank slots. The provisional score is 3/6 with one pending item, NR3.
+4. Review NR3, record a credit decision, save the result and photograph, and reopen the record offline. Repeat with the other layout. The existing export and backup steps above also apply to these profiles.
+5. For the manual fallback, use a fresh template draft, clear the proposal, select Numerical response and box one NR question including both decimal bubbles. Tap **Find bubbles in box** and check for 42 bubbles before confirming.
+
+The supplied originals and any local rasters of them are excluded from GitHub. The public preview provides synthetic analogues. For an original PDF, first render or save its page as an image on-device. The camera-style fixture is a simulated perspective, blur and compression test. Physical capture, touch interaction and Safari/PWA storage checks still require the iPhone.
+
+### Remaining acceptance blocker
+
+The clean document analogue passed all 18 observations. On the simulated camera analogue, the independent test found that a heading row could still enter the right MC proposal. The proposal then contained 19 rather than 18 items, with shifted MC identifiers and an incorrect pending count. The four NR blocks were discovered. Inspect the overlays before confirming each profile and do not use the automatic camera proposal if it contains an extra row. This candidate is available for synthetic testing, with M4 acceptance open.
