@@ -30,3 +30,5 @@ For physical iPhone testing, use the [GitHub Pages development preview](https://
 - [Contributor instructions](AGENTS.md)
 
 Use only synthetic or explicitly approved anonymized fixtures. Keep student papers, answers and recognition results on the device and out of the repository, issues and pull requests.
+
+M3 is accepted. See the [handoff](HANDOFF.md) for its acceptance record and the [M4 proposal](docs/MILESTONE_4_PROPOSAL.md) for the next scope decision.
