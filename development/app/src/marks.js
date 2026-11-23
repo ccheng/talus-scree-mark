@@ -62,7 +62,8 @@ function observeBubble(image, matrix, option) {
   return { symbol, score, quality, evidence, rawScore, blankInk: option.blankInk };
 }
 
-export const maximumPrintedBlankInk = .55;
+export const maximumPrintedBlankInk = .72;
+const isolatedBlankInkLimit = .55;
 
 export function measureNumericalBlankInk(image, matrix, components) {
   return components.map((block) => block.kind === 'mc' ? block : {
@@ -77,11 +78,19 @@ export function measureNumericalBlankInk(image, matrix, components) {
       const printedSlots = item.slots.filter(({ choices }, position) => choices.filter(({ symbol }, choice) =>
         /^[0-9]$/.test(symbol) && slots[position][choice] !== null).length >= 6).length;
       if (printedSlots < 3) return item;
+      // A dense glyph can cover more than half the sampled center. Only
+      // allow that baseline when the same digit is dark in several slots.
+      const denseDigits = new Set('0123456789'.split('').filter((digit) =>
+        item.slots.filter(({ choices }, position) => {
+          const index = choices.findIndex(({ symbol }) => symbol === digit);
+          return slots[position][index] >= .42;
+        }).length >= 3));
       return { ...item, slots: item.slots.map(({ choices, ...slot }, position) => ({
         ...slot,
         choices: choices.map((choice, index) => {
           const blankInk = slots[position][index];
-          return blankInk === null ? choice : { ...choice, blankInk };
+          return blankInk === null || (blankInk > isolatedBlankInkLimit && !denseDigits.has(choice.symbol))
+            ? choice : { ...choice, blankInk };
         }),
       })) };
     }),

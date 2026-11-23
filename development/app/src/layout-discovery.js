@@ -3,7 +3,7 @@ import { grayAt, quantile, toGrayImage } from './omr-image.js';
 import { createMarkerlessProfile, intersects, pageRingCandidates } from './profile-authoring.js';
 import { cross, project } from './projective.js';
 
-export const discoveryVersion = 'printed-ring-lattices-1';
+export const discoveryVersion = 'printed-ring-lattices-2';
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 function rowsOf(candidates) {
@@ -68,10 +68,18 @@ function latticesOf(rings) {
       const columns = group[0].cells.length;
       if (columns === 2 && group.length < 3) continue;
       const cells = group.flatMap((row) => row.cells);
-      candidates.push({ rows: group, columns, cells, spacing, pitch: cluster.seed.pitch });
+      // A header-shaped row can align with one real row at the wrong
+      // pitch. Rank that pair below rows whose spacing repeats, including
+      // across one intentionally empty interval between MC groups.
+      const support = rows.filter(({ y }) => {
+        const steps = Math.round((y - group[0].y) / spacing);
+        return Math.abs(y - group[0].y - steps * spacing) <= Math.max(1.45, spacing * .13);
+      }).length;
+      candidates.push({ rows: group, columns, cells, spacing, pitch: cluster.seed.pitch, support });
     }
   }
-  candidates.sort((a, b) => b.cells.length - a.cells.length || b.columns - a.columns);
+  candidates.sort((a, b) => b.support * b.columns - a.support * a.columns ||
+    b.cells.length - a.cells.length || b.columns - a.columns);
   const used = new Set();
   const output = [];
   for (const candidate of candidates) {
@@ -80,6 +88,49 @@ function latticesOf(rings) {
     candidate.cells.forEach((cell) => used.add(cell));
   }
   return { output, used };
+}
+
+function albertaGrids(rings) {
+  const bands = rowsOf(rings).map((band) => ({ ...band, cells: band.cells.sort((a, b) => a.x - b.x) }));
+  const candidates = [];
+  for (const [index, { y, cells }] of bands.entries()) {
+    for (const [column, left] of cells.entries()) {
+      const right = cells[column + 1];
+      if (!right) continue;
+      const pitch = right.x - left.x;
+      const radius = (left.radius + right.radius) / 2;
+      // The boxes aren't reliable under all captures. Adjacent decimal
+      // outlines must be distinct, with space beyond their combined radii.
+      if (pitch < left.radius + right.radius + .65 || pitch > 30 ||
+          Math.abs(left.radius - right.radius) > radius * .25) continue;
+      const tolerance = Math.min(pitch * .18, Math.max(1.4, radius * .40));
+      const match = (band, x) => band.cells.find((ring) => Math.abs(ring.x - x) <= tolerance &&
+        Math.abs(ring.radius - radius) <= radius * .28);
+      if (match(bands[index], left.x - pitch) || match(bands[index], right.x + pitch)) continue;
+      const xs = [left.x - pitch, left.x, right.x, right.x + pitch];
+      const rows = [];
+      let spacing;
+      for (const band of bands.slice(index + 1)) {
+        const gap = band.y - (rows.at(-1)?.y ?? y);
+        if (gap > (spacing ? spacing * 1.19 + .8 : pitch * 1.6)) break;
+        const matched = xs.map((x) => match(band, x));
+        if (!matched.some(Boolean)) continue;
+        if (!matched.every(Boolean)) break;
+        if (rows.length === 1) {
+          if (gap < 1.75 * radius || gap > pitch * 1.5 || rows[0].y - y < gap * .54) break;
+          spacing = gap;
+        } else if (spacing && gap < spacing * .81 - .8) break;
+        rows.push({ y: band.y, cells: matched });
+        if (rows.length === 10) break;
+      }
+      if (rows.length >= 8) candidates.push({
+        rows, columns: 4, cells: rows.flatMap((row) => row.cells), spacing, pitch,
+        above: [null, left, right, null], below: [], kind: 'nr',
+        issues: rows.length === 10 ? [] : ['nr-symbol-count'],
+      });
+    }
+  }
+  return candidates;
 }
 
 function enclosing(choices, page, padding = 2.6) {
@@ -114,7 +165,7 @@ function writingBoxes(gray, matrix, grid) {
       const checkSide = (x) => [.18, .34, .5, .66, .82].filter((fraction) => sample(x, top + fraction * (bottom - top))).length >= 4;
       const found = cells.map(({ x }, i) => {
         let left, right;
-        for (let dx = grid.pitch * .28; dx <= grid.pitch * .53; dx += .35) {
+        for (let dx = grid.pitch * .28; dx <= grid.pitch * .58; dx += .35) {
           if (left === undefined && checkSide(x - dx)) left = x - dx;
           if (right === undefined && checkSide(x + dx)) right = x + dx;
         }
@@ -125,6 +176,36 @@ function writingBoxes(gray, matrix, grid) {
     }
   }
   return [];
+}
+
+function joinMcGroups(proposals, unassigned, page) {
+  const blocks = [];
+  let interrupted = false;
+  for (const proposal of [...proposals].sort((a, b) => a.rows[0].y - b.rows[0].y)) {
+    const first = proposal.rows[0];
+    const previous = proposal.kind === 'mc' && blocks.findLast((other) => {
+      if (other.kind !== 'mc' || !persists(first, other.rows[0]) ||
+          Math.abs(proposal.spacing - other.spacing) > Math.max(1.3, proposal.spacing * .13)) return false;
+      const gap = first.y - other.rows.at(-1).y;
+      return gap > 0 && gap <= 2.65 * other.spacing;
+    });
+    if (!previous) {
+      blocks.push(proposal);
+      continue;
+    }
+    const hasPartialRow = unassigned.some((ring) =>
+      ring.y > previous.rows.at(-1).y + 1.35 && ring.y < first.y - 1.35 &&
+      first.cells.some((cell) => Math.abs(cell.x - ring.x) <= 1.65 && Math.abs(cell.radius - ring.radius) <= 1.15));
+    if (hasPartialRow || proposal.columns < 4 || proposal.columns > 5) {
+      interrupted = true;
+      blocks.push(proposal);
+      continue;
+    }
+    previous.rows = [...previous.rows, ...proposal.rows];
+    previous.cells = [...previous.cells, ...proposal.cells];
+    previous.bounds = enclosing(previous.cells, page);
+  }
+  return { blocks, interrupted };
 }
 
 function orderBlocks(blocks) {
@@ -147,6 +228,28 @@ function orderBlocks(blocks) {
 
 function publicCell(symbol, { x, y, radius }) {
   return { symbol, x, y, radius };
+}
+
+function numericalBlock(id, itemId, bounds, { rows, above, below }) {
+  const slots = [0, 1, 2, 3].map((slot) => ({
+      id: `${itemId}.${slot + 1}`, choices: [
+        ...(above[slot] ? [publicCell('.', above[slot])] : []),
+        ...rows.map(({ cells }, row) => publicCell(String(row), cells[slot])),
+        ...(below[slot] ? [publicCell(above[slot] ? '-' : '.', below[slot])] : []),
+      ],
+    }));
+  return { id, kind: 'nr', bounds, items: [{ id: itemId, kind: 'nr', bounds, slots }] };
+}
+
+export function discoverBoxedAlberta(image, matrix, page, region) {
+  const rings = excludePrintedLabels(pageRingCandidates(toGrayImage(image), matrix, page,
+    { printedCenters: true, maxRadius: 8.6, fineOutlines: true, region }));
+  const grids = albertaGrids(rings);
+  if (grids.length !== 1) return { count: grids.length };
+  const [grid] = grids;
+  if (grid.issues.length) return { count: 1, incomplete: true };
+  const bounds = enclosing([...grid.cells, ...grid.above.filter(Boolean)], page);
+  return { count: 1, block: numericalBlock('boxed-nr', 'NR1', bounds, grid) };
 }
 
 function excludePrintedLabels(rings) {
@@ -178,11 +281,21 @@ function inspectBlankLayout(image, page, corners) {
   const matrix = pageTransform(page, corners);
   if (!matrix) return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
   const gray = toGrayImage(image);
-  const candidates = pageRingCandidates(gray, matrix, page, { printedCenters: true, maxRadius: 8 });
+  const options = { printedCenters: true, maxRadius: 8 };
+  const candidates = pageRingCandidates(gray, matrix, page, options);
   if (candidates.length >= 1800) return { status: 'review', corners, components: [], issues: ['too-many-candidates'] };
-  const rings = excludePrintedLabels(candidates);
+  const fine = pageRingCandidates(gray, matrix, page, { ...options, maxRadius: 8.6, fineOutlines: true });
+  if (fine.length >= 1800) return { status: 'review', corners, components: [], issues: ['too-many-candidates'] };
+  const alberta = albertaGrids(excludePrintedLabels(fine));
+  const usedAlberta = alberta.flatMap(({ cells, above }) => [...cells, ...above.filter(Boolean)]);
+  const rings = excludePrintedLabels(candidates).filter((ring) =>
+    !usedAlberta.some((cell) => distance(ring, cell) <= 1.8));
   const { output, used } = latticesOf(rings);
-  const observedGrids = output.map((grid) => {
+  const observedGrids = [...alberta, ...output].map((grid) => {
+    if (grid.kind === 'nr') return {
+      ...grid, bounds: enclosing([...grid.cells, ...grid.above.filter(Boolean)], page),
+      writingBoxes: writingBoxes(gray, matrix, grid),
+    };
     const boxHints = grid.columns === 4 && grid.rows.length >= 8 ? writingBoxes(gray, matrix, grid) : [];
     const nr = grid.columns === 4 && grid.rows.length >= 8 &&
       (boxHints.length === 4 || (grid.rows.length === 10 && grid.spacing <= grid.pitch * .60));
@@ -199,21 +312,14 @@ function inspectBlankLayout(image, page, corners) {
     };
   });
   const boxed = observedGrids.filter(({ writingBoxes }) => writingBoxes.length === 4);
-  const proposals = observedGrids.filter(({ kind, cells }) => kind === 'nr' || !boxed.some(({ bounds }) =>
+  const filtered = observedGrids.filter(({ kind, cells }) => kind === 'nr' || !boxed.some(({ bounds }) =>
     cells.filter(({ x, y }) => x >= bounds.x - 9 && x <= bounds.x + bounds.width + 9 &&
       y >= bounds.y && y <= bounds.y + bounds.height).length > cells.length * .5));
   const unassigned = rings.filter((ring) => !used.has(ring));
+  const { blocks: proposals, interrupted } = joinMcGroups(filtered, unassigned, page);
   const issues = [];
   if (!proposals.length) issues.push('no-grid');
   if (proposals.some((proposal) => proposal.issues.length)) issues.push('unusual-nr-grid');
-  const interrupted = proposals.some((proposal, index) => proposals.slice(0, index).some((other) => {
-    if (proposal.kind !== 'mc' || other.kind !== 'mc' ||
-        Math.abs(proposal.spacing - other.spacing) > Math.max(1.3, proposal.spacing * .13) ||
-        !persists(proposal.rows[0], other.rows[0])) return false;
-    const [above, below] = [proposal, other].sort((a, b) => a.rows[0].y - b.rows[0].y);
-    const gap = below.rows[0].y - above.rows.at(-1).y;
-    return gap > 0 && gap <= 2.65 * above.spacing;
-  }));
   if (interrupted) issues.push('interrupted-grid');
   const typical = quantile(proposals.flatMap(({ cells }) => cells.map(({ radius }) => radius)), .50);
   // Printed labels also contain closed loops of bubble-like size. Require
@@ -222,11 +328,16 @@ function inspectBlankLayout(image, page, corners) {
   if (latticesOf(bubbleLike).used.size >= 6) issues.push('unassigned-print');
   // An interior unassigned ring on the same printed grid axes is more useful
   // evidence of a partial proposal than isolated printed character outlines.
-  if (proposals.some((proposal) => unassigned.some((ring) => proposal.rows.some(({ y, cells }) =>
-    Math.abs(ring.y - y) <= 1.3 && Math.abs(ring.radius - cells[0].radius) <= 1 &&
-    (Math.abs(ring.x - cells[0].x + proposal.pitch) <= 1.5 || Math.abs(ring.x - cells.at(-1).x - proposal.pitch) <= 1.5))))) {
-    issues.push('unassigned-near-grid');
-  }
+  if (proposals.some(({ rows, pitch, spacing, columns }) => [-1, 1].some((side) => {
+    const unmatched = rows.filter(({ y, cells }) => {
+      const edge = side < 0 ? cells[0] : cells.at(-1);
+      return unassigned.some((ring) => Math.abs(ring.y - y) <= 1.3 &&
+        Math.abs(ring.radius - edge.radius) <= Math.min(1, edge.radius * .22) &&
+        Math.abs(ring.x - edge.x - side * pitch) <= 1.5);
+    });
+    return columns < 4 ? unmatched.length > 0 : unmatched.some(({ y }, i) =>
+      i > 0 && y - unmatched[i - 1].y <= spacing * 1.25);
+  }))) issues.push('unassigned-near-grid');
   let mcIndex = 0;
   let nrIndex = 0;
   const diagnostics = [];
@@ -246,26 +357,26 @@ function inspectBlankLayout(image, page, corners) {
       return [{ id, kind, bounds, items }];
     }
     const itemId = `NR${++nrIndex}`;
-    const slots = [0, 1, 2, 3].map((slot) => ({
-      id: `${itemId}.${slot + 1}`, choices: [
-        ...(proposal.above[slot] ? [publicCell('.', proposal.above[slot])] : []),
-        ...rows.map(({ cells }, row) => publicCell(String(row), cells[slot])),
-        ...(proposal.below[slot] ? [publicCell(proposal.above[slot] ? '-' : '.', proposal.below[slot])] : []),
-      ],
-    }));
-    return [{ id, kind, bounds, items: [{ id: itemId, kind, bounds, slots }] }];
+    return [numericalBlock(id, itemId, bounds, proposal)];
   });
-  if (components.some((item, i) => components.slice(0, i).some((other) => intersects(item.bounds, other.bounds)))) {
-    return { status: 'review', corners, components: [], issues: [...issues, 'overlapping-grids'], diagnostics };
+  const conflicted = new Set();
+  for (const [i, component] of components.entries()) {
+    for (const other of components.slice(0, i)) {
+      if (!intersects(component.bounds, other.bounds)) continue;
+      conflicted.add(component);
+      conflicted.add(other);
+    }
   }
-  if (components.length) {
+  const independent = components.filter((component) => !conflicted.has(component));
+  if (conflicted.size) issues.push('overlapping-grids');
+  if (independent.length) {
     try {
-      createMarkerlessProfile({ id: 'proposal', name: 'Proposal', revision: 1, page, components });
+      createMarkerlessProfile({ id: 'proposal', name: 'Proposal', revision: 1, page, components: independent });
     } catch {
       return { status: 'review', corners, components: [], issues: [...issues, 'invalid-grids'], diagnostics };
     }
   }
-  return { status: issues.length ? 'review' : 'proposed', corners, components, issues, diagnostics };
+  return { status: issues.length ? 'review' : 'proposed', corners, components: independent, issues, diagnostics };
 }
 
 

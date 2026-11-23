@@ -1,6 +1,7 @@
 import { pageTransform, proposePageCorners } from './markerless-registration.js';
 import { conflictingResponseIds, createMarkerlessProfile, manualGrid, proposeGrid, renumberProfileBlock, validBounds } from './profile-authoring.js';
 import { cross, project } from './projective.js';
+import { discoverBoxedAlberta } from './layout-discovery.js';
 import { measureNumericalBlankInk } from './marks.js';
 import { toGrayImage } from './omr-image.js';
 
@@ -376,6 +377,27 @@ export function createProfileEditor({ onSave, onClose }) {
 
   function detect() {
     const region = inputRegion();
+    if (value('block-kind') === 'nr' && !state.editing) {
+      const { block, count, incomplete } = discoverBoxedAlberta(state.image, state.matrix, page(), region);
+      if (count > 1 || incomplete) {
+        state.grid = null;
+        byId('cell-selector').replaceChildren();
+        paint();
+        return say(count > 1
+          ? 'Found multiple NR questions. Draw around one question at a time, including its decimal bubbles.'
+          : 'The NR grid is incomplete. Include all ten digit rows and both decimal bubbles, or use the grid controls to correct it.');
+      }
+      if (block) {
+        const prefix = value('item-prefix');
+        const start = number('item-start');
+        restoreExisting(block);
+        byId('item-prefix').value = prefix;
+        write('item-start', start);
+        setRegion(block.bounds);
+        updateCellSelector();
+        return say('Found 42 printed NR bubbles, including decimals in slots 2 and 3. Review the mapping and confirm this block.');
+      }
+    }
     const { rows, columns } = counts();
     const proposal = proposeGrid(state.image, state.matrix, region, { rows, columns, printedCenters: value('block-kind') === 'nr' });
     if (!proposal.cells.length) throw new TypeError('No reliable bubble lattice was found. Adjust the box or place the grid manually.');
