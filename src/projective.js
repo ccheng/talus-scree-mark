@@ -71,6 +71,21 @@ export function fitProjective(source, target) {
   return multiply(multiply(invertProjective(to.matrix), [...solved, 1]), from.matrix);
 }
 
+export function fitProjectiveSamples(source, target) {
+  if (source.length < 6 || source.length !== target.length) return null;
+  const from = normalize(source);
+  const to = normalize(target);
+  if (!from || !to) return null;
+  const equations = from.points.flatMap(({ x, y }, index) => {
+    const { x: u, y: v } = to.points[index];
+    return [[x, y, 1, 0, 0, 0, -u*x, -u*y, u], [0, 0, 0, x, y, 1, -v*x, -v*y, v]];
+  });
+  const normal = Array.from({ length: 8 }, (_, row) =>
+    Array.from({ length: 9 }, (_, column) => equations.reduce((sum, equation) => sum + equation[row] * equation[column], 0)));
+  const solved = solve(normal);
+  return solved ? multiply(multiply(invertProjective(to.matrix), [...solved, 1]), from.matrix) : null;
+}
+
 export function cross(a, b, c) {
   return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }

@@ -1,8 +1,11 @@
-import { cross, fitProjective, invertProjective, project } from './projective.js';
+import { cross, fitProjective, fitProjectiveSamples, invertProjective, project } from './projective.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
+import { observeOutlines, outlinePoseProposals } from './bubble-registration.js';
 
-export const markerlessThresholdVersion = 'batch-geometry-v2';
+export const markerlessThresholdVersion = 'batch-geometry-v4';
 const registrationStrategy = 'markerless';
+const outlineAdjustments = [[1, 0], [.86, 0], [1.16, 0], [1, -.14], [1, .14]];
+const minimumPageSideRatio = .22;
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const failure = (reason, detail = {}) => ({
   status: 'retake', strategy: registrationStrategy, reasons: [reason], ...detail,
@@ -44,12 +47,12 @@ function quadrilateral(points) {
   return [...corners.slice(first), ...corners.slice(0, first)];
 }
 
-function plausible(corners, image, mirrored = false) {
+function plausible(corners, image, mirrored = false, virtual = false) {
   if (!Array.isArray(corners) || corners.length !== 4 || corners.some((point) => !point ||
-      !Number.isFinite(point.x) || !Number.isFinite(point.y) || point.x < -1 || point.y < -1 ||
-      point.x > image.width || point.y > image.height)) return false;
+      !Number.isFinite(point.x) || !Number.isFinite(point.y) || (!virtual &&
+      (point.x < -1 || point.y < -1 || point.x > image.width || point.y > image.height)))) return false;
   const lengths = corners.map((point, index) => distance(point, corners[(index + 1) % 4]));
-  if (Math.min(...lengths) < Math.min(image.width, image.height) * .22 ||
+  if (Math.min(...lengths) < Math.min(image.width, image.height) * minimumPageSideRatio ||
       Math.max(...lengths) / Math.min(...lengths) > 3.65) return false;
   const sign = mirrored ? -1 : 1;
   return corners.every((point, index) =>
@@ -57,7 +60,7 @@ function plausible(corners, image, mirrored = false) {
       lengths[index] * lengths[(index + 1) % 4] * .18);
 }
 
-function nativeEdge(gray, start, end, coarseStep) {
+function nativeEdge(gray, start, end, coarseStep, minimumContrast) {
   const length = distance(start, end);
   const along = { x: (end.x - start.x) / length, y: (end.y - start.y) / length };
   const inward = { x: -along.y, y: along.x };
@@ -68,12 +71,12 @@ function nativeEdge(gray, start, end, coarseStep) {
     const x = start.x + t * (end.x - start.x);
     const y = start.y + t * (end.y - start.y);
     const at = (offset) => grayAt(gray, x + offset * inward.x, y + offset * inward.y);
-    let best = { contrast: 24, offset: 0 };
+    let best = { contrast: minimumContrast, offset: 0 };
     for (let offset = -search; offset <= search; offset += .5) {
       const contrast = at(offset + 1.25) - at(offset - 1.25);
       if (contrast > best.contrast) best = { contrast, offset };
     }
-    if (best.contrast > 24) samples.push({ t, ...best });
+    if (best.contrast > minimumContrast) samples.push({ t, ...best });
   }
   if (samples.length < 22) return null;
 
@@ -102,15 +105,15 @@ function intersectEdges(first, second) {
   return { x: a.x + t * dx, y: a.y + t * dy };
 }
 
-function refinePageEdges(gray, corners, coarseStep) {
-  const edges = corners.map((point, index) => nativeEdge(gray, point, corners[(index + 1) % 4], coarseStep));
+function refinePageEdges(gray, corners, coarseStep, minimumContrast = 24) {
+  const edges = corners.map((point, index) => nativeEdge(gray, point, corners[(index + 1) % 4], coarseStep, minimumContrast));
   if (edges.some((edge) => !edge)) return corners;
   const refined = edges.map((edge, index) => intersectEdges(edges[(index + 3) % 4], edge));
   return plausible(refined, gray) && refined.every((point, index) => distance(point, corners[index]) <= 6 * coarseStep)
     ? refined : corners;
 }
 
-function pageCorners(gray) {
+function pageCorners(gray, weakEdge = false) {
   const { width, height } = gray;
   const step = Math.max(1, Math.ceil(Math.max(width, height) / 550));
   const w = Math.floor((width - 1) / step) + 1;
@@ -134,7 +137,9 @@ function pageCorners(gray) {
   ];
   const frameBackground = corners.map(({ x, y }) => gray.values[y * width + x]);
   const filledFrame = frameBackground.every((level) => level > paper - 28);
-  const cutoff = Math.max(89, Math.min(paper - 15, (ink + paper) / 2));
+  const outside = quantile(frameBackground, .50);
+  if (weakEdge && paper - outside < 5) return null;
+  const cutoff = weakEdge ? (outside + paper) / 2 : Math.max(89, Math.min(paper - 15, (ink + paper) / 2));
 
   const queue = new Int32Array(values.length);
   const visited = new Uint8Array(values.length);
@@ -174,7 +179,7 @@ function pageCorners(gray) {
     }
   }
   if (widest < values.length * .21 || second > widest * .62) return null;
-  if (filledFrame && widest >= values.length * .78) return corners;
+  if (!weakEdge && filledFrame && widest >= values.length * .78) return corners;
 
   const outline = [];
   for (let y = 0; y < h; y++) {
@@ -182,11 +187,15 @@ function pageCorners(gray) {
     outline.push({ x: left[y] * step, y: y * step }, { x: right[y] * step, y: y * step });
   }
   const proposed = quadrilateral(outline);
-  return plausible(proposed, gray) ? refinePageEdges(gray, proposed, step) : null;
+  return plausible(proposed, gray) ? refinePageEdges(gray, proposed, step, weakEdge ? 4 : 24) : null;
 }
 
 export function proposePageCorners(image) {
   return pageCorners(toGrayImage(image));
+}
+
+export function proposeWeakPageCorners(image) {
+  return pageCorners(toGrayImage(image), true);
 }
 
 export function pageTransform(page, corners) {
@@ -476,8 +485,7 @@ function containsComponents(gray, profile, transform) {
   }));
 }
 
-function inspectOrientation(gray, profile, corners, mirrored) {
-  const pageToSource = pageTransform(profile.page, corners);
+function inspectPose(gray, profile, pageToSource, mirrored, corners) {
   const sourceToPage = pageToSource && invertProjective(pageToSource);
   if (!sourceToPage) return null;
   const blocks = profile.components.map((block) => blockGeometry(gray, profile, block, pageToSource));
@@ -487,7 +495,7 @@ function inspectOrientation(gray, profile, corners, mirrored) {
   const inFrame = containsComponents(gray, profile, pageToSource);
   const geometry = { checked, supported, verified: inFrame && blocks.every(({ verified }) => verified), blocks };
   return {
-    pageToSource, sourceToPage, inFrame, geometry, mirrored,
+    pageToSource, sourceToPage, inFrame, geometry, mirrored, corners,
     score: supported / checked,
   };
 }
@@ -496,36 +504,257 @@ function rotations(corners) {
   return corners.map((_, index) => [...corners.slice(index), ...corners.slice(0, index)]);
 }
 
+function measureHypotheses(gray, profile, measured, manual, proposeTransform) {
+  const reflected = [measured[0], measured[3], measured[2], measured[1]];
+  const direct = manual ? [measured] : rotations(measured);
+  const mirrorVariants = manual ? [reflected] : rotations(reflected);
+  return [
+    ...direct.map((quad) => proposeTransform(gray, profile, quad, false)),
+    ...mirrorVariants.map((quad) => proposeTransform(gray, profile, quad, true)),
+  ].filter(Boolean).sort((a, b) => b.score - a.score);
+}
+
+function edgePose(gray, profile, corners, mirrored) {
+  return inspectPose(gray, profile, pageTransform(profile.page, corners), mirrored, corners);
+}
+
+function bubblePose(gray, profile, corners, mirrored, provisional = false) {
+  const seed = pageTransform(profile.page, corners);
+  if (!seed) return null;
+  const observed = [];
+  for (const block of profile.components) {
+    const choices = block.items.flatMap(choicesFor);
+    const interval = Math.max(1, Math.floor(choices.length / 24));
+    for (const [index, choice] of choices.entries()) {
+      if (index % interval !== 0) continue;
+      const center = outlineCenter(gray, seed, choice);
+      if (!center || distance(center, choice) > .62 * choice.radius) continue;
+      const actual = project(seed, center.x, center.y);
+      if (actual) observed.push({ choice, actual });
+    }
+  }
+  const sources = observed.map(({ choice }) => choice);
+  if (sources.length < 12 || Math.max(...sources.map(({ x }) => x)) - Math.min(...sources.map(({ x }) => x)) < profile.page.width * .27 ||
+      Math.max(...sources.map(({ y }) => y)) - Math.min(...sources.map(({ y }) => y)) < profile.page.height * .27) return null;
+  const fit = observed.filter((_, i) => i % 3 !== 0);
+  const hold = observed.filter((_, i) => i % 3 === 0);
+  const transform = fitProjectiveSamples(fit.map(({ choice }) => choice), fit.map(({ actual }) => actual));
+  const inverse = transform && invertProjective(transform);
+  if (!inverse) return null;
+  const residual = hold.map(({ choice, actual }) => {
+    const point = project(inverse, actual.x, actual.y);
+    return point ? distance(point, choice) / choice.radius : Infinity;
+  });
+  if (quantile(residual, .80) > .29 || Math.max(...residual) > .72) return null;
+  const adjusted = pagePoints(profile.page).map(({ x, y }) => project(transform, x, y));
+  if (!plausible(adjusted, gray, mirrored, provisional) ||
+      adjusted.some((point, index) => distance(point, corners[index]) > Math.min(gray.width, gray.height) * .024)) return null;
+  const result = inspectPose(gray, profile, transform, mirrored, adjusted);
+  const coverage = (points) => {
+    const axes = (axis) => points.map(({ choice }) => choice[axis]);
+    return { width: (Math.max(...axes('x')) - Math.min(...axes('x'))) / profile.page.width,
+      height: (Math.max(...axes('y')) - Math.min(...axes('y'))) / profile.page.height };
+  };
+  return result && { ...result, witnesses: { fit: fit.length, heldOut: hold.length,
+    maxHeldOutErrorInRadii: Math.max(...residual), fitCoverage: coverage(fit), heldOutCoverage: coverage(hold) } };
+}
+
+export function checkProvisionalBlankPose(gray, profile, corners) {
+  const pose = bubblePose(gray, profile, corners, false, true);
+  if (!pose || !stableOutlineProjection(profile.page, pose.pageToSource, pose.corners, gray, false, pose.witnesses)) {
+    return { discarded: { reason: 'insufficient-held-out-outline-fit' } };
+  }
+  const fit = { transform: pose.pageToSource, corners: pose.corners, witnesses: pose.witnesses, blocks: pose.geometry.blocks };
+  if (!pose.geometry.verified) return { discarded: { ...fit, reason: pose.inFrame ? 'response-geometry' : 'clipped-content' } };
+  return fit;
+}
+
+function photoBounds(points) {
+  return {
+    left: Math.min(...points.map(({ x }) => x)), right: Math.max(...points.map(({ x }) => x)),
+    top: Math.min(...points.map(({ y }) => y)), bottom: Math.max(...points.map(({ y }) => y)),
+  };
+}
+
+function responseBounds(profile, transform) {
+  return photoBounds(profile.components.flatMap(({ bounds: { x, y, width, height } }) =>
+    [[x, y], [x + width, y], [x + width, y + height], [x, y + height]]
+      .map(([u, v]) => project(transform, u, v))));
+}
+
+function separateResponses(first, second) {
+  return first.right < second.left || second.right < first.left ||
+    first.bottom < second.top || second.bottom < first.top;
+}
+
+function cropGray(gray, { x, y, width, height }) {
+  const values = new Uint8Array(width * height);
+  for (let row = 0; row < height; row++) {
+    const start = (y + row) * gray.width + x;
+    values.set(gray.values.subarray(start, start + width), row * width);
+  }
+  return { values, width, height };
+}
+
+function additionalSheet(gray, profile, best, candidates) {
+  const response = responseBounds(profile, best.pageToSource);
+  if (candidates.some((candidate) => candidate !== best &&
+      separateResponses(response, responseBounds(profile, candidate.pageToSource)))) return true;
+
+  const paper = photoBounds(best.corners);
+  if (paper.left <= 1 && paper.top <= 1 && paper.right >= gray.width - 2 && paper.bottom >= gray.height - 2) return false;
+  // Look beyond the first response field. A crop may include the first
+  // sheet's margins, but matching those cannot verify a second grid.
+  const rectangles = [
+    { x: 0, y: 0, width: Math.floor(response.left), height: gray.height },
+    { x: Math.ceil(response.right), y: 0, width: gray.width - Math.ceil(response.right), height: gray.height },
+    { x: 0, y: 0, width: gray.width, height: Math.floor(response.top) },
+    { x: 0, y: Math.ceil(response.bottom), width: gray.width, height: gray.height - Math.ceil(response.bottom) },
+  ];
+  const minimum = Math.min(gray.width, gray.height) * minimumPageSideRatio;
+  for (const rect of rectangles) {
+    if (Math.min(rect.width, rect.height) < minimum) continue;
+    const crop = cropGray(gray, rect);
+    function verifies(transform, mirrored, checked = false) {
+      const local = pagePoints(profile.page).map(({ x, y }) => project(transform, x, y));
+      if (local.some((point) => !point)) return false;
+      const corners = local.map(({ x, y }) => ({ x: x + rect.x, y: y + rect.y }));
+      if (!plausible(corners, gray, mirrored)) return false;
+      return checked || inspectPose(crop, profile, transform, mirrored, local)?.geometry.verified;
+    }
+    for (const weak of [false, true]) {
+      const found = pageCorners(crop, weak);
+      if (found && measureHypotheses(crop, profile, found, false, edgePose).some(({ pageToSource, mirrored, geometry }) =>
+        geometry.verified && verifies(pageToSource, mirrored, true))) return true;
+    }
+    const outlines = observeOutlines(crop, profile.page);
+    if (!outlines) continue;
+    for (const [ratio, shear] of outlineAdjustments) {
+      if (outlinePoseProposals(crop, profile, ratio, shear, outlines).some(({ transform, mirrored }) => verifies(transform, mirrored))) return true;
+    }
+  }
+  return false;
+}
+
+function stableOutlineProjection(page, transform, corners, gray, mirrored, witnesses) {
+  if (!plausible(corners, gray, mirrored, true) ||
+      [witnesses.fitCoverage, witnesses.heldOutCoverage].some(({ width, height }) => width < .27 || height < .27)) return false;
+  // A projective pole anywhere in the template means the visible fit cannot
+  // be extrapolated safely to the complete page.
+  const denominators = pagePoints(page).map(({ x, y }) => transform[6] * x + transform[7] * y + transform[8]);
+  return denominators.every((denominator) => Math.abs(denominator) > 1e-8 && Math.sign(denominator) === Math.sign(denominators[0]));
+}
+
+function stages(corners, path, pose, orientation, responseGeometry, geometry, fit) {
+  return {
+    pagePose: { status: pose, path, corners: corners ?? [], ...fit },
+    orientation: { status: orientation },
+    responseGeometry: { status: responseGeometry, blocks: geometry?.blocks ?? [] },
+  };
+}
+
 export function registerMarkerless(image, profile, { corners, batch } = {}) {
   if (batch?.profileId !== profile.id || batch?.revision !== profile.revision) {
-    return failure('batch-not-confirmed');
+    return failure('batch-not-confirmed', { diagnostics: stages(null, null, 'unchecked', 'unchecked', 'unchecked') });
   }
   const gray = toGrayImage(image);
   const measured = corners ?? pageCorners(gray);
-  if (!measured) return failure('page-corners', { canSetCorners: true });
-  if (!plausible(measured, gray)) {
-    return failure(plausible(measured, gray, true) ? 'mirrored-registration' : 'page-corners', { canSetCorners: true });
+  let path = corners ? 'manual-corners' : 'page-boundary';
+  let discardedOutline;
+  if (corners && !plausible(corners, gray)) {
+    const mirrored = plausible(corners, gray, true);
+    return failure(mirrored ? 'mirrored-registration' : 'page-corners', {
+      canSetCorners: true, diagnostics: stages(corners, path, 'failed', mirrored ? 'mirrored' : 'unchecked', 'unchecked'),
+    });
   }
-  const reflected = [measured[0], measured[3], measured[2], measured[1]];
-  const direct = corners ? [measured] : rotations(measured);
-  const mirrorVariants = corners ? [reflected] : rotations(reflected);
-  const candidates = [
-    ...direct.map((quad) => inspectOrientation(gray, profile, quad, false)),
-    ...mirrorVariants.map((quad) => inspectOrientation(gray, profile, quad, true)),
-  ].filter(Boolean).sort((a, b) => b.score - a.score);
-  const eligible = candidates.filter(({ geometry }) => geometry.verified);
+  let candidates = measured ? measureHypotheses(gray, profile, measured, Boolean(corners), edgePose) : [];
+  let eligible = candidates.filter(({ geometry }) => geometry.verified);
+  if (!eligible.length && !corners) {
+    const faint = pageCorners(gray, true);
+    const distinct = faint && (!measured || faint.some((point, index) => distance(point, measured[index]) > 3));
+    if (distinct) {
+      const alternative = measureHypotheses(gray, profile, faint, false, bubblePose);
+      const verified = alternative.filter(({ geometry }) => geometry.verified);
+      if (verified.length) {
+        path = 'bubble-fit';
+        candidates = alternative;
+        eligible = verified;
+      }
+    }
+  }
+  if (!eligible.length && !corners && (!measured || measured.filter((point, index) =>
+    nativeEdge(gray, point, measured[(index + 1) % 4], 5, 9)).length < 3)) {
+    const alternative = [];
+    const outlines = observeOutlines(gray, profile.page);
+    for (const [ratio, shear] of outlines ? outlineAdjustments : []) {
+      for (const { transform, mirrored, witnesses } of outlinePoseProposals(gray, profile, ratio, shear, outlines)) {
+        const adjusted = pagePoints(profile.page).map(({ x, y }) => project(transform, x, y));
+        const virtual = !plausible(adjusted, gray, mirrored);
+        const fit = { transform, corners: adjusted, witnesses, virtual };
+        if (virtual && !stableOutlineProjection(profile.page, transform, adjusted, gray, mirrored, witnesses)) {
+          discardedOutline ??= { ...fit, reason: 'unreliable-virtual-pose', score: -1 };
+          continue;
+        }
+        const samePose = (entry, candidate) => entry.mirrored === candidate.mirrored &&
+          entry.corners.every((point, index) => distance(point, candidate.corners[index]) < 5);
+        if (alternative.some((entry) => entry.fit && samePose(entry, { mirrored, corners: adjusted }))) continue;
+        const pose = inspectPose(gray, profile, transform, mirrored, adjusted);
+        if (!pose?.geometry.verified) {
+          if (!discardedOutline || (pose?.score ?? -1) > discardedOutline.score) {
+            discardedOutline = { ...fit, reason: pose?.inFrame ? 'response-geometry' : 'clipped-content',
+              blocks: pose?.geometry.blocks ?? [], score: pose?.score ?? -1 };
+          }
+          continue;
+        }
+        const existing = alternative.findIndex((entry) => samePose(entry, pose));
+        if (existing < 0) alternative.push({ ...pose, fit, virtual });
+        else alternative[existing] = { ...pose, fit, virtual };
+        const ordered = mirrored ? [adjusted[0], adjusted[3], adjusted[2], adjusted[1]] : adjusted;
+        for (const hypothesis of measureHypotheses(gray, profile, ordered, false, edgePose)) {
+          if (hypothesis.geometry.verified && !alternative.some((entry) =>
+            samePose(entry, hypothesis))) alternative.push({ ...hypothesis, virtual });
+        }
+      }
+      if (alternative.length) break;
+    }
+    if (alternative.length) {
+      candidates = alternative.sort((a, b) => b.score - a.score || Number(Boolean(b.fit)) - Number(Boolean(a.fit)));
+      path = candidates[0].virtual ? 'virtual-corners' : 'bubble-fit';
+      eligible = candidates;
+    }
+  }
   const best = eligible[0];
   if (!best) {
     const first = candidates[0];
+    const outlineFailure = { discarded: discardedOutline ?? { reason: 'no-reliable-outline-fit' } };
+    if (discardedOutline?.virtual && discardedOutline.blocks && discardedOutline.score > (first?.score ?? 0)) {
+      return failure(discardedOutline.reason, { canSetCorners: true,
+        diagnostics: stages(discardedOutline.corners, 'virtual-corners', 'review', 'unchecked', 'failed',
+          { blocks: discardedOutline.blocks }, outlineFailure),
+      });
+    }
+    if (!first) return failure('page-corners', {
+      canSetCorners: true, diagnostics: stages(measured, path, 'failed', 'unchecked', 'unchecked', undefined, outlineFailure),
+    });
     return failure(first?.inFrame ? 'response-geometry' : 'clipped-content', {
       canSetCorners: true, geometry: first?.geometry,
+      diagnostics: stages(measured, path, first.score >= .55 ? 'verified' : 'review', 'unchecked', 'failed', first.geometry, outlineFailure),
     });
   }
   const competitor = eligible[1];
   const tied = competitor && best.score - competitor.score < .075;
   const evidence = { geometry: best.geometry, canSetCorners: true, orientationMargin: competitor ? best.score - competitor.score : null };
-  if (tied && !corners) return failure('ambiguous-orientation', evidence);
-  if (best.mirrored && !(tied && corners && !competitor.mirrored)) return failure('mirrored-registration', evidence);
+  const poseStatus = path === 'bubble-fit' || path === 'virtual-corners' ? 'recovered' : 'verified';
+  const fitDetail = best.fit ? { ...best.fit, discarded: discardedOutline } : undefined;
+  if (additionalSheet(gray, profile, best, eligible)) return failure('multiple-sheets', {
+    geometry: best.geometry, canSetCorners: false, diagnostics: stages(null, path, 'review', 'unchecked', 'verified', best.geometry),
+  });
+  if ((tied || (path === 'virtual-corners' && !best.fit)) && !corners) return failure('ambiguous-orientation', {
+    ...evidence, diagnostics: stages(best.corners, path, poseStatus, 'ambiguous', 'verified', best.geometry, fitDetail),
+  });
+  if (best.mirrored && !(tied && corners && !competitor.mirrored)) return failure('mirrored-registration', {
+    ...evidence, diagnostics: stages(best.corners, path, poseStatus, 'mirrored', 'verified', best.geometry, fitDetail),
+  });
   // Manually ordered corners resolve orientation only. The direct hypothesis
   // must have passed exactly the same complete response-geometry checks.
   const aligned = best.mirrored ? competitor : best;
@@ -533,6 +762,7 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
     status: 'registered', strategy: registrationStrategy, reasons: [],
     pageToSource: aligned.pageToSource, sourceToPage: aligned.sourceToPage,
     authorization: 'teacher-confirmed-batch', orientationMargin: evidence.orientationMargin,
-    cornerPath: corners ? 'manual-corners' : 'page-boundary', corners: measured, geometry: aligned.geometry,
+    cornerPath: path, corners: aligned.corners, geometry: aligned.geometry,
+    diagnostics: stages(aligned.corners, path, poseStatus, 'verified', 'verified', aligned.geometry, fitDetail),
   };
 }

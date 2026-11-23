@@ -55,7 +55,37 @@ function observeBubble(image, matrix, option) {
   if (!usable) return { symbol, score: null, quality, evidence };
   const darkness = coreSamples.reduce((sum, sample) =>
     sum + Math.max(0, Math.min(1, (background - sample) / contrast)), 0);
-  return { symbol, score: darkness / coreSamples.length, quality, evidence };
+  const rawScore = darkness / coreSamples.length;
+  if (option.blankInk === undefined) return { symbol, score: rawScore, quality, evidence };
+  // Measure the added fill against the paper area the printed glyph leaves.
+  const score = Math.max(0, (rawScore - option.blankInk) / (1 - option.blankInk));
+  return { symbol, score, quality, evidence, rawScore, blankInk: option.blankInk };
+}
+
+export const maximumPrintedBlankInk = .55;
+
+export function measureNumericalBlankInk(image, matrix, components) {
+  return components.map((block) => block.kind === 'mc' ? block : {
+    ...block,
+    items: block.items.map((item) => {
+      const slots = item.slots.map(({ choices }) => choices.map(({ blankInk: _, ...choice }) => {
+        const { score } = observeBubble(image, matrix, choice);
+        return score >= .035 && score <= maximumPrintedBlankInk ? Number(score.toFixed(3)) : null;
+      }));
+      // A printed grid has ink in many different digits and positions. A
+      // stray mark or an isolated printed dot must never become a baseline.
+      const printedSlots = item.slots.filter(({ choices }, position) => choices.filter(({ symbol }, choice) =>
+        /^[0-9]$/.test(symbol) && slots[position][choice] !== null).length >= 6).length;
+      if (printedSlots < 3) return item;
+      return { ...item, slots: item.slots.map(({ choices, ...slot }, position) => ({
+        ...slot,
+        choices: choices.map((choice, index) => {
+          const blankInk = slots[position][index];
+          return blankInk === null ? choice : { ...choice, blankInk };
+        }),
+      })) };
+    }),
+  });
 }
 
 function observeGroup(image, matrix, choices) {

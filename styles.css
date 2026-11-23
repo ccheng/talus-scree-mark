@@ -149,6 +149,8 @@ figcaption { color: var(--muted); margin-top: .45rem; font-size: .87rem; text-al
 .profile-card input:focus-visible, .profile-card select:focus-visible { outline: 3px solid #385d97; outline-offset: 1px; }
 .profile-card li { margin: .25rem 0; }
 .profile-card li button { min-height: 2rem; margin: .2rem .25rem; }
+.block-actions { display: flex; flex-wrap: wrap; align-items: start; }
+#numbering-conflicts, [data-numbering-conflict="true"] > strong { color: #922a17; }
 .profile-viewport { max-height: 60vh; overflow: auto; background: #e7ebe4; }
 .profile-viewport canvas {
   max-width: none;

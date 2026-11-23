@@ -2,6 +2,7 @@ import { project } from './projective.js';
 
 const messages = {
   'page-corners': 'Could not locate a reliable page outline. Use Set scan corners or retake against a contrasting background.',
+  'multiple-sheets': 'More than one complete sheet fits the selected template. Retake with one sheet in the photo.',
   'ambiguous-orientation': 'More than one page orientation fits. Set scan corners to identify the correct orientation.',
   'batch-not-confirmed': 'Confirm a batch with the selected profile revision.',
   'response-geometry': 'The bubble blocks or rows do not match the selected layout, or part of a block is obscured.',
@@ -29,6 +30,15 @@ function drawOverlay(canvas, image, registration, items) {
   const width = Math.max(2, Math.min(image.width, image.height) / 260);
   const matrix = registration.pageToSource;
   context.lineWidth = width;
+  const pose = registration.diagnostics?.pagePose;
+  if (pose?.virtual && pose.corners.length === 4) {
+    context.strokeStyle = '#4b5571';
+    context.setLineDash([width * 4, width * 3]);
+    context.beginPath();
+    pose.corners.forEach(({ x, y }, index) => index === 0 ? context.moveTo(x, y) : context.lineTo(x, y));
+    context.closePath();
+    context.stroke();
+  }
   for (const item of items) {
     const { x, y, width: regionWidth, height } = item.bounds;
     const corners = [[x, y], [x + regionWidth, y], [x + regionWidth, y + height], [x, y + height]]
@@ -93,7 +103,7 @@ function addItems(table, items) {
   table.replaceChildren(fragment);
 }
 
-export function createRecognitionView({ button, status, results, table, overlay }) {
+export function createRecognitionView({ button, status, results, table, overlay, diagnostics, onRegistration }) {
   let active;
   let available = false;
   let jobId = 0;
@@ -115,6 +125,65 @@ export function createRecognitionView({ button, status, results, table, overlay 
     overlay.hidden = true;
     overlay.width = 1;
     overlay.height = 1;
+    diagnostics.hidden = true;
+    for (const row of diagnostics.children) {
+      row.textContent = '';
+      delete row.dataset.status;
+      delete row.dataset.path;
+      delete row.dataset.discarded;
+    }
+  }
+
+  function showDiagnostics(registration, profile) {
+    const stages = registration.diagnostics;
+    if (!stages || !profile) return;
+    const stage = (name, state, detail) => {
+      const row = diagnostics.querySelector(`[data-stage="${name}"]`);
+      row.dataset.status = state;
+      row.textContent = detail;
+    };
+    const pose = stages.pagePose;
+    const poseText = pose.status === 'recovered' ? (pose.virtual
+      ? 'recovered from bubble outlines; estimated corners extend beyond the photo'
+      : 'recovered from fitted bubble centers')
+      : pose.status === 'verified' ? (pose.path === 'manual-corners' ? 'checked using your corner positions' : 'located from the page edges')
+      : pose.status === 'unchecked' ? 'not checked'
+      : pose.discarded?.reason === 'clipped-content' ? 'a bubble fit did not keep every required response region in frame'
+      : 'uncertain. Adjust corners or retake the photo.';
+    stage('page-pose', pose.status, `Page pose — ${poseText}`);
+    const poseRow = diagnostics.querySelector('[data-stage="page-pose"]');
+    if (pose.path) poseRow.dataset.path = pose.path;
+    if (pose.discarded?.reason) poseRow.dataset.discarded = pose.discarded.reason;
+    const orientation = stages.orientation.status;
+    stage('orientation', orientation, `Orientation — ${{
+      verified: 'verified', ambiguous: 'ambiguous. Move the numbered corners to identify the upright sheet.',
+      mirrored: 'the capture appears mirrored', unchecked: 'not confirmed',
+    }[orientation] ?? orientation}`);
+    const geometry = stages.responseGeometry;
+    const row = diagnostics.querySelector('[data-stage="response-geometry"]');
+    stage('response-geometry', geometry.status, 'Response geometry — ' + ({
+      verified: 'all expected blocks passed', failed: 'one or more required blocks did not match', unchecked: 'not checked',
+    }[geometry.status] ?? geometry.status));
+    const failures = geometry.blocks.filter(({ verified }) => !verified);
+    if (failures.length) {
+      const list = document.createElement('ul');
+      for (const block of failures) {
+        const expected = profile.components.find(({ id }) => id === block.id);
+        const ids = expected?.items.map(({ id }) => id) ?? [block.id];
+        const label = ids.length > 1 ? `${ids[0]}–${ids.at(-1)}` : ids[0];
+        const counts = [
+          [block.missingRows, 'missing row'], [block.missingSlots, 'missing slot'],
+          [block.missingColumns, 'missing column'], [block.extraRows, 'extra row'], [block.relocatedChoices, 'displaced choice'],
+        ].flatMap(([count, reason]) => count ? [`${count} ${reason}${count === 1 ? '' : 's'}`] : []);
+        if (block.spacingMismatch) counts.push('choice spacing differs');
+        if (!counts.length) counts.push(`only ${block.supported} of ${block.checked} expected outlines supported`);
+        const item = document.createElement('li');
+        item.textContent = `${label}: ${counts.join(', ')}.`;
+        list.append(item);
+      }
+      row.append(list);
+    }
+    diagnostics.hidden = false;
   }
 
   function read(image, request) {
@@ -141,6 +210,8 @@ export function createRecognitionView({ button, status, results, table, overlay 
         setStatus('error', 'Recognition did not finish. Try reading the bubbles again.');
         return;
       }
+      onRegistration(result.registration);
+      showDiagnostics(result.registration, request?.profile);
       if (result.registration.strategy) status.dataset.strategy = result.registration.strategy;
       if (result.registration.authorization) status.dataset.authorization = result.registration.authorization;
       if (result.registration.cornerPath) status.dataset.cornerPath = result.registration.cornerPath;
@@ -179,9 +250,9 @@ export function createRecognitionView({ button, status, results, table, overlay 
     }
   }
 
-  function setAvailable(value) {
+  function setAvailable(value, visible = true) {
     available = value;
-    button.hidden = !value;
+    button.hidden = !value || !visible;
   }
 
   return { read, reset, setAvailable };

@@ -1,4 +1,4 @@
-import { pageTransform, proposePageCorners } from './markerless-registration.js';
+import { checkProvisionalBlankPose, pageTransform, proposePageCorners, proposeWeakPageCorners } from './markerless-registration.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 import { createMarkerlessProfile, intersects, pageRingCandidates } from './profile-authoring.js';
 import { cross, project } from './projective.js';
@@ -100,14 +100,17 @@ function writingBoxes(gray, matrix, grid) {
   const { cells, y } = grid.rows[0];
   const sample = (x, top) => inkAt(gray, matrix, x, top) < 150;
   const hits = [];
-  for (let line = y - 38; line <= y - 5; line += .55) {
+  // Alberta forms may use one tall strip with shared dividers rather than
+  // four short separate boxes. Scale the search to the printed column pitch.
+  const maxHeight = Math.max(25, Math.min(48, grid.pitch * 2));
+  for (let line = y - 13 - grid.spacing - maxHeight; line <= y - 5; line += .55) {
     const horizontal = cells.every(({ x }) =>
       [-.23, -.12, 0, .12, .23].filter((u) => sample(x + u * grid.pitch, line)).length >= 4);
     if (horizontal) hits.push(line);
   }
   for (const top of hits) {
     for (const bottom of hits) {
-      if (bottom - top < 7 || bottom - top > 25) continue;
+      if (bottom - top < 7 || bottom - top > maxHeight) continue;
       const checkSide = (x) => [.18, .34, .5, .66, .82].filter((fraction) => sample(x, top + fraction * (bottom - top))).length >= 4;
       const found = cells.map(({ x }, i) => {
         let left, right;
@@ -146,8 +149,28 @@ function publicCell(symbol, { x, y, radius }) {
   return { symbol, x, y, radius };
 }
 
-export function discoverBlankLayout(image, page, suppliedCorners) {
-  const corners = suppliedCorners ?? proposePageCorners(image);
+function excludePrintedLabels(rings) {
+  // Small outlined characters inside, or immediately above, repeated
+  // larger bubbles are labels. Check the same offset across the row before
+  // discarding an above-bubble candidate from the geometry search.
+  const contained = (small, large) => large.radius >= small.radius * 1.65 &&
+    distance(small, large) < large.radius - small.radius * .5;
+  return rings.filter((ring) => {
+    if (rings.some((candidate) => contained(ring, candidate))) return false;
+    const above = (small, large) => large.radius >= small.radius * 1.75 &&
+      Math.abs(small.x - large.x) < large.radius * .45 && large.y - small.y > large.radius &&
+      large.y - small.y < large.radius * 2.35;
+    const anchor = rings.find((candidate) => above(ring, candidate));
+    if (!anchor) return true;
+    const offset = anchor.y - ring.y;
+    const labels = rings.filter((candidate) => Math.abs(candidate.y - ring.y) < 1.3 &&
+      Math.abs(candidate.radius - ring.radius) < .85 && rings.some((bubble) =>
+        above(candidate, bubble) && Math.abs(bubble.y - candidate.y - offset) < 1.3));
+    return labels.length < 3;
+  });
+}
+
+function inspectBlankLayout(image, page, corners) {
   if (!Array.isArray(corners) || corners.length !== 4 || !corners.every((corner, index) =>
     cross(corner, corners[(index + 1) % 4], corners[(index + 2) % 4]) > 0)) {
     return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
@@ -155,8 +178,9 @@ export function discoverBlankLayout(image, page, suppliedCorners) {
   const matrix = pageTransform(page, corners);
   if (!matrix) return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
   const gray = toGrayImage(image);
-  const rings = pageRingCandidates(gray, matrix, page);
-  if (rings.length >= 1800) return { status: 'review', corners, components: [], issues: ['too-many-candidates'] };
+  const candidates = pageRingCandidates(gray, matrix, page, { printedCenters: true, maxRadius: 8 });
+  if (candidates.length >= 1800) return { status: 'review', corners, components: [], issues: ['too-many-candidates'] };
+  const rings = excludePrintedLabels(candidates);
   const { output, used } = latticesOf(rings);
   const observedGrids = output.map((grid) => {
     const boxHints = grid.columns === 4 && grid.rows.length >= 8 ? writingBoxes(gray, matrix, grid) : [];
@@ -191,6 +215,11 @@ export function discoverBlankLayout(image, page, suppliedCorners) {
     return gap > 0 && gap <= 2.65 * above.spacing;
   }));
   if (interrupted) issues.push('interrupted-grid');
+  const typical = quantile(proposals.flatMap(({ cells }) => cells.map(({ radius }) => radius)), .50);
+  // Printed labels also contain closed loops of bubble-like size. Require
+  // repeated spacing before treating unmatched ink as an omitted response grid.
+  const bubbleLike = unassigned.filter(({ radius }) => Math.abs(radius - typical) <= typical * .22);
+  if (latticesOf(bubbleLike).used.size >= 6) issues.push('unassigned-print');
   // An interior unassigned ring on the same printed grid axes is more useful
   // evidence of a partial proposal than isolated printed character outlines.
   if (proposals.some((proposal) => unassigned.some((ring) => proposal.rows.some(({ y, cells }) =>
@@ -237,4 +266,53 @@ export function discoverBlankLayout(image, page, suppliedCorners) {
     }
   }
   return { status: issues.length ? 'review' : 'proposed', corners, components, issues, diagnostics };
+}
+
+
+function provisionalBlank(image, page, first) {
+  // With no physical edges the exact paper origin is unobservable. Use a
+  // same-aspect local coordinate frame and verify the visible layout against it.
+  const scale = Math.min((image.width - 1) / page.width, (image.height - 1) / page.height);
+  const left = (image.width - 1 - scale * page.width) / 2;
+  const top = (image.height - 1 - scale * page.height) / 2;
+  const corners = [{ x: left, y: top }, { x: left + scale * page.width, y: top },
+    { x: left + scale * page.width, y: top + scale * page.height }, { x: left, y: top + scale * page.height }];
+  const found = inspectBlankLayout(image, page, corners);
+  const signatures = ({ components }) => JSON.stringify(components.map(({ kind, items }) =>
+    [kind, items.map((item) => item.kind === 'mc' ? item.choices.map(({ symbol }) => symbol) :
+      item.slots.map(({ choices }) => choices.map(({ symbol }) => symbol)))]));
+  const coverage = new Set(found.components.map(({ bounds }) =>
+    [bounds.x + bounds.width / 2 > page.width / 2, bounds.y + bounds.height / 2 > page.height / 2].join()));
+  if (found.status !== 'proposed' || coverage.size < 3 || signatures(first) !== signatures(found)) {
+    return { discarded: { reason: 'incomplete-or-inconsistent-visible-lattices', blocks: found.diagnostics ?? [] } };
+  }
+  const evidence = checkProvisionalBlankPose(toGrayImage(image), { page, components: found.components }, corners);
+  if (evidence.discarded) return evidence;
+  return { proposal: { ...found, corners: evidence.corners, pagePose: 'virtual-corners',
+    poseDiagnostics: { ...evidence, frame: 'provisional', discarded: { reason: 'frame-aspect', corners: first.corners } } } };
+}
+
+export function discoverBlankLayout(image, page, suppliedCorners) {
+  const provisional = suppliedCorners ?? proposePageCorners(image);
+  const first = inspectBlankLayout(image, page, provisional);
+  const fillsPhoto = provisional?.length === 4 && provisional[0].x === 0 && provisional[0].y === 0 &&
+    provisional[2].x === image.width - 1 && provisional[2].y === image.height - 1;
+  if (!suppliedCorners && fillsPhoto && Math.abs(image.width * page.height / (image.height * page.width) - 1) > .017) {
+    first.status = 'review';
+    first.issues.push('frame-aspect');
+  }
+  if (suppliedCorners || first.status === 'proposed') return first;
+  const faint = proposeWeakPageCorners(image);
+  if (faint && !(first.corners.length === 4 && faint.every((corner, index) => distance(corner, first.corners[index]) < 3))) {
+    const recovered = inspectBlankLayout(image, page, faint);
+    if (recovered.status === 'proposed') return { ...recovered, pagePose: 'faint-boundary' };
+  }
+  if (first.issues.includes('frame-aspect')) {
+    const recovery = first.issues.length === 1 ? provisionalBlank(image, page, first) :
+      { discarded: { reason: 'provisional-frame-has-incomplete-lattices', blocks: first.diagnostics ?? [] } };
+    if (recovery.proposal) return recovery.proposal;
+    return { ...first, components: [], diagnostics: [], pagePose: 'uncertain',
+      poseDiagnostics: { discarded: recovery.discarded } };
+  }
+  return first;
 }
