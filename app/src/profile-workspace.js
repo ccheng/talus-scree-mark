@@ -1,11 +1,12 @@
-import { createProfileEditor, sourceOnCanvas } from './profile-editor.js';
+import { createProfileEditor, insetCorners, nearestCorner, paintCornerMarkers, sourceOnCanvas } from './profile-editor.js';
+import { proposePageCorners } from './markerless-registration.js';
 import { deleteProfile, listProfiles, saveProfile } from './profile-store.js';
 
 const byId = (id) => document.getElementById(id);
 const referenceKey = 'reference';
 const key = ({ id, revision }) => `${id}@${revision}`;
 
-export function createProfileWorkspace({ image, onChanged, requestBlank, read, onEditorClosed }) {
+export function createProfileWorkspace({ image, onChanged, requestBlank, read, onEditorClosed, onCaptureRequested }) {
   const selector = byId('profile-selector');
   const profileStatus = byId('profile-status');
   const management = byId('profile-management');
@@ -13,9 +14,8 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   const manualCanvas = byId('scan-corner-canvas');
   const manualBackground = document.createElement('canvas');
   const manual = byId('manual-corners');
-  const batchConfirmation = byId('batch-confirmation');
-  const attestation = byId('batch-attestation');
-  const startBatch = byId('start-batch');
+  const scanCompleted = byId('scan-completed');
+  const scanNext = byId('scan-next');
   const endBatch = byId('end-batch');
   const userCorners = [];
   let selectedKey = referenceKey;
@@ -24,8 +24,9 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   let pendingBlank = false;
   let manageAction = null;
   let activeCorners;
+  let estimatedCorners;
+  let dragCorner = -1;
   let activeBatch;
-  let offeredBatch;
   let refreshSequence = 0;
 
   function selected() {
@@ -37,37 +38,29 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
     byId('profile-pin').textContent = active
       ? activeBatch
         ? `Batch active for ${active.name}, revision ${active.revision}.`
-        : `${active.name}, revision ${active.revision}. Start a batch to read marked sheets.`
+        : `${active.name}, revision ${active.revision}, selected.`
       : 'Coded reference sheet selected.';
-    selector.disabled = Boolean(activeBatch);
-    startBatch.hidden = !active || Boolean(activeBatch) || !batchConfirmation.hidden;
+    scanCompleted.hidden = !active || Boolean(activeBatch);
+    scanNext.hidden = !activeBatch || !image();
+    byId('profile-advanced').hidden = !active;
+
     endBatch.hidden = !activeBatch;
-    byId('setup-profile').disabled = Boolean(activeBatch);
     for (const control of ['revise-profile', 'rename-profile']) {
       const button = byId(control);
       button.hidden = !active || latest.get(active.id) !== active.revision;
-      button.disabled = Boolean(activeBatch);
     }
     byId('delete-profile').hidden = !active;
-    byId('delete-profile').disabled = Boolean(activeBatch);
   }
 
   function actions() {
     const enabled = Boolean(image() && activeBatch && selected() && !editor.active);
+    scanNext.hidden = !enabled;
     byId('scan-registration').hidden = !enabled;
     manual.hidden = !enabled;
   }
 
-  function closeBatchConfirmation() {
-    offeredBatch = undefined;
-    batchConfirmation.hidden = true;
-    attestation.checked = false;
-    byId('confirm-batch').disabled = true;
-  }
-
   function clearBatch() {
     activeBatch = undefined;
-    closeBatchConfirmation();
     label();
   }
 
@@ -75,10 +68,12 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
     manualPanel.hidden = true;
     manualCanvas.width = manualCanvas.height = manualBackground.width = manualBackground.height = 1;
     userCorners.length = 0;
+    dragCorner = -1;
   }
 
   function resetCapture() {
     activeCorners = undefined;
+    estimatedCorners = undefined;
     closeManual();
     actions();
   }
@@ -121,29 +116,21 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
       const saved = await saveProfile(profile);
       editor.close();
       await refresh(key(saved));
-      profileStatus.textContent = `Saved ${saved.name}, revision ${saved.revision}. Start a batch to scan marked copies.`;
+      profileStatus.textContent = `Saved ${saved.name}, revision ${saved.revision}. Select Scan completed sheet when you are ready.`;
       onEditorClosed(true);
     },
     onClose() { actions(); onEditorClosed(false); },
   });
 
   function beginBlank(prior) {
-    if (activeBatch) return;
-    closeBatchConfirmation();
-    label();
-    if (editor.active) editor.close();
-    const current = image();
-    profileStatus.textContent = '';
-    if (!current) {
-      pendingBlank = { prior };
-      requestBlank();
-      profileStatus.textContent = 'Choose a blank JPEG or PNG to set up this profile.';
-      return;
-    }
+    clearBatch();
+    editor.close();
+    closeManagement();
     resetCapture();
-    editor.open(current, prior);
-    onChanged();
-    actions();
+    onChanged({ clearImage: true });
+    pendingBlank = { prior };
+    requestBlank();
+    profileStatus.textContent = 'Choose a blank JPEG or PNG to set up this profile.';
   }
 
   function acceptImage(next) {
@@ -163,9 +150,6 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   }
 
   function selectManagement(action) {
-    if (activeBatch) return;
-    closeBatchConfirmation();
-    label();
     const profile = selected();
     if (!profile) return;
     manageAction = { action, profile };
@@ -181,53 +165,34 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   }
 
   selector.addEventListener('change', () => {
-    if (activeBatch) {
-      selector.value = selectedKey;
-      return;
-    }
-    closeBatchConfirmation();
     editor.close();
     closeManagement();
     pendingBlank = false;
     selectedKey = selector.value;
+    clearBatch();
     resetCapture();
-    label();
-    onChanged();
+    onChanged({ clearImage: true });
   });
-  startBatch.addEventListener('click', () => {
+  scanCompleted.addEventListener('click', () => {
     const profile = selected();
     if (!profile || activeBatch || editor.active) return;
     closeManagement();
-    offeredBatch = key(profile);
-    batchConfirmation.hidden = false;
-    byId('batch-summary').textContent = `Confirm ${profile.name}, revision ${profile.revision}, for these scans.`;
-    label();
-    attestation.focus();
-  });
-  attestation.addEventListener('change', () => {
-    byId('confirm-batch').disabled = !attestation.checked;
-  });
-  byId('cancel-batch').addEventListener('click', () => {
-    closeBatchConfirmation();
-    label();
-    startBatch.focus();
-  });
-  byId('confirm-batch').addEventListener('click', () => {
-    const profile = selected();
-    if (!profile || offeredBatch !== key(profile) || !attestation.checked || editor.active) return;
     activeBatch = Object.freeze({ profileId: profile.id, revision: profile.revision });
-    closeBatchConfirmation();
     label();
     resetCapture();
-    onChanged();
-    endBatch.focus();
+    onCaptureRequested();
+  });
+  scanNext.addEventListener('click', () => {
+    if (!activeBatch || editor.active) return;
+    resetCapture();
+    onCaptureRequested();
   });
   endBatch.addEventListener('click', () => {
     if (!activeBatch) return;
     clearBatch();
     resetCapture();
     onChanged({ clearImage: true });
-    startBatch.focus();
+    scanCompleted.focus();
   });
   byId('setup-profile').addEventListener('click', () => beginBlank());
   byId('revise-profile').addEventListener('click', () => beginBlank(selected()));
@@ -268,38 +233,50 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
     manualCanvas.height = manualBackground.height;
     const context = manualCanvas.getContext('2d');
     context.drawImage(manualBackground, 0, 0);
-    context.lineWidth = 2;
-    context.font = '15px system-ui';
-    context.fillStyle = context.strokeStyle = '#aa3c19';
-    for (const [index, point] of userCorners.entries()) {
-      const x = point.x * manualCanvas.width / current.width;
-      const y = point.y * manualCanvas.height / current.height;
-      context.beginPath(); context.arc(x, y, 6, 0, Math.PI * 2); context.stroke();
-      context.fillText(String(index + 1), x + 8, y - 7);
-    }
+    context.scale(manualCanvas.width / current.width, manualCanvas.height / current.height);
+    paintCornerMarkers(context, current, userCorners, manualCanvas.getBoundingClientRect().width, dragCorner);
+    manualCanvas.dataset.corners = JSON.stringify(userCorners);
     byId('apply-scan-corners').disabled = userCorners.length !== 4;
   }
 
   manual.addEventListener('click', () => {
     if (!image() || !activeBatch) return;
     onChanged();
-    userCorners.length = 0;
+    seedCorners();
     sourceOnCanvas(manualBackground, image());
     manualPanel.hidden = false;
     showManual();
     actions();
   });
-  manualCanvas.addEventListener('pointerdown', (event) => {
-    if (manualPanel.hidden || !image() || event.button !== 0) return;
+  function seedCorners() {
+    const corners = activeCorners ?? estimatedCorners ?? proposePageCorners(image()) ?? insetCorners(image());
+    userCorners.splice(0, userCorners.length, ...structuredClone(corners));
+  }
+  function cornerPoint(event) {
     const rect = manualCanvas.getBoundingClientRect();
-    if (userCorners.length === 4) userCorners.length = 0;
-    userCorners.push({
+    return {
       x: Math.min(image().width - 1, Math.max(0, (event.clientX - rect.left) * image().width / rect.width)),
       y: Math.min(image().height - 1, Math.max(0, (event.clientY - rect.top) * image().height / rect.height)),
-    });
+    };
+  }
+  manualCanvas.addEventListener('pointerdown', (event) => {
+    if (manualPanel.hidden || !image() || event.button !== 0) return;
+    dragCorner = nearestCorner(manualCanvas, image(), userCorners, cornerPoint(event));
+    if (dragCorner >= 0) manualCanvas.setPointerCapture(event.pointerId);
+  });
+  manualCanvas.addEventListener('pointermove', (event) => {
+    if (dragCorner < 0 || !image()) return;
+    userCorners[dragCorner] = cornerPoint(event);
     showManual();
   });
-  byId('reset-scan-corners').addEventListener('click', () => { userCorners.length = 0; showManual(); });
+  manualCanvas.addEventListener('pointerup', (event) => {
+    if (dragCorner < 0 || !image()) return;
+    userCorners[dragCorner] = cornerPoint(event);
+    dragCorner = -1;
+    showManual();
+  });
+  manualCanvas.addEventListener('pointercancel', () => { dragCorner = -1; showManual(); });
+  byId('reset-scan-corners').addEventListener('click', () => { seedCorners(); showManual(); });
   byId('cancel-scan-corners').addEventListener('click', closeManual);
   byId('apply-scan-corners').addEventListener('click', () => {
     if (userCorners.length !== 4 || !activeBatch) return;
@@ -317,8 +294,14 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   refresh();
   return {
     acceptImage, scanOptions, resetCapture, reset,
+    observeRegistration(registration) {
+      const points = registration?.diagnostics?.pagePose?.corners;
+      if (points?.length === 4) estimatedCorners = points;
+    },
     cancelBlank() { pendingBlank = false; },
     get editing() { return editor.active; },
     get canRead() { return selectedKey === referenceKey || Boolean(activeBatch); },
+    get autoRead() { return Boolean(activeBatch); },
+    get captureVisible() { return selectedKey === referenceKey || Boolean(activeBatch); },
   };
 }

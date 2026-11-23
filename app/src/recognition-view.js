@@ -93,7 +93,7 @@ function addItems(table, items) {
   table.replaceChildren(fragment);
 }
 
-export function createRecognitionView({ button, status, results, table, overlay }) {
+export function createRecognitionView({ button, status, results, table, overlay, diagnostics, onRegistration }) {
   let active;
   let available = false;
   let jobId = 0;
@@ -115,6 +115,56 @@ export function createRecognitionView({ button, status, results, table, overlay 
     overlay.hidden = true;
     overlay.width = 1;
     overlay.height = 1;
+    diagnostics.hidden = true;
+    for (const row of diagnostics.children) {
+      row.textContent = '';
+      delete row.dataset.status;
+    }
+  }
+
+  function showDiagnostics(registration, profile) {
+    const stages = registration.diagnostics;
+    if (!stages || !profile) return;
+    const stage = (name, state, detail) => {
+      const row = diagnostics.querySelector(`[data-stage="${name}"]`);
+      row.dataset.status = state;
+      row.textContent = detail;
+    };
+    const pose = stages.pagePose;
+    const poseText = pose.status === 'recovered' ? 'recovered from faint edges and fitted bubble centers'
+      : pose.status === 'verified' ? (pose.path === 'manual-corners' ? 'checked using your corner positions' : 'located from the page edges')
+      : pose.status === 'unchecked' ? 'not checked' : 'uncertain. Adjust corners or retake the photo.';
+    stage('page-pose', pose.status, `Page pose — ${poseText}`);
+    const orientation = stages.orientation.status;
+    stage('orientation', orientation, `Orientation — ${{
+      verified: 'verified', ambiguous: 'ambiguous. Move the numbered corners to identify the upright sheet.',
+      mirrored: 'the capture appears mirrored', unchecked: 'not confirmed',
+    }[orientation] ?? orientation}`);
+    const geometry = stages.responseGeometry;
+    const row = diagnostics.querySelector('[data-stage="response-geometry"]');
+    stage('response-geometry', geometry.status, 'Response geometry — ' + ({
+      verified: 'all expected blocks passed', failed: 'one or more required blocks did not match', unchecked: 'not checked',
+    }[geometry.status] ?? geometry.status));
+    const failures = geometry.blocks.filter(({ verified }) => !verified);
+    if (failures.length) {
+      const list = document.createElement('ul');
+      for (const block of failures) {
+        const expected = profile.components.find(({ id }) => id === block.id);
+        const ids = expected?.items.map(({ id }) => id) ?? [block.id];
+        const label = ids.length > 1 ? `${ids[0]}–${ids.at(-1)}` : ids[0];
+        const counts = [
+          [block.missingRows, 'missing row'], [block.missingSlots, 'missing slot'],
+          [block.missingColumns, 'missing column'], [block.extraRows, 'extra row'], [block.relocatedChoices, 'displaced choice'],
+        ].flatMap(([count, reason]) => count ? [`${count} ${reason}${count === 1 ? '' : 's'}`] : []);
+        if (block.spacingMismatch) counts.push('choice spacing differs');
+        if (!counts.length) counts.push(`only ${block.supported} of ${block.checked} expected outlines supported`);
+        const item = document.createElement('li');
+        item.textContent = `${label}: ${counts.join(', ')}.`;
+        list.append(item);
+      }
+      row.append(list);
+    }
+    diagnostics.hidden = false;
   }
 
   function read(image, request) {
@@ -141,6 +191,8 @@ export function createRecognitionView({ button, status, results, table, overlay 
         setStatus('error', 'Recognition did not finish. Try reading the bubbles again.');
         return;
       }
+      onRegistration(result.registration);
+      showDiagnostics(result.registration, request?.profile);
       if (result.registration.strategy) status.dataset.strategy = result.registration.strategy;
       if (result.registration.authorization) status.dataset.authorization = result.registration.authorization;
       if (result.registration.cornerPath) status.dataset.cornerPath = result.registration.cornerPath;
@@ -179,9 +231,9 @@ export function createRecognitionView({ button, status, results, table, overlay 
     }
   }
 
-  function setAvailable(value) {
+  function setAvailable(value, visible = true) {
     available = value;
-    button.hidden = !value;
+    button.hidden = !value || !visible;
   }
 
   return { read, reset, setAvailable };

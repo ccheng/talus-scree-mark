@@ -1,7 +1,7 @@
-import { cross, fitProjective, invertProjective, project } from './projective.js';
+import { cross, fitProjective, fitProjectiveSamples, invertProjective, project } from './projective.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 
-export const markerlessThresholdVersion = 'batch-geometry-v2';
+export const markerlessThresholdVersion = 'batch-geometry-v3';
 const registrationStrategy = 'markerless';
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const failure = (reason, detail = {}) => ({
@@ -57,7 +57,7 @@ function plausible(corners, image, mirrored = false) {
       lengths[index] * lengths[(index + 1) % 4] * .18);
 }
 
-function nativeEdge(gray, start, end, coarseStep) {
+function nativeEdge(gray, start, end, coarseStep, minimumContrast) {
   const length = distance(start, end);
   const along = { x: (end.x - start.x) / length, y: (end.y - start.y) / length };
   const inward = { x: -along.y, y: along.x };
@@ -68,12 +68,12 @@ function nativeEdge(gray, start, end, coarseStep) {
     const x = start.x + t * (end.x - start.x);
     const y = start.y + t * (end.y - start.y);
     const at = (offset) => grayAt(gray, x + offset * inward.x, y + offset * inward.y);
-    let best = { contrast: 24, offset: 0 };
+    let best = { contrast: minimumContrast, offset: 0 };
     for (let offset = -search; offset <= search; offset += .5) {
       const contrast = at(offset + 1.25) - at(offset - 1.25);
       if (contrast > best.contrast) best = { contrast, offset };
     }
-    if (best.contrast > 24) samples.push({ t, ...best });
+    if (best.contrast > minimumContrast) samples.push({ t, ...best });
   }
   if (samples.length < 22) return null;
 
@@ -102,15 +102,15 @@ function intersectEdges(first, second) {
   return { x: a.x + t * dx, y: a.y + t * dy };
 }
 
-function refinePageEdges(gray, corners, coarseStep) {
-  const edges = corners.map((point, index) => nativeEdge(gray, point, corners[(index + 1) % 4], coarseStep));
+function refinePageEdges(gray, corners, coarseStep, minimumContrast = 24) {
+  const edges = corners.map((point, index) => nativeEdge(gray, point, corners[(index + 1) % 4], coarseStep, minimumContrast));
   if (edges.some((edge) => !edge)) return corners;
   const refined = edges.map((edge, index) => intersectEdges(edges[(index + 3) % 4], edge));
   return plausible(refined, gray) && refined.every((point, index) => distance(point, corners[index]) <= 6 * coarseStep)
     ? refined : corners;
 }
 
-function pageCorners(gray) {
+function pageCorners(gray, weakEdge = false) {
   const { width, height } = gray;
   const step = Math.max(1, Math.ceil(Math.max(width, height) / 550));
   const w = Math.floor((width - 1) / step) + 1;
@@ -134,7 +134,9 @@ function pageCorners(gray) {
   ];
   const frameBackground = corners.map(({ x, y }) => gray.values[y * width + x]);
   const filledFrame = frameBackground.every((level) => level > paper - 28);
-  const cutoff = Math.max(89, Math.min(paper - 15, (ink + paper) / 2));
+  const outside = quantile(frameBackground, .50);
+  if (weakEdge && paper - outside < 5) return null;
+  const cutoff = weakEdge ? (outside + paper) / 2 : Math.max(89, Math.min(paper - 15, (ink + paper) / 2));
 
   const queue = new Int32Array(values.length);
   const visited = new Uint8Array(values.length);
@@ -174,7 +176,7 @@ function pageCorners(gray) {
     }
   }
   if (widest < values.length * .21 || second > widest * .62) return null;
-  if (filledFrame && widest >= values.length * .78) return corners;
+  if (!weakEdge && filledFrame && widest >= values.length * .78) return corners;
 
   const outline = [];
   for (let y = 0; y < h; y++) {
@@ -182,11 +184,15 @@ function pageCorners(gray) {
     outline.push({ x: left[y] * step, y: y * step }, { x: right[y] * step, y: y * step });
   }
   const proposed = quadrilateral(outline);
-  return plausible(proposed, gray) ? refinePageEdges(gray, proposed, step) : null;
+  return plausible(proposed, gray) ? refinePageEdges(gray, proposed, step, weakEdge ? 4 : 24) : null;
 }
 
 export function proposePageCorners(image) {
   return pageCorners(toGrayImage(image));
+}
+
+export function proposeWeakPageCorners(image) {
+  return pageCorners(toGrayImage(image), true);
 }
 
 export function pageTransform(page, corners) {
@@ -476,8 +482,7 @@ function containsComponents(gray, profile, transform) {
   }));
 }
 
-function inspectOrientation(gray, profile, corners, mirrored) {
-  const pageToSource = pageTransform(profile.page, corners);
+function inspectPose(gray, profile, pageToSource, mirrored, corners) {
   const sourceToPage = pageToSource && invertProjective(pageToSource);
   if (!sourceToPage) return null;
   const blocks = profile.components.map((block) => blockGeometry(gray, profile, block, pageToSource));
@@ -487,7 +492,7 @@ function inspectOrientation(gray, profile, corners, mirrored) {
   const inFrame = containsComponents(gray, profile, pageToSource);
   const geometry = { checked, supported, verified: inFrame && blocks.every(({ verified }) => verified), blocks };
   return {
-    pageToSource, sourceToPage, inFrame, geometry, mirrored,
+    pageToSource, sourceToPage, inFrame, geometry, mirrored, corners,
     score: supported / checked,
   };
 }
@@ -496,36 +501,112 @@ function rotations(corners) {
   return corners.map((_, index) => [...corners.slice(index), ...corners.slice(0, index)]);
 }
 
+function measureHypotheses(gray, profile, measured, manual, proposeTransform) {
+  const reflected = [measured[0], measured[3], measured[2], measured[1]];
+  const direct = manual ? [measured] : rotations(measured);
+  const mirrorVariants = manual ? [reflected] : rotations(reflected);
+  return [
+    ...direct.map((quad) => proposeTransform(gray, profile, quad, false)),
+    ...mirrorVariants.map((quad) => proposeTransform(gray, profile, quad, true)),
+  ].filter(Boolean).sort((a, b) => b.score - a.score);
+}
+
+function edgePose(gray, profile, corners, mirrored) {
+  return inspectPose(gray, profile, pageTransform(profile.page, corners), mirrored, corners);
+}
+
+function bubblePose(gray, profile, corners, mirrored) {
+  const seed = pageTransform(profile.page, corners);
+  if (!seed) return null;
+  const observed = [];
+  for (const block of profile.components) {
+    const choices = block.items.flatMap(choicesFor);
+    const interval = Math.max(1, Math.floor(choices.length / 24));
+    for (const [index, choice] of choices.entries()) {
+      if (index % interval !== 0) continue;
+      const center = outlineCenter(gray, seed, choice);
+      if (!center || distance(center, choice) > .62 * choice.radius) continue;
+      const actual = project(seed, center.x, center.y);
+      if (actual) observed.push({ choice, actual });
+    }
+  }
+  const sources = observed.map(({ choice }) => choice);
+  if (sources.length < 12 || Math.max(...sources.map(({ x }) => x)) - Math.min(...sources.map(({ x }) => x)) < profile.page.width * .27 ||
+      Math.max(...sources.map(({ y }) => y)) - Math.min(...sources.map(({ y }) => y)) < profile.page.height * .27) return null;
+  const fit = observed.filter((_, i) => i % 3 !== 0);
+  const hold = observed.filter((_, i) => i % 3 === 0);
+  const transform = fitProjectiveSamples(fit.map(({ choice }) => choice), fit.map(({ actual }) => actual));
+  const inverse = transform && invertProjective(transform);
+  if (!inverse) return null;
+  const residual = hold.map(({ choice, actual }) => {
+    const point = project(inverse, actual.x, actual.y);
+    return point ? distance(point, choice) / choice.radius : Infinity;
+  });
+  if (quantile(residual, .80) > .29 || Math.max(...residual) > .72) return null;
+  const adjusted = pagePoints(profile.page).map(({ x, y }) => project(transform, x, y));
+  if (!plausible(adjusted, gray, mirrored) ||
+      adjusted.some((point, index) => distance(point, corners[index]) > Math.min(gray.width, gray.height) * .024)) return null;
+  const result = inspectPose(gray, profile, transform, mirrored, adjusted);
+  return result && { ...result, witnesses: observed.length, heldOut: hold.length };
+}
+
+function stages(corners, path, pose, orientation, responseGeometry, geometry) {
+  return {
+    pagePose: { status: pose, path, corners: corners ?? [] },
+    orientation: { status: orientation },
+    responseGeometry: { status: responseGeometry, blocks: geometry?.blocks ?? [] },
+  };
+}
+
 export function registerMarkerless(image, profile, { corners, batch } = {}) {
   if (batch?.profileId !== profile.id || batch?.revision !== profile.revision) {
-    return failure('batch-not-confirmed');
+    return failure('batch-not-confirmed', { diagnostics: stages(null, null, 'unchecked', 'unchecked', 'unchecked') });
   }
   const gray = toGrayImage(image);
   const measured = corners ?? pageCorners(gray);
-  if (!measured) return failure('page-corners', { canSetCorners: true });
-  if (!plausible(measured, gray)) {
-    return failure(plausible(measured, gray, true) ? 'mirrored-registration' : 'page-corners', { canSetCorners: true });
+  let path = corners ? 'manual-corners' : 'page-boundary';
+  if (corners && !plausible(corners, gray)) {
+    const mirrored = plausible(corners, gray, true);
+    return failure(mirrored ? 'mirrored-registration' : 'page-corners', {
+      canSetCorners: true, diagnostics: stages(corners, path, 'failed', mirrored ? 'mirrored' : 'unchecked', 'unchecked'),
+    });
   }
-  const reflected = [measured[0], measured[3], measured[2], measured[1]];
-  const direct = corners ? [measured] : rotations(measured);
-  const mirrorVariants = corners ? [reflected] : rotations(reflected);
-  const candidates = [
-    ...direct.map((quad) => inspectOrientation(gray, profile, quad, false)),
-    ...mirrorVariants.map((quad) => inspectOrientation(gray, profile, quad, true)),
-  ].filter(Boolean).sort((a, b) => b.score - a.score);
-  const eligible = candidates.filter(({ geometry }) => geometry.verified);
+  let candidates = measured ? measureHypotheses(gray, profile, measured, Boolean(corners), edgePose) : [];
+  let eligible = candidates.filter(({ geometry }) => geometry.verified);
+  if (!eligible.length && !corners) {
+    const faint = pageCorners(gray, true);
+    const distinct = faint && (!measured || faint.some((point, index) => distance(point, measured[index]) > 3));
+    if (distinct) {
+      const alternative = measureHypotheses(gray, profile, faint, false, bubblePose);
+      const verified = alternative.filter(({ geometry }) => geometry.verified);
+      if (verified.length) {
+        path = 'bubble-fit';
+        candidates = alternative;
+        eligible = verified;
+      }
+    }
+  }
   const best = eligible[0];
   if (!best) {
     const first = candidates[0];
+    if (!first) return failure('page-corners', {
+      canSetCorners: true, diagnostics: stages(measured, path, 'failed', 'unchecked', 'unchecked'),
+    });
     return failure(first?.inFrame ? 'response-geometry' : 'clipped-content', {
       canSetCorners: true, geometry: first?.geometry,
+      diagnostics: stages(measured, path, first.score >= .55 ? 'verified' : 'review', 'unchecked', 'failed', first.geometry),
     });
   }
   const competitor = eligible[1];
   const tied = competitor && best.score - competitor.score < .075;
   const evidence = { geometry: best.geometry, canSetCorners: true, orientationMargin: competitor ? best.score - competitor.score : null };
-  if (tied && !corners) return failure('ambiguous-orientation', evidence);
-  if (best.mirrored && !(tied && corners && !competitor.mirrored)) return failure('mirrored-registration', evidence);
+  const poseStatus = path === 'bubble-fit' ? 'recovered' : 'verified';
+  if (tied && !corners) return failure('ambiguous-orientation', {
+    ...evidence, diagnostics: stages(best.corners, path, poseStatus, 'ambiguous', 'verified', best.geometry),
+  });
+  if (best.mirrored && !(tied && corners && !competitor.mirrored)) return failure('mirrored-registration', {
+    ...evidence, diagnostics: stages(best.corners, path, poseStatus, 'mirrored', 'verified', best.geometry),
+  });
   // Manually ordered corners resolve orientation only. The direct hypothesis
   // must have passed exactly the same complete response-geometry checks.
   const aligned = best.mirrored ? competitor : best;
@@ -533,6 +614,7 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
     status: 'registered', strategy: registrationStrategy, reasons: [],
     pageToSource: aligned.pageToSource, sourceToPage: aligned.sourceToPage,
     authorization: 'teacher-confirmed-batch', orientationMargin: evidence.orientationMargin,
-    cornerPath: corners ? 'manual-corners' : 'page-boundary', corners: measured, geometry: aligned.geometry,
+    cornerPath: path, corners: aligned.corners, geometry: aligned.geometry,
+    diagnostics: stages(aligned.corners, path, poseStatus, 'verified', 'verified', aligned.geometry),
   };
 }

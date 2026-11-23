@@ -1,4 +1,4 @@
-import { pageTransform, proposePageCorners } from './markerless-registration.js';
+import { pageTransform, proposePageCorners, proposeWeakPageCorners } from './markerless-registration.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 import { createMarkerlessProfile, intersects, pageRingCandidates } from './profile-authoring.js';
 import { cross, project } from './projective.js';
@@ -146,8 +146,7 @@ function publicCell(symbol, { x, y, radius }) {
   return { symbol, x, y, radius };
 }
 
-export function discoverBlankLayout(image, page, suppliedCorners) {
-  const corners = suppliedCorners ?? proposePageCorners(image);
+function inspectBlankLayout(image, page, corners) {
   if (!Array.isArray(corners) || corners.length !== 4 || !corners.every((corner, index) =>
     cross(corner, corners[(index + 1) % 4], corners[(index + 2) % 4]) > 0)) {
     return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
@@ -191,6 +190,10 @@ export function discoverBlankLayout(image, page, suppliedCorners) {
     return gap > 0 && gap <= 2.65 * above.spacing;
   }));
   if (interrupted) issues.push('interrupted-grid');
+  const typical = quantile(proposals.flatMap(({ cells }) => cells.map(({ radius }) => radius)), .50);
+  const unmatchedBubbles = unassigned.filter(({ radius }) => Math.abs(radius - typical) <= typical * .22).length;
+  const matchedBubbles = proposals.reduce((sum, grid) => sum + grid.cells.length, 0);
+  if (unmatchedBubbles >= 6 && unmatchedBubbles > matchedBubbles * .23) issues.push('unassigned-print');
   // An interior unassigned ring on the same printed grid axes is more useful
   // evidence of a partial proposal than isolated printed character outlines.
   if (proposals.some((proposal) => unassigned.some((ring) => proposal.rows.some(({ y, cells }) =>
@@ -237,4 +240,23 @@ export function discoverBlankLayout(image, page, suppliedCorners) {
     }
   }
   return { status: issues.length ? 'review' : 'proposed', corners, components, issues, diagnostics };
+}
+
+export function discoverBlankLayout(image, page, suppliedCorners) {
+  const provisional = suppliedCorners ?? proposePageCorners(image);
+  const first = inspectBlankLayout(image, page, provisional);
+  const fillsPhoto = provisional?.length === 4 && provisional[0].x === 0 && provisional[0].y === 0 &&
+    provisional[2].x === image.width - 1 && provisional[2].y === image.height - 1;
+  if (!suppliedCorners && fillsPhoto && Math.abs(image.width * page.height / (image.height * page.width) - 1) > .017) {
+    first.status = 'review';
+    first.issues.push('frame-aspect');
+  }
+  if (suppliedCorners || first.status === 'proposed') return first;
+  const faint = proposeWeakPageCorners(image);
+  if (faint && !(first.corners.length === 4 && faint.every((corner, index) => distance(corner, first.corners[index]) < 3))) {
+    const recovered = inspectBlankLayout(image, page, faint);
+    if (recovered.status === 'proposed') return { ...recovered, pagePose: 'faint-boundary' };
+  }
+  if (first.issues.includes('frame-aspect')) return { ...first, components: [], diagnostics: [], pagePose: 'uncertain' };
+  return first;
 }

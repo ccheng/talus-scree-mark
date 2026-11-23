@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="aa175558bd36c1cb46482d42">
+  <meta name="scree-release" content="d5915638591e6ddc8b994063">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -27,13 +27,13 @@
       <h2 id="capture-heading">Capture an answer sheet</h2>
       <p class="preview-note">Development preview. Use mock sheets only.</p>
       <p class="hint">Use the camera or choose a JPEG or PNG. The preview clears when you close this page.</p>
-      <div class="controls">
-        <button id="start-camera" type="button" class="primary">Open camera</button>
+      <div class="controls" id="marked-capture-controls">
+        <button id="start-camera" type="button">Open camera</button>
         <button id="shutter" type="button" class="primary" hidden disabled>Take photo</button>
         <button id="cancel-camera" type="button" hidden>Cancel camera</button>
         <button id="choose-image" type="button">Choose image</button>
         <input id="image-picker" type="file" hidden>
-        <button id="read-bubbles" type="button" class="primary" hidden>Read bubbles</button>
+        <button id="read-bubbles" type="button" hidden>Read bubbles</button>
         <button id="clear-image" type="button" hidden>Clear preview</button>
       </div>
       <p id="capture-status" class="capture-status" role="status"></p>
@@ -52,15 +52,20 @@
       </div>
       <section id="scan-corner-panel" class="profile-card" aria-labelledby="scan-corner-heading" hidden>
         <h3 id="scan-corner-heading">Set scan corners</h3>
-        <p>Check that the photo is upright and unmirrored. Tap the page corners in sheet order: top left, top right, bottom right, bottom left.</p>
+        <p>Check that the photo is upright and unmirrored. Drag the four numbered markers onto the corresponding page corners.</p>
         <div class="profile-viewport"><canvas id="scan-corner-canvas" width="1" height="1" aria-label="Mark scan corners"></canvas></div>
         <div class="controls">
-          <button id="reset-scan-corners" type="button">Start over</button>
+          <button id="reset-scan-corners" type="button">Reset corner markers</button>
           <button id="apply-scan-corners" type="button" disabled>Use these corners</button>
           <button id="cancel-scan-corners" type="button">Cancel</button>
         </div>
       </section>
       <p id="recognition-status" class="capture-status" role="status" data-status="idle"></p>
+      <ol id="scan-diagnostics" aria-label="Scan checks" hidden>
+        <li data-stage="page-pose"></li>
+        <li data-stage="orientation"></li>
+        <li data-stage="response-geometry"></li>
+      </ol>
       <section id="recognition-results" aria-labelledby="recognition-heading" data-status="idle" hidden>
         <h3 id="recognition-heading">Observed responses</h3>
         <p class="hint">Dashed outlines show areas to review. In numerical responses, · marks an empty position and ? marks an unresolved position.</p>
@@ -75,23 +80,19 @@
         <select id="profile-selector"><option value="reference">Coded reference sheet (M2)</option></select>
         <p id="profile-pin" class="hint" role="status">Coded reference sheet selected.</p>
         <div class="controls">
-          <button id="start-batch" type="button" class="primary" hidden>Start batch</button>
-          <button id="end-batch" type="button" hidden>End batch</button>
+          <button id="setup-profile" type="button" class="primary">Import blank sheet</button>
+          <button id="scan-completed" type="button" class="primary" hidden>Scan completed sheet</button>
+          <button id="scan-next" type="button" class="primary" hidden>Scan next sheet</button>
         </div>
-        <div id="batch-confirmation" hidden>
-          <p id="batch-summary"></p>
-          <label><input id="batch-attestation" type="checkbox"> The sheets in this batch use this template and print run, and I have the intended answer key.</label>
+        <details id="profile-advanced" hidden>
+          <summary>Manage profiles</summary>
           <div class="controls">
-            <button id="confirm-batch" type="button" class="primary" disabled>Confirm batch</button>
-            <button id="cancel-batch" type="button">Cancel</button>
+            <button id="end-batch" type="button" hidden>End batch</button>
+            <button id="revise-profile" type="button" hidden>Revise selected profile</button>
+            <button id="rename-profile" type="button" hidden>Rename</button>
+            <button id="delete-profile" type="button" hidden>Delete</button>
           </div>
-        </div>
-        <div class="controls">
-          <button id="setup-profile" type="button">Set up a blank sheet</button>
-          <button id="revise-profile" type="button" hidden>Revise selected profile</button>
-          <button id="rename-profile" type="button" hidden>Rename</button>
-          <button id="delete-profile" type="button" hidden>Delete</button>
-        </div>
+        </details>
         <form id="profile-management" hidden>
           <p id="profile-management-message" role="status"></p>
           <label id="rename-profile-label" hidden>New profile name <input id="rename-profile-name" maxlength="80" required></label>
@@ -101,7 +102,7 @@
         <p id="profile-status" class="capture-status" role="status"></p>
       </section>
       <section id="profile-editor" class="profile-card" aria-labelledby="profile-editor-heading" hidden>
-        <h3 id="profile-editor-heading">Set up a blank sheet</h3>
+        <h3 id="profile-editor-heading">Review the blank-sheet template</h3>
         <div class="editor-fields">
           <label>Profile name <input id="profile-name" maxlength="80"></label>
           <label>Paper orientation
@@ -197,8 +198,7 @@
               <button id="cancel-block-mapping" type="button">Cancel</button>
             </div>
           </section>
-          <label><input id="confirm-profile-preview" type="checkbox"> I checked every item ID, symbol and bubble overlay against the blank sheet.</label>
-          <div class="controls"><button id="enroll-profile" type="button" class="primary">Save profile revision</button></div>
+          <div class="controls"><button id="enroll-profile" type="button" class="primary">Confirm and save template</button></div>
         </div>
         <button id="cancel-profile-editor" type="button">Close setup</button>
       </section>

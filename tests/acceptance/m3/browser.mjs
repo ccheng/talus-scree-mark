@@ -10,6 +10,7 @@ assert(appPath, 'Provide the static app path');
 const fixtureFolder = new URL('./fixtures/', import.meta.url);
 const { families, orientationControl, discoveryControl, fourBoxControl } = JSON.parse(await readFile(new URL('oracles.json', fixtureFolder), 'utf8'));
 assert(families.length === 3 && families.every(({ fixtures }) => fixtures.filter(({ mode }) => mode === 'standard').length >= 8));
+const poses = JSON.parse(await readFile(new URL('pose-oracles.json', fixtureFolder), 'utf8'));
 const encoded = (file) => readFile(new URL(file, fixtureFolder), 'base64');
 const server = await openServer(appPath);
 const target = server.origin + projectPath;
@@ -30,8 +31,8 @@ const scaleComponent = ({ id, kind, bounds, items }) => ({ id, kind, bounds: sca
 const normalizeMatrix = (matrix) => matrix.map((value, index) => [2, 5, 8].includes(index) ? value : value * coordinateScale);
 const fixtureFilePath = (file) => fileURLToPath(new URL(file, fixtureFolder));
 
-async function withPage(check) {
-  const context = await browser.newContext({ serviceWorkers: 'allow', viewport: { width: 390, height: 844 } });
+async function withPage(check, contextOptions) {
+  const context = await browser.newContext({ serviceWorkers: 'allow', viewport: { width: 390, height: 844 }, ...contextOptions });
   try {
     const page = await context.newPage();
     await page.goto(target);
@@ -40,9 +41,9 @@ async function withPage(check) {
   } finally { await context.close(); }
 }
 
-async function group(name, check) {
+async function group(name, check, contextOptions) {
   try {
-    await withPage(check);
+    await withPage(check, contextOptions);
     console.log(`PASS ${name}`);
   } catch (error) {
     failures += 1;
@@ -119,20 +120,20 @@ function assertExactRead(result, truth, label) {
   for (const expected of truth) assertObservation(result.items.find(({ id }) => id === expected.id), expected);
 }
 
-async function selectImage(page, path, name, mimeType) {
+async function selectImage(page, path, name, mimeType, control = '#choose-image') {
   const open = page.waitForEvent('filechooser');
-  await page.locator('#choose-image').click();
+  await page.locator(control).click();
   const chooser = await open;
   await chooser.setFiles({ name, mimeType, buffer: await readFile(path) });
-  await page.locator('#capture-status').filter({ hasText: /Image ready to review/i }).waitFor();
 }
 
 async function confirmAndRead(page, path, name, mimeType, truth) {
-  await page.locator('#start-batch').click();
-  await page.locator('#batch-attestation').check();
-  await page.locator('#confirm-batch').click();
+  await page.locator('#scan-completed').click();
   await selectImage(page, path, name, mimeType);
-  await page.locator('#read-bubbles').click();
+  await assertReadRows(page, truth);
+}
+
+async function assertReadRows(page, truth) {
   const outcome = page.locator('#recognition-status[data-status="read"]');
   await outcome.waitFor();
   assert.equal(await outcome.getAttribute('data-authorization'), 'teacher-confirmed-batch');
@@ -296,8 +297,12 @@ try {
     const symmetricFixture = orientationControl.fixture;
     const ambiguous = await scan(page, symmetricProfile, orientationControl, symmetricFixture);
     assertRetake(ambiguous, 'Geometrically symmetric form', 'ambiguous-orientation');
+    assert.equal(ambiguous.registration.diagnostics.orientation.status, 'ambiguous');
+    assert.equal(ambiguous.registration.diagnostics.responseGeometry.status, 'verified');
     const supplied = await scan(page, symmetricProfile, orientationControl, symmetricFixture, { corners: pageCorners(normalizeMatrix(symmetricFixture.pageToSource)) });
     assertExactRead(supplied, symmetricFixture.truth, 'Explicit orientation still checks response geometry');
+    assert.equal(supplied.registration.diagnostics.pagePose.path, 'manual-corners');
+    assert.equal(supplied.registration.diagnostics.orientation.status, 'verified');
 
     const legacyFamily = families.at(-1);
     const geometry = await enroll(page, legacyFamily);
@@ -360,8 +365,7 @@ try {
       const truth = oracle.itemOrder.map((id) => ({ id, status: oracle.expected[id].state, value: oracle.expected[id].rawText, review: false }));
       const start = performance.now();
       // Neutral filenames prevent template selection based on the supplied name.
-      await selectImage(page, resolve(source, `${fixtureId}-blank.png`), 'independent-blank.png', 'image/png');
-      await page.locator('#setup-profile').click();
+      await selectImage(page, resolve(source, `${fixtureId}-blank.png`), 'independent-blank.png', 'image/png', '#setup-profile');
       const panel = page.locator('#profile-editor');
       await panel.waitFor();
       await page.locator('#profile-name').fill(`Discovery QA ${fixtureId}`);
@@ -371,7 +375,6 @@ try {
       await installAdapters(page);
       assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), [], 'The proposal must remain unsaved before confirmation');
       // The normal path performs no corner, region, grid, or individual-cell edits.
-      await page.locator('#confirm-profile-preview').check();
       await page.locator('#enroll-profile').click();
       await panel.waitFor({ state: 'hidden' });
       const setupTime = performance.now() - start;
@@ -393,8 +396,7 @@ try {
     assert.equal(proposal.status, 'proposed', proposal.issues.join(', '));
     const numerical = proposal.diagnostics.filter(({ kind }) => kind === 'nr');
     assert.deepEqual(numerical.map(({ writingBoxes, mappingReview }) => [writingBoxes.length, mappingReview]), [[4, true], [4, true]]);
-    await selectImage(page, fixtureFilePath(fixture.blank), 'four-writing-boxes.png', 'image/png');
-    await page.locator('#setup-profile').click();
+    await selectImage(page, fixtureFilePath(fixture.blank), 'four-writing-boxes.png', 'image/png', '#setup-profile');
     const panel = page.locator('#profile-editor');
     await panel.waitFor();
     await page.locator('#profile-name').fill('Four writing boxes QA');
@@ -409,7 +411,6 @@ try {
     }
     await page.locator('#apply-block-mapping').click();
     await mapping.waitFor({ state: 'hidden' });
-    await page.locator('#confirm-profile-preview').check();
     await page.locator('#enroll-profile').click();
     await panel.waitFor({ state: 'hidden' });
     const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
@@ -421,14 +422,11 @@ try {
   await group('Automatic discovery exposes incomplete geometry and permits explicit correction', async (page) => {
     const fixture = discoveryControl;
     const block = fixture.components[0];
-    await selectImage(page, fixtureFilePath(fixture.blank), 'incomplete-blank.png', 'image/png');
-    await page.locator('#setup-profile').click();
+    await selectImage(page, fixtureFilePath(fixture.blank), 'incomplete-blank.png', 'image/png', '#setup-profile');
     const panel = page.locator('#profile-editor');
     await panel.waitFor();
     await page.locator('#profile-name').fill('Recovered discovery QA');
     await page.locator('#discovery-status[data-status="review"]').waitFor();
-    const acknowledgment = page.locator('#confirm-profile-preview');
-    if ((await acknowledgment.isVisible()) && (await acknowledgment.isEnabled())) await acknowledgment.check();
     const save = page.locator('#enroll-profile');
     if ((await save.isVisible()) && (await save.isEnabled())) await save.click();
     await installAdapters(page);
@@ -449,8 +447,7 @@ try {
     await page.locator('#apply-grid-endpoints').click();
     await page.locator('#confirm-block').click();
     assert.equal(await page.locator('#profile-blocks > li').count(), 1);
-    assert.equal(await acknowledgment.isChecked(), false, 'A revised map requires a fresh overlay confirmation');
-    await acknowledgment.check();
+    assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), [], 'A corrected draft must still be explicitly saved');
     await save.click();
     await panel.waitFor({ state: 'hidden' });
     const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
@@ -462,11 +459,9 @@ try {
     const family = families[0];
     const file = fixtureFilePath(family.blank);
     const initialChooser = page.waitForEvent('filechooser');
-    await page.locator('#choose-image').click();
-    await (await initialChooser).setFiles(file);
-    await page.locator('#capture-status').filter({ hasText: /Image ready to review/i }).waitFor();
-    const panel = page.locator('#profile-editor');
     await page.locator('#setup-profile').click();
+    await (await initialChooser).setFiles(file);
+    const panel = page.locator('#profile-editor');
     await panel.waitFor();
     await page.locator('#profile-name').fill('Independent UI calibration');
     await page.locator('#discovery-status:is([data-status="proposed"], [data-status="review"], [data-status="needs-corners"])').waitFor();
@@ -508,9 +503,6 @@ try {
     await page.locator('#confirm-block').click();
     assert.equal(await page.locator('#profile-blocks > li').count(), 2);
     await page.locator('#enroll-profile').click();
-    assert.match(await page.locator('#editor-status').textContent(), /confirm.*before saving/i);
-    await page.locator('#confirm-profile-preview').check();
-    await page.locator('#enroll-profile').click();
     await panel.waitFor({ state: 'hidden', timeout: 6000 });
     await installAdapters(page);
     const enrolled = await page.evaluate(() => window.m3qa.listProfiles());
@@ -519,6 +511,66 @@ try {
     assert(Math.abs(enrolled[0].components[0].items[0].choices[0].x - corrected) < .02);
     assert.deepEqual(enrolled[0].components[1].items[0].choices.map(({ symbol }) => symbol), ['A', 'B', 'C', 'D', 'E']);
   });
+
+  await group('Mobile viewport keeps page pose, orientation, response layout and answer reading distinct', async (page) => {
+    const [weak, first, second] = poses.scenes;
+    const oracle = JSON.parse(await readFile(resolve(appPath, 'fixtures/m3/mixed-key.json'), 'utf8'));
+    const truth = oracle.itemOrder.map((id) => ({ id, status: oracle.expected[id].state, value: oracle.expected[id].rawText, review: false }));
+    const capture = (file, control) => selectImage(page, fixtureFilePath(file), 'independent-capture.jpg', 'image/jpeg', control);
+    const stage = (name) => page.locator(`#scan-diagnostics [data-stage="${name}"]`);
+    const retake = page.locator('#recognition-status[data-status="retake"]');
+    const rows = page.locator('#recognition-results [data-item-id]');
+    const editor = page.locator('#profile-editor');
+    await installAdapters(page);
+    assert(await page.evaluate(() => window.innerWidth === 390 && document.documentElement.scrollWidth <= 390 && navigator.maxTouchPoints > 0));
+
+    // The previous runtime showed an apparently complete four-item overlay on this exact weak blank.
+    await capture(weak.blank, '#setup-profile');
+    await editor.waitFor();
+    await page.locator('#profile-name').fill('Independent mobile template');
+    await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    await page.locator('#profile-canvas').waitFor();
+    assert.equal(await page.locator('#profile-blocks > li').count(), oracle.blocks.length);
+    assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), []);
+    await page.locator('#enroll-profile').click();
+    await editor.waitFor({ state: 'hidden' });
+    const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
+    assertDiscoveredMapping(profile, oracle);
+
+    async function verifyRead(file, poseStatus) {
+      await capture(file);
+      await assertReadRows(page, truth);
+      for (const [name, status] of [['page-pose', poseStatus], ['orientation', 'verified'], ['response-geometry', 'verified']]) {
+        const evidence = stage(name);
+        assert(await evidence.isVisible(), `${name} must be visible`);
+        assert.equal(await evidence.getAttribute('data-status'), status, name);
+      }
+    }
+    async function next() {
+      await page.locator('#scan-next').click();
+      assert.equal(await rows.count(), 0);
+      assert.equal(await page.locator('#profile-selector').inputValue(), `${profile.id}@${profile.revision}`);
+    }
+
+    await page.locator('#scan-completed').click();
+    await verifyRead(first.filled, 'verified');
+    await next();
+    await verifyRead(weak.filled, 'recovered');
+    await next();
+    await capture(poses.missingBlock);
+    await retake.waitFor();
+    assert.equal(await rows.count(), 0);
+    assert.equal(await stage('page-pose').getAttribute('data-status'), 'verified');
+    assert.equal(await stage('response-geometry').getAttribute('data-status'), 'failed');
+    await next();
+    await capture(poses.mirror);
+    await retake.waitFor();
+    assert.equal(await rows.count(), 0);
+    assert.equal(await stage('orientation').getAttribute('data-status'), 'mirrored');
+    await next();
+    await verifyRead(second.filled, 'verified');
+    console.log(`  390×844 Chromium touch emulation: three complete exact scans of ${truth.length} answers each, two staged retakes with zero answers.`);
+  }, { isMobile: true, hasTouch: true });
 
   await group('M3.2 confirmed-batch successive scans, invalidation, privacy and offline validation', async (page, context) => {
     await installAdapters(page);
@@ -549,7 +601,6 @@ try {
     const active = await selector.locator('option').filter({ hasText: 'QA mixed' }).first().getAttribute('value');
     assert.equal(active, `${profile.id}@${profile.revision}`);
     await selector.selectOption(active);
-    const readButton = page.locator('#read-bubbles');
     const rows = page.locator('#recognition-results [data-item-id]');
     const observed = page.locator('#recognition-status');
     const sent = [];
@@ -559,80 +610,58 @@ try {
       const chooser = page.waitForEvent('filechooser');
       await page.locator('#choose-image').click();
       await (await chooser).setFiles(fixtureFilePath(fixture.file));
-      await page.locator('#capture-status').filter({ hasText: /Image ready to review/i }).waitFor();
-      assert.equal(await rows.count(), 0, 'Previous result carried to new capture');
       assert.equal(await selector.inputValue(), active, 'Profile selection changed between scans');
     }
-    async function read() {
-      await readButton.click();
-      await page.waitForFunction(() => ['read', 'retake'].includes(document.getElementById('recognition-status').dataset.status));
-      return observed.getAttribute('data-status');
+    async function next() {
+      await page.locator('#scan-next').click();
+      assert.equal(await rows.count(), 0, 'Previous result carried to the next capture');
+      assert.equal(await selector.inputValue(), active);
     }
-    async function authorize() {
-      await page.locator('#start-batch').click();
-      const attestation = page.locator('#batch-attestation');
-      assert.equal(await attestation.isChecked(), false, 'A new batch should require fresh attestation');
-      const confirm = page.locator('#confirm-batch');
-      if (await confirm.isEnabled()) await confirm.click();
-      assert.equal(await selector.isEnabled(), true, 'A batch started without attestation');
-      await attestation.check();
-      await confirm.click();
-      assert.equal(await selector.isDisabled(), true, 'The active template revision is not pinned');
+    async function start() {
+      await page.locator('#scan-completed').click();
+      await page.locator('#scan-next').waitFor();
       assert.equal(await selector.inputValue(), active);
     }
     async function assertNotReading() {
-      if ((await readButton.isVisible()) && (await readButton.isEnabled())) await readButton.click();
+      await page.locator('#scan-completed').waitFor();
+      assert.equal(await page.locator('#marked-capture-controls').isVisible(), false);
       assert(!['processing', 'read'].includes(await observed.getAttribute('data-status')));
       assert.equal(await rows.count(), 0);
     }
-    async function assertRows(truth) {
-      const reported = await rows.evaluateAll((items) => items.map((row) => ({
-        id: row.dataset.itemId, status: row.dataset.status, value: row.querySelector('[data-raw-text]')?.dataset.rawText ?? null,
-        review: row.dataset.review === 'true',
-      })));
-      assert.deepEqual(reported, truth);
-    }
 
-    await choose(family.fixtures[0]);
     await assertNotReading();
-    await authorize();
-    assert.equal(await read(), 'read');
-    await assertRows(family.fixtures[0].truth);
+    await start();
+    await choose(family.fixtures[0]);
+    await assertReadRows(page, family.fixtures[0].truth);
     assert.equal(await observed.getAttribute('data-strategy'), 'markerless');
     assert.equal(await observed.getAttribute('data-profile-id'), profile.id);
     assert.equal(await observed.getAttribute('data-revision'), String(profile.revision));
     const changedPrint = family.fixtures.find(({ id }) => id === 'wrong-same-grid');
+    await next();
     await choose(changedPrint);
-    assert.equal(await read(), 'read');
-    await assertRows(changedPrint.truth);
+    await assertReadRows(page, changedPrint.truth);
     const missing = family.fixtures.find(({ id }) => id === 'missing-block');
+    await next();
     await choose(missing);
-    assert.equal(await read(), 'retake');
+    const retake = observed.and(page.locator('[data-status="retake"]'));
+    await retake.waitFor();
     assert.equal(await rows.count(), 0);
-    assert.equal(await selector.isDisabled(), true, 'A retake must not clear batch confirmation');
+    assert.equal(await page.locator('#scan-next').isVisible(), true, 'A retake must not end the batch');
     await page.locator('#manual-corners').click();
-    const cornerCanvas = page.locator('#scan-corner-canvas');
-    const preview = await page.locator('#sheet-canvas').evaluate(({ width, height }) => ({ width, height }));
-    const display = await cornerCanvas.boundingBox();
-    assert(display, 'The scan-corner tool should be visible');
-    for (const point of pageCorners(normalizeMatrix(missing.pageToSource))) {
-      await cornerCanvas.click({ position: { x: point.x * display.width / preview.width, y: point.y * display.height / preview.height } });
-    }
+    await page.locator('#scan-corner-canvas').waitFor();
     await page.locator('#apply-scan-corners').click();
-    await observed.and(page.locator('[data-status="retake"]')).waitFor();
+    await retake.waitFor();
     assert.equal(await rows.count(), 0, 'Manually supplied geometry must not excuse a missing block');
+    await next();
     await choose(family.fixtures[4]);
-    assert.equal(await read(), 'read');
-    await assertRows(family.fixtures[4].truth);
+    await assertReadRows(page, family.fixtures[4].truth);
     await page.locator('#clear-image').click();
     assert.equal(await rows.count(), 0);
-    assert.equal(await selector.isDisabled(), true, 'Clearing a capture must preserve the active batch');
-    await choose(family.fixtures[0]);
+    assert.equal(await page.locator('#scan-next').isVisible(), true, 'Clearing a capture must preserve the active batch');
+    await next();
     await page.evaluate(() => { window.delayProfileResults = true; });
-    await readButton.click();
+    await choose(family.fixtures[0]);
     await page.waitForFunction(() => window.delayedProfileResults.length > 0);
-    await page.locator('#end-batch').click();
-    assert.equal(await selector.isEnabled(), true, 'Ending the batch must unlock selection');
     await selector.selectOption('reference');
     await page.evaluate(() => {
       window.delayProfileResults = false;
@@ -641,7 +670,10 @@ try {
     assert.equal(await rows.count(), 0, 'Batch/profile switch allowed a late result to appear');
     assert.notEqual(await observed.getAttribute('data-status'), 'read');
     await selector.selectOption(active);
-    await choose(family.fixtures[0]);
+    await assertNotReading();
+    await start();
+    await page.locator('#profile-advanced summary').click();
+    await page.locator('#end-batch').click();
     await assertNotReading();
     const appRelease = await page.evaluate(async (url) => (await import(url)).shellAssets, new URL('precache.generated.js', target).href);
     const allowed = new Set(['./', ...Object.keys(appRelease), 'sw.js', 'precache.generated.js'].map((path) => new URL(path, target).href));
@@ -681,11 +713,10 @@ try {
     await selector.locator('option').filter({ hasText: 'QA mixed' }).first().waitFor({ state: 'attached' });
     assert.equal(await rows.count(), 0);
     await selector.selectOption(active);
-    await choose(family.fixtures[0]);
     await assertNotReading();
-    await authorize();
-    assert.equal(await read(), 'read');
-    await assertRows(family.fixtures[0].truth);
+    await start();
+    await choose(family.fixtures[0]);
+    await assertReadRows(page, family.fixtures[0].truth);
     assert.equal(server.requests.length, beforeOffline);
   });
 

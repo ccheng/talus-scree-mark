@@ -3,6 +3,8 @@ import { test } from 'node:test';
 import { discoverBlankLayout } from '../app/src/layout-discovery.js';
 import { createMarkerlessProfile } from '../app/src/profile-authoring.js';
 import { readProfileSheet } from '../app/src/profile-omr.js';
+import { pageTransform } from '../app/src/markerless-registration.js';
+import { invertProjective, project } from '../app/src/projective.js';
 
 const page = { width: 612, height: 792, units: 'pt', origin: 'top-left', orientation: 'portrait' };
 
@@ -70,4 +72,51 @@ test('a missing bubble in a repeated row is exposed for teacher review', () => {
 test('invalid or reversed corners cannot create an automatic proposal', () => {
   const corners = [{ x: 10, y: 10 }, { x: 10, y: 700 }, { x: 600, y: 700 }, { x: 600, y: 10 }];
   assert.equal(discoverBlankLayout(syntheticBlank(), page, corners).status, 'needs-corners');
+});
+
+function weakEdgePhoto(image, background = 244) {
+  const width = 1420, height = 1720;
+  const corners = [
+    { x: 108, y: 124 }, { x: 1327, y: 70 }, { x: 1308, y: 1536 }, { x: 105, y: 1659 },
+  ];
+  const inverse = invertProjective(pageTransform(page, corners));
+  const pixels = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const point = project(inverse, x, y);
+      const inside = point && point.x >= 0 && point.y >= 0 && point.x <= page.width && point.y <= page.height;
+      const at = 4 * (y * width + x);
+      const source = inside ? 4 * (Math.round(point.y * 2) * image.width + Math.round(point.x * 2)) : null;
+      const value = source === null ? background : image.pixels[source];
+      pixels[at] = pixels[at + 1] = pixels[at + 2] = value;
+      pixels[at + 3] = 255;
+    }
+  }
+  return { id: 'weak-edge-photo', width, height, pixels };
+}
+
+test('faint page edges recover a complete blank and a verified marked pose', () => {
+  const proposal = discoverBlankLayout(weakEdgePhoto(syntheticBlank({ numeric: true })), page);
+  assert.equal(proposal.status, 'proposed', JSON.stringify(proposal.issues));
+  assert.equal(proposal.pagePose, 'faint-boundary');
+  assert.deepEqual(proposal.components.map(({ kind }) => kind), ['mc', 'nr']);
+  const profile = createMarkerlessProfile({ id: 'recovered-layout', revision: 1, name: 'Synthetic', page, components: proposal.components });
+  const batch = { profileId: profile.id, revision: profile.revision };
+  const result = readProfileSheet(weakEdgePhoto(syntheticBlank({ numeric: true, marks: true })), profile, { batch });
+  assert.equal(result.status, 'read', JSON.stringify(result.registration.reasons));
+  assert.equal(result.registration.cornerPath, 'bubble-fit');
+  assert.equal(result.registration.diagnostics.orientation.status, 'verified');
+  assert.deepEqual(result.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null, '7   ']);
+
+  const missing = readProfileSheet(weakEdgePhoto(syntheticBlank()), profile, { batch });
+  assert.equal(missing.status, 'retake');
+  assert.equal(missing.registration.diagnostics.responseGeometry.status, 'failed');
+  assert.deepEqual(missing.items, []);
+});
+
+test('a full-frame pose with unreliable aspect and no visible edge cannot save a partial discovery', () => {
+  const uncertain = discoverBlankLayout(weakEdgePhoto(syntheticBlank({ numeric: true }), 255), page);
+  assert.equal(uncertain.status, 'review');
+  assert.equal(uncertain.pagePose, 'uncertain');
+  assert.deepEqual(uncertain.components, []);
 });

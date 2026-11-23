@@ -40,3 +40,13 @@ Start from the [synthetic preview](https://ccheng.github.io/talus-scree-mark/) a
 2. Compare the proposed numbering, choice order and each NR column’s symbols against the print. Review the flagged conventions, correct any mapping at block level and save. Stop timing at successful save.
 3. Record time to overlay, total setup time, and counts of manual corner placements, region draws, row or column entries, individual bubble edits, block mapping changes and retries. Expect zero manual geometry interventions on the three standard sheets.
 4. Confirm the saved profile for the batch and scan the matching filled example. Compare every MC selection and NR slot against the key. Repeat one setup and scan offline after the app has cached.
+
+## iPhone workflow and registration retest
+
+1. Import a standard blank PNG using the fixture table above. Check the proposed overlay, then choose **Confirm and save template**.
+2. Verify the selected profile and choose **Scan completed sheet**. Photograph a matching filled sheet under ordinary lighting and tilt. Compare the result with the key. Choose **Scan next sheet** and verify the app still uses the saved revision without asking for another confirmation.
+3. Photograph a matching copy against a similarly colored background. Keep the printed answer blocks visible. Record whether page alignment succeeded, whether every required response block passed, and which answers were read or withheld. On a copy with an ambiguous mark, expect the affected answer to be flagged for review.
+4. Open corner correction and verify the order **1 Top left, 2 Top right, 3 Bottom right, 4 Bottom left**. Drag each handle to the matching page corner. Try both a valid correction and a visibly crossed outline. If registration still fails, record the exact failure and recovery action shown.
+5. Clip a required block and verify that the app withholds every answer. After a valid read, reopen offline in airplane mode and scan another synthetic sheet.
+
+Record the device, iOS version, preview build and any touch or navigation difficulty. Desktop mobile-viewport acceptance and synthetic alignment results are reported separately from this physical check.

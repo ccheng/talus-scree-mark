@@ -23,12 +23,15 @@ const read = byId('read-bubbles');
 const recognition = createRecognitionView({
   button: read, status: byId('recognition-status'), results: byId('recognition-results'),
   table: byId('recognition-items'), overlay: byId('recognition-overlay'),
+  diagnostics: byId('scan-diagnostics'),
+  onRegistration(registration) { workspace.observeRegistration(registration); },
 });
 const workspace = createProfileWorkspace({
   image: () => workingImage,
   onChanged({ clearImage = false } = {}) {
     if (clearImage) {
       cancelImport();
+      camera.close();
       workingImage = undefined;
       workspace.resetCapture();
     }
@@ -44,6 +47,16 @@ const workspace = createProfileWorkspace({
     updatePreview();
   },
   requestBlank: () => choose.click(),
+  onCaptureRequested() {
+    cancelImport();
+    camera.close();
+    workingImage = undefined;
+    workspace.resetCapture();
+    recognition.reset();
+    showStatus('Open the camera or choose a completed sheet.');
+    updatePreview();
+    start.focus();
+  },
   read: runRecognition,
 });
 
@@ -56,7 +69,8 @@ function updatePreview() {
   start.textContent = workingImage?.source === 'camera' ? 'Retake photo' : 'Open camera';
   clear.hidden = !workingImage;
   sheet.hidden = !workingImage || camera.state !== 'closed';
-  recognition.setAvailable(!sheet.hidden && !pickerPending && !importOperation && !workspace.editing && workspace.canRead);
+  byId('marked-capture-controls').hidden = !workspace.captureVisible || workspace.editing;
+  recognition.setAvailable(!sheet.hidden && !pickerPending && !importOperation && !workspace.editing && workspace.canRead, !workspace.autoRead);
   if (!workingImage) {
     canvas.width = 1;
     canvas.height = 1;
@@ -112,6 +126,7 @@ shutter.addEventListener('click', () => {
     if (!captured) return;
     showWorkingImage(captured);
     showStatus('Photo ready to review.');
+    if (workspace.autoRead) runRecognition();
   } catch (error) {
     showStatus(error instanceof ImageInputError ? error.message : 'Could not take a photo. Reopen the camera or choose an image.');
   }
@@ -143,10 +158,12 @@ picker.addEventListener('change', async () => {
   importOperation = operation;
   updatePreview();
   showStatus('Reading the selected image…');
+  let loaded = false;
   try {
     const imported = await importWorkingImage(file, operation.signal);
     if (importOperation !== operation) return;
     showWorkingImage(imported);
+    loaded = true;
     showStatus('Image ready to review.');
   } catch (error) {
     if (importOperation === operation) {
@@ -156,6 +173,7 @@ picker.addEventListener('change', async () => {
     if (importOperation === operation) {
       importOperation = undefined;
       updatePreview();
+      if (loaded && workspace.autoRead) runRecognition();
     }
   }
 });
