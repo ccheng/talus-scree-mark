@@ -74,16 +74,23 @@ test('invalid or reversed corners cannot create an automatic proposal', () => {
   assert.equal(discoverBlankLayout(syntheticBlank(), page, corners).status, 'needs-corners');
 });
 
-function weakEdgePhoto(image, background = 244) {
-  const width = 1420, height = 1720;
-  const corners = [
+function weakEdgePhoto(image, background = 244, { turn = 0, mirror = false, duplicate = false } = {}) {
+  const width = duplicate ? 1880 : turn % 2 ? 1720 : 1420;
+  const height = duplicate ? 1250 : turn % 2 ? 1420 : 1720;
+  const frame = duplicate ? [{ x: 45, y: 51 }, { x: 905, y: 51 }, { x: 905, y: 1160 }, { x: 45, y: 1160 }] : [
     { x: 108, y: 124 }, { x: 1327, y: 70 }, { x: 1308, y: 1536 }, { x: 105, y: 1659 },
   ];
+  const corners = frame.map(({ x, y }) => {
+    if (turn === 2) return { x: width - 1 - x, y: height - 1 - y };
+    if (turn === 3) return { x: y, y: height - 1 - x };
+    return { x, y };
+  });
   const inverse = invertProjective(pageTransform(page, corners));
   const pixels = new Uint8ClampedArray(width * height * 4);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const point = project(inverse, x, y);
+      const point = project(inverse, duplicate && x > 935 ? x - 935 : x, y);
+      if (point && mirror) point.x = page.width - point.x;
       const inside = point && point.x >= 0 && point.y >= 0 && point.x <= page.width && point.y <= page.height;
       const at = 4 * (y * width + x);
       const source = inside ? 4 * (Math.round(point.y * 2) * image.width + Math.round(point.x * 2)) : null;
@@ -119,4 +126,29 @@ test('a full-frame pose with unreliable aspect and no visible edge cannot save a
   assert.equal(uncertain.status, 'review');
   assert.equal(uncertain.pagePose, 'uncertain');
   assert.deepEqual(uncertain.components, []);
+});
+
+test('printed outlines recover edge-free upside-down and sideways sheets when geometry is unique', () => {
+  const proposal = discoverBlankLayout(syntheticBlank({ numeric: true }), page);
+  const profile = createMarkerlessProfile({ id: 'edge-free', revision: 1, name: 'Synthetic', page, components: proposal.components });
+  const batch = { profileId: profile.id, revision: profile.revision };
+  const expected = ['B', null, null, null, null, null, '7   '];
+  const marked = syntheticBlank({ numeric: true, marks: true });
+  for (const turn of [2, 3]) {
+    const result = readProfileSheet(weakEdgePhoto(marked, 255, { turn }), profile, { batch });
+    assert.equal(result.status, 'read', JSON.stringify([...result.registration.reasons, turn]));
+    assert.equal(result.registration.cornerPath, 'bubble-fit');
+    assert.equal(result.registration.diagnostics.orientation.status, 'verified');
+    assert(result.registration.geometry.blocks.every(({ verified }) => verified));
+    assert.deepEqual(result.items.map(({ rawText }) => rawText), expected);
+  }
+  for (const source of [
+    weakEdgePhoto(marked, 255, { turn: 2, mirror: true }),
+    weakEdgePhoto(syntheticBlank({ marks: true }), 255, { turn: 3 }),
+    weakEdgePhoto(marked, 255, { duplicate: true }),
+  ]) {
+    const result = readProfileSheet(source, profile, { batch });
+    assert.equal(result.status, 'retake');
+    assert.deepEqual(result.items, []);
+  }
 });

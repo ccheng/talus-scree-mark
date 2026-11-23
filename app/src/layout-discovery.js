@@ -191,9 +191,10 @@ function inspectBlankLayout(image, page, corners) {
   }));
   if (interrupted) issues.push('interrupted-grid');
   const typical = quantile(proposals.flatMap(({ cells }) => cells.map(({ radius }) => radius)), .50);
-  const unmatchedBubbles = unassigned.filter(({ radius }) => Math.abs(radius - typical) <= typical * .22).length;
-  const matchedBubbles = proposals.reduce((sum, grid) => sum + grid.cells.length, 0);
-  if (unmatchedBubbles >= 6 && unmatchedBubbles > matchedBubbles * .23) issues.push('unassigned-print');
+  // Printed labels also contain closed loops of bubble-like size. Require
+  // repeated spacing before treating unmatched ink as an omitted response grid.
+  const bubbleLike = unassigned.filter(({ radius }) => Math.abs(radius - typical) <= typical * .22);
+  if (latticesOf(bubbleLike).used.size >= 6) issues.push('unassigned-print');
   // An interior unassigned ring on the same printed grid axes is more useful
   // evidence of a partial proposal than isolated printed character outlines.
   if (proposals.some((proposal) => unassigned.some((ring) => proposal.rows.some(({ y, cells }) =>

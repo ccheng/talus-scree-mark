@@ -520,6 +520,7 @@ try {
     const stage = (name) => page.locator(`#scan-diagnostics [data-stage="${name}"]`);
     const retake = page.locator('#recognition-status[data-status="retake"]');
     const rows = page.locator('#recognition-results [data-item-id]');
+    const overlay = page.locator('#recognition-overlay');
     const editor = page.locator('#profile-editor');
     await installAdapters(page);
     assert(await page.evaluate(() => window.innerWidth === 390 && document.documentElement.scrollWidth <= 390 && navigator.maxTouchPoints > 0));
@@ -532,7 +533,7 @@ try {
     await page.locator('#profile-canvas').waitFor();
     assert.equal(await page.locator('#profile-blocks > li').count(), oracle.blocks.length);
     assert.deepEqual(await page.evaluate(() => window.m3qa.listProfiles()), []);
-    await page.locator('#enroll-profile').click();
+    await page.locator('#enroll-profile').tap();
     await editor.waitFor({ state: 'hidden' });
     const [profile] = await page.evaluate(() => window.m3qa.listProfiles());
     assertDiscoveredMapping(profile, oracle);
@@ -540,6 +541,7 @@ try {
     async function verifyRead(file, poseStatus) {
       await capture(file);
       await assertReadRows(page, truth);
+      assert(await overlay.isVisible());
       for (const [name, status] of [['page-pose', poseStatus], ['orientation', 'verified'], ['response-geometry', 'verified']]) {
         const evidence = stage(name);
         assert(await evidence.isVisible(), `${name} must be visible`);
@@ -547,12 +549,12 @@ try {
       }
     }
     async function next() {
-      await page.locator('#scan-next').click();
+      await page.locator('#scan-next').tap();
       assert.equal(await rows.count(), 0);
       assert.equal(await page.locator('#profile-selector').inputValue(), `${profile.id}@${profile.revision}`);
     }
 
-    await page.locator('#scan-completed').click();
+    await page.locator('#scan-completed').tap();
     await verifyRead(first.filled, 'verified');
     await next();
     await verifyRead(weak.filled, 'recovered');
@@ -562,11 +564,14 @@ try {
     assert.equal(await rows.count(), 0);
     assert.equal(await stage('page-pose').getAttribute('data-status'), 'verified');
     assert.equal(await stage('response-geometry').getAttribute('data-status'), 'failed');
+    assert.match(await stage('response-geometry').textContent(), /NR4:/);
+    assert.equal(await overlay.isVisible(), false);
     await next();
     await capture(poses.mirror);
     await retake.waitFor();
     assert.equal(await rows.count(), 0);
     assert.equal(await stage('orientation').getAttribute('data-status'), 'mirrored');
+    assert.equal(await overlay.isVisible(), false);
     await next();
     await verifyRead(second.filled, 'verified');
     console.log(`  390×844 Chromium touch emulation: three complete exact scans of ${truth.length} answers each, two staged retakes with zero answers.`);
@@ -604,6 +609,8 @@ try {
     const rows = page.locator('#recognition-results [data-item-id]');
     const observed = page.locator('#recognition-status');
     const sent = [];
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
     context.on('request', (request) => sent.push({ url: new URL(request.url()), method: request.method(), data: request.postData() }));
 
     async function choose(fixture) {
@@ -618,7 +625,15 @@ try {
       assert.equal(await selector.inputValue(), active);
     }
     async function start() {
-      await page.locator('#scan-completed').click();
+      const startButton = page.locator('#scan-completed');
+      const pin = page.locator('#profile-pin');
+      await pin.filter({ hasText: 'QA mixed, revision 1, selected.' }).waitFor();
+      assert.equal(await selector.inputValue(), active);
+      // Use keyboard activation here. Pointer activation is covered by the enrollment and mobile flows.
+      await startButton.press('Enter');
+      await pin.filter({ hasText: 'Batch active for QA mixed, revision 1.' }).waitFor({ timeout: 5000 }).catch(async (error) => {
+        throw new Error(`Scan session did not start. Pin: ${await pin.textContent()}. Page errors: ${pageErrors.join('; ')}`, { cause: error });
+      });
       await page.locator('#scan-next').waitFor();
       assert.equal(await selector.inputValue(), active);
     }

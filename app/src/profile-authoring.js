@@ -158,17 +158,18 @@ export function proposeGrid(image, pageToSource, region, { rows, columns } = {})
   return { status: complete ? 'complete' : 'partial', ...best, trials: settings.map((c) => c.length) };
 }
 
-export function pageRingCandidates(gray, pageToSource, page) {
-  const margin = 13;
+export function pageRingCandidates(gray, pageToSource, page, {
+  minRadius = 2.3, maxRadius = 7, margin = 13, limit = 1800,
+} = {}) {
   const region = { x: margin, y: margin, width: page.width - 2 * margin, height: page.height - 2 * margin };
   const raster = rasterizeRegion(gray, pageToSource, region, 1680);
   const candidates = [];
   for (const threshold of [.64, .82]) {
     for (const candidate of ringCandidates(raster, region, raster.background * threshold)) {
-      if (candidate.radius < 2.3 || candidate.radius > 7 || candidates.some((entry) =>
+      if (candidate.radius < minRadius || candidate.radius > maxRadius || candidates.some((entry) =>
         Math.hypot(entry.x - candidate.x, entry.y - candidate.y) < 1.5)) continue;
       candidates.push(candidate);
-      if (candidates.length >= 1800) return candidates;
+      if (candidates.length >= limit) return candidates;
     }
   }
   return candidates;

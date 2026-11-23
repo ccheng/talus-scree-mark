@@ -1,7 +1,8 @@
 import { cross, fitProjective, fitProjectiveSamples, invertProjective, project } from './projective.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
+import { outlinePoseProposals } from './bubble-registration.js';
 
-export const markerlessThresholdVersion = 'batch-geometry-v3';
+export const markerlessThresholdVersion = 'batch-geometry-v4';
 const registrationStrategy = 'markerless';
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const failure = (reason, detail = {}) => ({
@@ -584,6 +585,31 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
         candidates = alternative;
         eligible = verified;
       }
+    }
+  }
+  if (!eligible.length && !corners && (!measured || measured.filter((point, index) =>
+    nativeEdge(gray, point, measured[(index + 1) % 4], 5, 9)).length < 3)) {
+    const alternative = [];
+    for (const [ratio, shear] of [[1, 0], [.86, 0], [1.16, 0], [1, -.14], [1, .14]]) {
+      for (const { transform, mirrored } of outlinePoseProposals(gray, profile, ratio, shear)) {
+        const adjusted = pagePoints(profile.page).map(({ x, y }) => project(transform, x, y));
+        if (!plausible(adjusted, gray, mirrored) || alternative.some((entry) =>
+          entry.mirrored === mirrored && entry.corners.every((point, index) => distance(point, adjusted[index]) < 5))) continue;
+        const pose = inspectPose(gray, profile, transform, mirrored, adjusted);
+        if (!pose?.geometry.verified) continue;
+        const ordered = mirrored ? [adjusted[0], adjusted[3], adjusted[2], adjusted[1]] : adjusted;
+        for (const hypothesis of measureHypotheses(gray, profile, ordered, false, edgePose)) {
+          if (hypothesis.geometry.verified && !alternative.some((entry) =>
+            entry.mirrored === hypothesis.mirrored && entry.corners.every((point, index) =>
+              distance(point, hypothesis.corners[index]) < 5))) alternative.push(hypothesis);
+        }
+      }
+      if (alternative.length) break;
+    }
+    if (alternative.length) {
+      path = 'bubble-fit';
+      candidates = alternative.sort((a, b) => b.score - a.score);
+      eligible = candidates;
     }
   }
   const best = eligible[0];

@@ -22,6 +22,7 @@ const staticFiles = [
   'src/camera.js',
   'src/image.js',
   'src/layout-discovery.js',
+  'src/bubble-registration.js',
   'src/main.js',
   'src/markerless-registration.js',
   'src/offline.js',
