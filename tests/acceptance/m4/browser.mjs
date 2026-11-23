@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { openServer, projectPath } from '../m1/server.mjs';
 
 const { chromium } = await import(process.env.TALUS_TEST_PLAYWRIGHT_PATH || 'playwright');
@@ -9,6 +10,9 @@ assert(appPath, 'Usage: node browser.mjs /absolute/candidate/app');
 const server = await openServer(appPath);
 const target = server.origin + projectPath;
 const source = (file) => new URL(`src/${file}`, target).href;
+const { shellAssets } = await import(pathToFileURL(resolve(appPath, 'precache.generated.js')).href);
+const shell = Object.keys(shellAssets).map((path) => path.replace(/^\.\//, ''));
+const staticUrls = new Set([target, ...[...shell, 'sw.js', 'precache.generated.js'].map((path) => new URL(path, target).href)]);
 const browser = await chromium.launch({ executablePath: process.env.TALUS_TEST_CHROMIUM, headless: true });
 let failures = 0;
 let backupWithDeletedPhoto;
@@ -69,6 +73,7 @@ async function group(name, check) {
     console.error(`FAIL ${name}\n${error.stack}`);
   } finally {
     await context.close();
+    server.fault.clear();
   }
 }
 
@@ -83,8 +88,9 @@ try {
     await page.locator('#discovery-status[data-status="proposed"]').waitFor();
     await page.locator('#enroll-profile').click();
     await editor.waitFor({ state: 'hidden' });
-    const fromHere = server.requests.length;
     await context.setOffline(true);
+    const fromHere = server.requests.length;
+    for (const path of [...shell, 'sw.js', 'precache.generated.js']) server.fault.set(path, { status: 503 });
 
     const keyPanel = page.locator('#grading-key-panel');
     const keyField = (id) => keyPanel.locator(`[name="${id}"]`);
@@ -239,9 +245,12 @@ try {
     await waitGrade(page, '2/5 · 0 pending · final');
     const offline = await snapshot(page);
     assert(offline.scans.some(({ id, bytes }) => id === original.id && bytes === 0));
-    assert.equal(server.requests.length, fromHere, 'Offline operations reached the static server');
+    const attempts = server.requests.slice(fromHere);
+    assert(attempts.every(({ method, url, bytes }) => method === 'GET' && Number(bytes ?? 0) === 0 &&
+      staticUrls.has(new URL(url, server.origin).href)), `Unexpected offline server request: ${JSON.stringify(attempts)}`);
+    console.log(`  Offline static requests refused by server: ${attempts.map(({ method, url }) => `${method} ${url}`).join(', ') || 'none'}`);
     assert(requests.every(({ method, url, body }) => method === 'GET' && body === null &&
-      (url.startsWith(target) || url.startsWith(`blob:${server.origin}`))), JSON.stringify(requests));
+      (staticUrls.has(url) || url.startsWith(`blob:${server.origin}/`))), JSON.stringify(requests));
   });
 
   await group('M4 restores a local JSON backup without resurrecting a deleted photo or duplicating records', async (page, context) => {
