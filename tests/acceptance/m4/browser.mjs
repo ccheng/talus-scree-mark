@@ -202,8 +202,16 @@ try {
     const [numerical] = saved.components;
     assert.equal(saved.components.length, 1);
     assert.equal(numerical.items[0].id, 'NR2');
-    assert.deepEqual(numerical.items[0].slots.map(({ choices }) => choices.map(({ symbol }) => symbol).join('')),
-      expected.items[0].slots.map(({ choices }) => choices.map(({ symbol }) => symbol).join('')));
+    for (const [index, slot] of numerical.items[0].slots.entries()) {
+      const physical = [...slot.choices].sort((a, b) => a.y - b.y);
+      const expectedPhysical = expected.items[0].slots[index].choices;
+      assert.deepEqual(physical.map(({ symbol }) => symbol), expectedPhysical.map(({ symbol }) => symbol));
+      for (const [n, choice] of physical.entries()) {
+        const target = expectedPhysical[n];
+        const offset = Math.hypot(choice.x - target.x, choice.y - target.y) / target.radius;
+        assert(offset <= .65, `Manual slot ${index + 1} ${choice.symbol} shifted ${offset.toFixed(3)} local radii`);
+      }
+    }
     await page.locator('#scan-completed').click();
     await recognize(page, portfolioFile(form.marked));
     const [result] = await page.locator('#recognition-results [data-item-id]').all();
