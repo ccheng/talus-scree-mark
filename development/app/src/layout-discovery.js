@@ -100,14 +100,17 @@ function writingBoxes(gray, matrix, grid) {
   const { cells, y } = grid.rows[0];
   const sample = (x, top) => inkAt(gray, matrix, x, top) < 150;
   const hits = [];
-  for (let line = y - 38 - grid.spacing; line <= y - 5; line += .55) {
+  // Alberta forms may use one tall strip with shared dividers rather than
+  // four short separate boxes. Scale the search to the printed column pitch.
+  const maxHeight = Math.max(25, Math.min(48, grid.pitch * 2));
+  for (let line = y - 13 - grid.spacing - maxHeight; line <= y - 5; line += .55) {
     const horizontal = cells.every(({ x }) =>
       [-.23, -.12, 0, .12, .23].filter((u) => sample(x + u * grid.pitch, line)).length >= 4);
     if (horizontal) hits.push(line);
   }
   for (const top of hits) {
     for (const bottom of hits) {
-      if (bottom - top < 7 || bottom - top > 25) continue;
+      if (bottom - top < 7 || bottom - top > maxHeight) continue;
       const checkSide = (x) => [.18, .34, .5, .66, .82].filter((fraction) => sample(x, top + fraction * (bottom - top))).length >= 4;
       const found = cells.map(({ x }, i) => {
         let left, right;
@@ -175,7 +178,7 @@ function inspectBlankLayout(image, page, corners) {
   const matrix = pageTransform(page, corners);
   if (!matrix) return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
   const gray = toGrayImage(image);
-  const candidates = pageRingCandidates(gray, matrix, page, { printedCenters: true });
+  const candidates = pageRingCandidates(gray, matrix, page, { printedCenters: true, maxRadius: 8 });
   if (candidates.length >= 1800) return { status: 'review', corners, components: [], issues: ['too-many-candidates'] };
   const rings = excludePrintedLabels(candidates);
   const { output, used } = latticesOf(rings);
