@@ -1,3 +1,4 @@
+import { createGradingView } from './grading-view.js';
 import { createCamera } from './camera.js';
 import { importWorkingImage, ImageInputError } from './image.js';
 import { prepareOffline } from './offline.js';
@@ -20,15 +21,18 @@ let workingImage;
 let importOperation;
 let pickerPending = false;
 const read = byId('read-bubbles');
+const grading = createGradingView();
 const recognition = createRecognitionView({
   button: read, status: byId('recognition-status'), results: byId('recognition-results'),
   table: byId('recognition-items'), overlay: byId('recognition-overlay'),
   diagnostics: byId('scan-diagnostics'),
+  onRead(result, profile, image) { grading.observe(result, profile, image); },
   onRegistration(registration) { workspace.observeRegistration(registration); },
 });
 const workspace = createProfileWorkspace({
   image: () => workingImage,
   onChanged({ clearImage = false } = {}) {
+    grading.select(workspace.selectedProfile, clearImage);
     if (clearImage) {
       cancelImport();
       camera.close();
@@ -39,6 +43,7 @@ const workspace = createProfileWorkspace({
     updatePreview();
   },
   onEditorClosed(saved) {
+    grading.select(workspace.selectedProfile);
     if (saved) {
       recognition.reset();
       workingImage = undefined;
@@ -200,6 +205,7 @@ function resetPage() {
   camera.close();
   workingImage = undefined;
   workspace.reset({ end: true });
+  grading.select(workspace.selectedProfile, true);
   updatePreview();
   showStatus('');
 }

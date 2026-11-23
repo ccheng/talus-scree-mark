@@ -103,7 +103,7 @@ function addItems(table, items) {
   table.replaceChildren(fragment);
 }
 
-export function createRecognitionView({ button, status, results, table, overlay, diagnostics, onRegistration }) {
+export function createRecognitionView({ button, status, results, table, overlay, diagnostics, onRegistration, onRead }) {
   let active;
   let available = false;
   let jobId = 0;
@@ -235,6 +235,7 @@ export function createRecognitionView({ button, status, results, table, overlay,
       const summary = reviewCount === 1 ? '1 response needs review.' : `${reviewCount} responses need review.`;
       const path = request ? ' Read against the confirmed batch profile.' : '';
       setStatus('read', (reviewCount ? summary : 'All responses read.') + path);
+      onRead?.(result, request?.profile, image);
     }
     worker.addEventListener('message', ({ data }) => complete(data));
     worker.addEventListener('error', () => complete());

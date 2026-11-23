@@ -294,6 +294,7 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   refresh();
   return {
     acceptImage, scanOptions, resetCapture, reset,
+    get selectedProfile() { return selected(); },
     observeRegistration(registration) {
       const points = registration?.diagnostics?.pagePose?.corners;
       if (points?.length === 4) estimatedCorners = points;

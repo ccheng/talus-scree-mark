@@ -1,0 +1,35 @@
+name: M4 desktop acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - '.github/workflows/m4-acceptance.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  desktop-chromium:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm run check:release
+      - name: Prepare desktop Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/talus-browser" --no-save --package-lock=false playwright@1.58.2
+          "$RUNNER_TEMP/talus-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Run independent M4 browser acceptance
+        env:
+          TALUS_TEST_PLAYWRIGHT_PATH: ${{ runner.temp }}/talus-browser/node_modules/playwright/index.mjs
+        run: node tests/acceptance/m4/browser.mjs "$GITHUB_WORKSPACE/app"

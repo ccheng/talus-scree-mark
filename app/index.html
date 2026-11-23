@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="61ec5fe86f07fbdde9dfc443">
+  <meta name="scree-release" content="5b9b4ce5d8d74cc6f4890442">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -227,6 +227,62 @@
         </ul>
       </details>
       <noscript>Turn on JavaScript to capture a sheet or set up offline use.</noscript>
+    </section>
+    <section id="grading" aria-labelledby="grading-heading">
+      <h2 id="grading-heading">Grade and review</h2>
+      <p>Use a saved template to grade scans. Saving a result also retains the source photograph on this device. Safari can clear local storage. Keep a JSON backup for anything you need to retain.</p>
+      <button id="grading-edit-key" type="button" disabled>Edit selected template’s key</button>
+      <form id="grading-key-panel" hidden>
+        <h3 id="grading-key-title"></h3>
+        <div id="grading-key-inputs" class="grading-fields"></div>
+        <button type="submit">Save new key revision</button>
+        <button id="grading-key-cancel" type="button">Cancel</button>
+      </form>
+      <p id="grading-status" role="status"></p>
+      <p id="grading-rescan-note"></p>
+      <button id="grading-cancel-rescan" type="button" hidden>Cancel rescan</button>
+      <label>Results <select id="grading-saved"><option value="">Choose a result</option></select></label>
+      <div id="grading-result" hidden>
+        <h3 id="grading-label"></h3>
+        <p>Score <output id="grading-score" aria-live="polite"></output></p>
+        <button id="grading-save" type="button">Save result and photograph</button>
+        <div class="grading-table">
+          <table>
+            <thead><tr><th>Question</th><th>Observed</th><th>Effective</th><th>Status</th><th>Points</th><th>Review detail</th></tr></thead>
+            <tbody id="grading-items"></tbody>
+          </table>
+        </div>
+        <label>Question <select id="grading-item"></select></label>
+        <label>Corrected answer (empty for blank) <input id="grading-answer" maxlength="5"></label>
+        <div class="grading-fields">
+          <button id="grading-correct" type="button">Correct answer</button>
+          <button id="grading-award" type="button">Award credit</button>
+          <button id="grading-deny" type="button">Deny credit</button>
+          <button id="grading-undo" type="button">Undo last decision</button>
+        </div>
+        <details>
+          <summary>Source photograph and review history</summary>
+          <p id="grading-photo-status"></p>
+          <img id="grading-photo" alt="Source photograph for this scan" hidden>
+          <ol id="grading-history"></ol>
+          <button id="grading-delete-photo" type="button">Delete photograph only</button>
+        </details>
+        <details>
+          <summary>Result and batch actions</summary>
+          <button id="grading-repeat" type="button">Rescan this sheet</button>
+          <button id="grading-edit-saved-key" type="button">Edit key for this template</button>
+          <button id="grading-regrade" type="button">Regrade with latest key</button>
+          <button id="grading-delete-result" type="button">Delete result</button>
+          <button id="grading-delete-batch" type="button">Delete batch</button>
+        </details>
+      </div>
+      <details>
+        <summary>Local export and restore</summary>
+        <button id="grading-csv" type="button">Export selected batch CSV</button>
+        <button id="grading-json" type="button">Create JSON backup with photographs</button>
+        <label>Restore JSON backup <input id="grading-import" type="file" accept=".json,application/json"></label>
+        <p id="grading-download"></p>
+      </details>
     </section>
   </main>
 </body>

@@ -1,6 +1,6 @@
 # M4 proposal — Review, grading and export
 
-**Status** · Proposed. Implementation begins after Product Owner approval.
+**Status** · Historical proposal. The Product Owner approved a revised scope. See [M4 acceptance](MILESTONE_4_ACCEPTANCE.md) for the operative rules.
 
 - **Answer keys.** Enter and edit keys against a specific saved template revision. Use its item IDs and available symbols. Permit unkeyed items with explicit status. Key revisions are immutable after use in a graded record, and regrading against a newer revision is explicit.
 - **Grading.** Run locally. Propose one point per keyed item. A verified blank is incorrect when keyed. Ambiguous or unreadable responses remain pending until reviewed. Unkeyed items stay outside the denominator. Show correct, incorrect, pending and unkeyed counts. Preserve literal NR slots in evidence. For grading, propose exact decimal-value comparison after stripping padding, so 004 equals 4 and 7.00 equals 7. Compare decimal strings without binary floating-point tolerance. Hold malformed or incomplete values for review when recognition reports uncertainty.
