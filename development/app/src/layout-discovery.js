@@ -3,7 +3,8 @@ import { grayAt, quantile, toGrayImage } from './omr-image.js';
 import { createMarkerlessProfile, intersects, pageRingCandidates } from './profile-authoring.js';
 import { cross, project } from './projective.js';
 
-export const discoveryVersion = 'printed-ring-lattices-2';
+export const discoveryVersion = 'printed-ring-lattices-3';
+const maxColumnPitch = 45;
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 function rowsOf(candidates) {
@@ -25,7 +26,7 @@ function runsOf({ y, cells }) {
     for (let j = index + 1; j < sorted.length; j++) {
       const next = sorted[j];
       const pitch = next.x - first.x;
-      if (pitch > 45) break;
+      if (pitch > maxColumnPitch) break;
       if (pitch < Math.max(first.radius, next.radius) * 3 || Math.abs(first.radius - next.radius) > 1.05) continue;
       const run = [first, next];
       while (run.length < 13) {
@@ -78,8 +79,10 @@ function latticesOf(rings) {
       candidates.push({ rows: group, columns, cells, spacing, pitch: cluster.seed.pitch, support });
     }
   }
-  candidates.sort((a, b) => b.support * b.columns - a.support * a.columns ||
-    b.cells.length - a.cells.length || b.columns - a.columns);
+  // Directly observed runs outrank extrapolated support across gaps. Use
+  // the latter to choose between equally complete fragments before joining.
+  candidates.sort((a, b) => b.cells.length - a.cells.length ||
+    b.support * b.columns - a.support * a.columns || b.columns - a.columns);
   const used = new Set();
   const output = [];
   for (const candidate of candidates) {
@@ -101,7 +104,7 @@ function albertaGrids(rings) {
       const radius = (left.radius + right.radius) / 2;
       // The boxes aren't reliable under all captures. Adjacent decimal
       // outlines must be distinct, with space beyond their combined radii.
-      if (pitch < left.radius + right.radius + .65 || pitch > 30 ||
+      if (pitch < left.radius + right.radius + .65 || pitch > maxColumnPitch ||
           Math.abs(left.radius - right.radius) > radius * .25) continue;
       const tolerance = Math.min(pitch * .18, Math.max(1.4, radius * .40));
       const match = (band, x) => band.cells.find((ring) => Math.abs(ring.x - x) <= tolerance &&
