@@ -74,7 +74,9 @@ test('invalid or reversed corners cannot create an automatic proposal', () => {
   assert.equal(discoverBlankLayout(syntheticBlank(), page, corners).status, 'needs-corners');
 });
 
-function weakEdgePhoto(image, background = 244, { turn = 0, mirror = false, duplicate = false } = {}) {
+function weakEdgePhoto(image, background = 244, {
+  turn = 0, mirror = false, duplicate = false, secondary = image,
+} = {}) {
   const width = duplicate ? 1880 : turn % 2 ? 1720 : 1420;
   const height = duplicate ? 1250 : turn % 2 ? 1420 : 1720;
   const frame = duplicate ? [{ x: 45, y: 51 }, { x: 905, y: 51 }, { x: 905, y: 1160 }, { x: 45, y: 1160 }] : [
@@ -85,21 +87,27 @@ function weakEdgePhoto(image, background = 244, { turn = 0, mirror = false, dupl
     if (turn === 3) return { x: y, y: height - 1 - x };
     return { x, y };
   });
+  const alternateCorners = duplicate === 'unequal' ? [
+    { x: 1000, y: 207 }, { x: 1632, y: 166 }, { x: 1661, y: 980 }, { x: 1026, y: 968 },
+  ] : corners.map(({ x, y }) => ({ x: x + 935, y }));
   const inverse = invertProjective(pageTransform(page, corners));
+  const alternate = duplicate && invertProjective(pageTransform(page, alternateCorners));
   const pixels = new Uint8ClampedArray(width * height * 4);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const point = project(inverse, duplicate && x > 935 ? x - 935 : x, y);
+      const second = alternate && x > 935;
+      const point = project(second ? alternate : inverse, x, y);
       if (point && mirror) point.x = page.width - point.x;
       const inside = point && point.x >= 0 && point.y >= 0 && point.x <= page.width && point.y <= page.height;
       const at = 4 * (y * width + x);
-      const source = inside ? 4 * (Math.round(point.y * 2) * image.width + Math.round(point.x * 2)) : null;
-      const value = source === null ? background : image.pixels[source];
+      const source = inside && (!second || secondary)
+        ? 4 * (Math.round(point.y * 2) * image.width + Math.round(point.x * 2)) : null;
+      const value = source === null ? background : (second ? secondary : image).pixels[source];
       pixels[at] = pixels[at + 1] = pixels[at + 2] = value;
       pixels[at + 3] = 255;
     }
   }
-  return { id: 'weak-edge-photo', width, height, pixels };
+  return { id: 'weak-edge-photo', width, height, pixels, corners, alternateCorners };
 }
 
 test('faint page edges recover a complete blank and a verified marked pose', () => {
@@ -151,4 +159,32 @@ test('printed outlines recover edge-free upside-down and sideways sheets when ge
     assert.equal(result.status, 'retake');
     assert.deepEqual(result.items, []);
   }
+});
+
+test('two separate complete sheets retake even when manual corners identify either sheet', () => {
+  const blank = syntheticBlank({ numeric: true });
+  const marked = syntheticBlank({ numeric: true, marks: true });
+  const profile = createMarkerlessProfile({
+    id: 'duplicates', revision: 1, name: 'Synthetic', page,
+    components: discoverBlankLayout(blank, page).components,
+  });
+  const batch = { profileId: profile.id, revision: profile.revision };
+  const duplicate = weakEdgePhoto(marked, 150, { duplicate: 'unequal', secondary: blank });
+  for (const corners of [undefined, duplicate.corners, duplicate.alternateCorners]) {
+    const result = readProfileSheet(duplicate, profile, { batch, corners });
+    assert.equal(result.status, 'retake');
+    assert.deepEqual(result.registration.reasons, ['multiple-sheets']);
+    assert.equal(result.registration.canSetCorners, false);
+    assert.deepEqual(result.items, []);
+  }
+
+  const single = weakEdgePhoto(marked, 150, { duplicate: 'unequal', secondary: null });
+  const partial = weakEdgePhoto(marked, 150, { duplicate: 'unequal', secondary: syntheticBlank() });
+  const expected = readProfileSheet(single, profile, { batch });
+  const result = readProfileSheet(partial, profile, { batch });
+  assert.equal(expected.status, 'read');
+  assert.equal(result.status, 'read');
+  assert.equal(result.items.length, 7);
+  assert.deepEqual(result.items.map(({ id, rawText, status }) => [id, rawText, status]),
+    expected.items.map(({ id, rawText, status }) => [id, rawText, status]));
 });

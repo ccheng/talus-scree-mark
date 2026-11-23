@@ -608,6 +608,10 @@ try {
     await selector.selectOption(active);
     const rows = page.locator('#recognition-results [data-item-id]');
     const observed = page.locator('#recognition-status');
+    const pin = page.locator('#profile-pin');
+    const activePin = pin.filter({ hasText: 'Batch active for QA mixed, revision 1.' });
+    const nextSheet = page.locator('#scan-next');
+    const captureControls = page.locator('#marked-capture-controls');
     const sent = [];
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
@@ -619,23 +623,28 @@ try {
       await (await chooser).setFiles(fixtureFilePath(fixture.file));
       assert.equal(await selector.inputValue(), active, 'Profile selection changed between scans');
     }
-    async function next() {
-      await page.locator('#scan-next').click();
-      assert.equal(await rows.count(), 0, 'Previous result carried to the next capture');
+    async function assertReadyForCapture() {
+      await activePin.waitFor();
+      await captureControls.waitFor();
+      assert.equal(await nextSheet.isVisible(), false, 'An empty capture should offer capture controls');
       assert.equal(await selector.inputValue(), active);
+    }
+    async function next() {
+      await nextSheet.waitFor();
+      await nextSheet.click();
+      assert.equal(await rows.count(), 0, 'Previous result carried to the next capture');
+      await assertReadyForCapture();
     }
     async function start() {
       const startButton = page.locator('#scan-completed');
-      const pin = page.locator('#profile-pin');
       await pin.filter({ hasText: 'QA mixed, revision 1, selected.' }).waitFor();
       assert.equal(await selector.inputValue(), active);
       // Use keyboard activation here. Pointer activation is covered by the enrollment and mobile flows.
       await startButton.press('Enter');
-      await pin.filter({ hasText: 'Batch active for QA mixed, revision 1.' }).waitFor({ timeout: 5000 }).catch(async (error) => {
+      await activePin.waitFor({ timeout: 5000 }).catch(async (error) => {
         throw new Error(`Scan session did not start. Pin: ${await pin.textContent()}. Page errors: ${pageErrors.join('; ')}`, { cause: error });
       });
-      await page.locator('#scan-next').waitFor();
-      assert.equal(await selector.inputValue(), active);
+      await assertReadyForCapture();
     }
     async function assertNotReading() {
       await page.locator('#scan-completed').waitFor();
@@ -672,8 +681,7 @@ try {
     await assertReadRows(page, family.fixtures[4].truth);
     await page.locator('#clear-image').click();
     assert.equal(await rows.count(), 0);
-    assert.equal(await page.locator('#scan-next').isVisible(), true, 'Clearing a capture must preserve the active batch');
-    await next();
+    await assertReadyForCapture();
     await page.evaluate(() => { window.delayProfileResults = true; });
     await choose(family.fixtures[0]);
     await page.waitForFunction(() => window.delayedProfileResults.length > 0);

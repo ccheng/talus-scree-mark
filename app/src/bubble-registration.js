@@ -3,9 +3,17 @@ import { fitProjective, fitProjectiveSamples, project } from './projective.js';
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
+export function observeOutlines(gray, page) {
+  const scale = Math.max(page.width, page.height) / Math.max(gray.width, gray.height);
+  const frame = { width: gray.width * scale, height: gray.height * scale };
+  const observed = pageRingCandidates(gray, [1 / scale, 0, 0, 0, 1 / scale, 0, 0, 0, 1], frame,
+    { minRadius: 1.6, maxRadius: 8, margin: 0, limit: 360 });
+  return observed.length >= 12 && observed.length < 360 ? { scale, frame, observed } : null;
+}
+
 // These correspondences propose a pose only. The caller still verifies that
 // every enrolled response block exists and that the orientation is unique.
-export function outlinePoseProposals(gray, profile, axisRatio = 1, shear = 0) {
+export function outlinePoseProposals(gray, profile, axisRatio = 1, shear = 0, outlines) {
   const { page, components } = profile;
   const blocks = components.map(({ items }) => items.flatMap((item) =>
     item.kind === 'mc' ? item.choices : item.slots.flatMap(({ choices }) => choices)));
@@ -18,11 +26,9 @@ export function outlinePoseProposals(gray, profile, axisRatio = 1, shear = 0) {
   if (Math.max(...xs) - Math.min(...xs) < page.width * .27 ||
       Math.max(...ys) - Math.min(...ys) < page.height * .27) return [];
 
-  const scale = Math.max(page.width, page.height) / Math.max(gray.width, gray.height);
-  const frame = { width: gray.width * scale, height: gray.height * scale };
-  const observed = pageRingCandidates(gray, [1 / scale, 0, 0, 0, 1 / scale, 0, 0, 0, 1], frame,
-    { minRadius: 1.6, maxRadius: 8, margin: 0, limit: 360 });
-  if (observed.length < 12 || observed.length >= 360) return [];
+  const available = outlines ?? observeOutlines(gray, page);
+  if (!available) return [];
+  const { scale, frame, observed } = available;
 
   const binSize = 12;
   const bins = new Map();

@@ -1,9 +1,11 @@
 import { cross, fitProjective, fitProjectiveSamples, invertProjective, project } from './projective.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
-import { outlinePoseProposals } from './bubble-registration.js';
+import { observeOutlines, outlinePoseProposals } from './bubble-registration.js';
 
 export const markerlessThresholdVersion = 'batch-geometry-v4';
 const registrationStrategy = 'markerless';
+const outlineAdjustments = [[1, 0], [.86, 0], [1.16, 0], [1, -.14], [1, .14]];
+const minimumPageSideRatio = .22;
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const failure = (reason, detail = {}) => ({
   status: 'retake', strategy: registrationStrategy, reasons: [reason], ...detail,
@@ -50,7 +52,7 @@ function plausible(corners, image, mirrored = false) {
       !Number.isFinite(point.x) || !Number.isFinite(point.y) || point.x < -1 || point.y < -1 ||
       point.x > image.width || point.y > image.height)) return false;
   const lengths = corners.map((point, index) => distance(point, corners[(index + 1) % 4]));
-  if (Math.min(...lengths) < Math.min(image.width, image.height) * .22 ||
+  if (Math.min(...lengths) < Math.min(image.width, image.height) * minimumPageSideRatio ||
       Math.max(...lengths) / Math.min(...lengths) > 3.65) return false;
   const sign = mirrored ? -1 : 1;
   return corners.every((point, index) =>
@@ -551,6 +553,73 @@ function bubblePose(gray, profile, corners, mirrored) {
   return result && { ...result, witnesses: observed.length, heldOut: hold.length };
 }
 
+function photoBounds(points) {
+  return {
+    left: Math.min(...points.map(({ x }) => x)), right: Math.max(...points.map(({ x }) => x)),
+    top: Math.min(...points.map(({ y }) => y)), bottom: Math.max(...points.map(({ y }) => y)),
+  };
+}
+
+function responseBounds(profile, transform) {
+  return photoBounds(profile.components.flatMap(({ bounds: { x, y, width, height } }) =>
+    [[x, y], [x + width, y], [x + width, y + height], [x, y + height]]
+      .map(([u, v]) => project(transform, u, v))));
+}
+
+function separateResponses(first, second) {
+  return first.right < second.left || second.right < first.left ||
+    first.bottom < second.top || second.bottom < first.top;
+}
+
+function cropGray(gray, { x, y, width, height }) {
+  const values = new Uint8Array(width * height);
+  for (let row = 0; row < height; row++) {
+    const start = (y + row) * gray.width + x;
+    values.set(gray.values.subarray(start, start + width), row * width);
+  }
+  return { values, width, height };
+}
+
+function additionalSheet(gray, profile, best, candidates) {
+  const response = responseBounds(profile, best.pageToSource);
+  if (candidates.some((candidate) => candidate !== best &&
+      separateResponses(response, responseBounds(profile, candidate.pageToSource)))) return true;
+
+  const paper = photoBounds(best.corners);
+  if (paper.left <= 1 && paper.top <= 1 && paper.right >= gray.width - 2 && paper.bottom >= gray.height - 2) return false;
+  // Look beyond the first response field. A crop may include the first
+  // sheet's margins, but matching those cannot verify a second grid.
+  const rectangles = [
+    { x: 0, y: 0, width: Math.floor(response.left), height: gray.height },
+    { x: Math.ceil(response.right), y: 0, width: gray.width - Math.ceil(response.right), height: gray.height },
+    { x: 0, y: 0, width: gray.width, height: Math.floor(response.top) },
+    { x: 0, y: Math.ceil(response.bottom), width: gray.width, height: gray.height - Math.ceil(response.bottom) },
+  ];
+  const minimum = Math.min(gray.width, gray.height) * minimumPageSideRatio;
+  for (const rect of rectangles) {
+    if (Math.min(rect.width, rect.height) < minimum) continue;
+    const crop = cropGray(gray, rect);
+    function verifies(transform, mirrored, checked = false) {
+      const local = pagePoints(profile.page).map(({ x, y }) => project(transform, x, y));
+      if (local.some((point) => !point)) return false;
+      const corners = local.map(({ x, y }) => ({ x: x + rect.x, y: y + rect.y }));
+      if (!plausible(corners, gray, mirrored)) return false;
+      return checked || inspectPose(crop, profile, transform, mirrored, local)?.geometry.verified;
+    }
+    for (const weak of [false, true]) {
+      const found = pageCorners(crop, weak);
+      if (found && measureHypotheses(crop, profile, found, false, edgePose).some(({ pageToSource, mirrored, geometry }) =>
+        geometry.verified && verifies(pageToSource, mirrored, true))) return true;
+    }
+    const outlines = observeOutlines(crop, profile.page);
+    if (!outlines) continue;
+    for (const [ratio, shear] of outlineAdjustments) {
+      if (outlinePoseProposals(crop, profile, ratio, shear, outlines).some(({ transform, mirrored }) => verifies(transform, mirrored))) return true;
+    }
+  }
+  return false;
+}
+
 function stages(corners, path, pose, orientation, responseGeometry, geometry) {
   return {
     pagePose: { status: pose, path, corners: corners ?? [] },
@@ -590,8 +659,9 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
   if (!eligible.length && !corners && (!measured || measured.filter((point, index) =>
     nativeEdge(gray, point, measured[(index + 1) % 4], 5, 9)).length < 3)) {
     const alternative = [];
-    for (const [ratio, shear] of [[1, 0], [.86, 0], [1.16, 0], [1, -.14], [1, .14]]) {
-      for (const { transform, mirrored } of outlinePoseProposals(gray, profile, ratio, shear)) {
+    const outlines = observeOutlines(gray, profile.page);
+    for (const [ratio, shear] of outlines ? outlineAdjustments : []) {
+      for (const { transform, mirrored } of outlinePoseProposals(gray, profile, ratio, shear, outlines)) {
         const adjusted = pagePoints(profile.page).map(({ x, y }) => project(transform, x, y));
         if (!plausible(adjusted, gray, mirrored) || alternative.some((entry) =>
           entry.mirrored === mirrored && entry.corners.every((point, index) => distance(point, adjusted[index]) < 5))) continue;
@@ -627,6 +697,9 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
   const tied = competitor && best.score - competitor.score < .075;
   const evidence = { geometry: best.geometry, canSetCorners: true, orientationMargin: competitor ? best.score - competitor.score : null };
   const poseStatus = path === 'bubble-fit' ? 'recovered' : 'verified';
+  if (additionalSheet(gray, profile, best, eligible)) return failure('multiple-sheets', {
+    geometry: best.geometry, canSetCorners: false, diagnostics: stages(null, path, 'review', 'unchecked', 'verified', best.geometry),
+  });
   if (tied && !corners) return failure('ambiguous-orientation', {
     ...evidence, diagnostics: stages(best.corners, path, poseStatus, 'ambiguous', 'verified', best.geometry),
   });

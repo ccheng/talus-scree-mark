@@ -2,6 +2,7 @@ import { project } from './projective.js';
 
 const messages = {
   'page-corners': 'Could not locate a reliable page outline. Use Set scan corners or retake against a contrasting background.',
+  'multiple-sheets': 'More than one complete sheet fits the selected template. Retake with one sheet in the photo.',
   'ambiguous-orientation': 'More than one page orientation fits. Set scan corners to identify the correct orientation.',
   'batch-not-confirmed': 'Confirm a batch with the selected profile revision.',
   'response-geometry': 'The bubble blocks or rows do not match the selected layout, or part of a block is obscured.',
