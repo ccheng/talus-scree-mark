@@ -13,7 +13,7 @@ const page = { width: 612, height: 792, units: 'pt', origin: 'top-left', orienta
 
 function syntheticBlank({
   missing = false, marks = false, numeric = false, digitInk = false, tallBoxes = false, mcRadius = 3.4, answer, rival,
-  upperDecimal = false, numericPitch = 24, missingDigit,
+  upperDecimal = false, numericPitch = 24, missingDigit, choiceOffsets = [0, 0, 0, 0],
 } = {}) {
   const width = 1225, height = 1585;
   const pixels = new Uint8ClampedArray(width * height * 4).fill(255);
@@ -36,7 +36,7 @@ function syntheticBlank({
   for (let row = 0; row < 6; row++) {
     for (let column = 0; column < 4; column++) {
       if (missing && row === 2 && column === 3) continue;
-      ring(92 + column * 24, 202 + row * 19, marks && row === 0 && column === 1, mcRadius);
+      ring(92 + column * 24 + choiceOffsets[column], 202 + row * 19, marks && row === 0 && column === 1, mcRadius);
     }
   }
   if (numeric) {
@@ -107,6 +107,15 @@ test('discovery exclusions remove NR evidence and preserve original pixels and s
   const read = readProfileSheet(marked, saved, { batch: { profileId: saved.id, revision: saved.revision } });
   assert.equal(read.status, 'read');
   assert.deepEqual(read.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null]);
+});
+
+test('MC-only discovery refines pitch without dropping the furthest printed choice', () => {
+  const blank = syntheticBlank({ choiceOffsets: [-.50, .60, 0, 0] });
+  const proposal = discoverBlankLayout(blank, page, undefined, { scope: 'mc-only' });
+  assert.equal(proposal.status, 'proposed');
+  assert.equal(proposal.components.length, 1);
+  assert.equal(proposal.components[0].items.length, 6);
+  assert(proposal.components[0].items.every(({ choices }) => choices.map(({ symbol }) => symbol).join('') === 'ABCD'));
 });
 
 test('wide upper-decimal NR requires all ten observed digit rows', () => {

@@ -19,7 +19,7 @@ function rowsOf(candidates) {
   return rows;
 }
 
-function runsOf({ y, cells }) {
+function runsOf({ y, cells }, refinePitch) {
   const sorted = [...cells].sort((a, b) => a.x - b.x);
   const options = [];
   for (const [index, first] of sorted.entries()) {
@@ -30,7 +30,10 @@ function runsOf({ y, cells }) {
       if (pitch < Math.max(first.radius, next.radius) * 3 || Math.abs(first.radius - next.radius) > 1.05) continue;
       const run = [first, next];
       while (run.length < 13) {
-        const x = first.x + run.length * pitch;
+        // After another outline agrees, use the span of all observed
+        // columns so quantization of the first interval doesn't accumulate.
+        const step = refinePitch ? (run.at(-1).x - first.x) / (run.length - 1) : pitch;
+        const x = first.x + run.length * step;
         const candidate = sorted.find((cell) => Math.abs(cell.x - x) <= Math.max(1.3, pitch * .075) &&
           Math.abs(cell.radius - first.radius) <= 1.05 && !run.includes(cell));
         if (!candidate) break;
@@ -47,11 +50,11 @@ function persists(a, b) {
     Math.abs(cell.x - b.cells[i].x) <= 1.65 && Math.abs(cell.radius - b.cells[i].radius) <= 1.15);
 }
 
-function latticesOf(rings) {
+function latticesOf(rings, refinePitch = false) {
   const bands = rowsOf(rings);
   const clusters = [];
   for (const band of bands) {
-    for (const row of runsOf(band)) {
+    for (const row of runsOf(band, refinePitch)) {
       const cluster = clusters.find(({ seed }) => persists(seed, row));
       if (!cluster) clusters.push({ seed: row, rows: [row] });
       else if (cluster.rows.at(-1).y < row.y - 1.3) cluster.rows.push(row);
@@ -293,7 +296,7 @@ function inspectBlankLayout(image, page, corners, { exclusions = [], scope } = {
   const usedAlberta = alberta.flatMap(({ cells, above }) => [...cells, ...above.filter(Boolean)]);
   const rings = excludePrintedLabels(candidates).filter((ring) =>
     !usedAlberta.some((cell) => distance(ring, cell) <= 1.8));
-  const { output, used } = latticesOf(rings);
+  const { output, used } = latticesOf(rings, scope === 'mc-only');
   const observedGrids = [...alberta, ...output].map((grid) => {
     if (grid.kind === 'nr') return {
       ...grid, bounds: enclosing([...grid.cells, ...grid.above.filter(Boolean)], page),

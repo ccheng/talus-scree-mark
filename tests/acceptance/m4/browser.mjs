@@ -238,7 +238,7 @@ try {
     await waitGrade(page, '2/2 · 0 pending · final');
     await page.locator('#grading-save').click();
     await appStatus(page).filter({ hasText: /result and source photograph saved locally/i }).waitFor();
-    await page.getByText('Result and batch actions', { exact: true }).click();
+    await page.getByText('Local export and restore', { exact: true }).click();
     const csv = await download(page, '#grading-csv', 'scree-grades.csv');
     assert.match(csv, /"intersection","Level","DV","Outcome","Lab","1","1","0"/);
     const backup = JSON.parse(await download(page, '#grading-json', 'scree-backup.json'));
