@@ -179,6 +179,91 @@ try {
     });
   }
 
+  await group('M4 independent enrollment and scan photos verify all four MC blocks', async (page) => {
+    const form = portfolio.find(({ variant }) => variant === 'camera');
+    const photos = JSON.parse(await readFile(portfolioFile('independent-oracle.json'), 'utf8'));
+    await chooseImage(page, '#setup-profile', portfolioFile(photos.blank.file));
+    await page.locator('#discovery-status:is([data-status="proposed"], [data-status="review"])').waitFor();
+    await page.locator('#profile-name').fill('Four blocks from an independent enrollment photo');
+    await page.locator('#profile-mc-only').check();
+    await page.locator('#mc-expected-count').fill('14');
+    const clear = page.locator('#clear-discovery');
+    if (await clear.isVisible()) await clear.click();
+    await openOptions(page, '#region-coordinate-details');
+    const bounds = [[70, 84, 68, 37, 2], [70, 148, 68, 142, 7], [197, 84, 68, 57, 3], [197, 168, 68, 37, 2]];
+    for (const [x, y, width, height, rows] of bounds) {
+      for (const [field, value] of Object.entries({ x, y, width, height })) {
+        await page.locator('#region-' + field).fill(String(value));
+      }
+      await page.locator('#grid-rows').fill(String(rows));
+      await page.locator('#grid-columns').fill('4');
+      await page.locator('#fit-mc-grid').click();
+      assert.match(await page.locator('#mc-fit-status').textContent(), new RegExp(`^${rows * 4} detected bubbles, 0 estimated`));
+      await page.locator('#confirm-block').click();
+      assert.equal(await page.locator('#block-confirm-status').textContent(), 'Block confirmed.');
+    }
+    await page.locator('#mc-completeness').selectOption('complete');
+    await page.locator('#enroll-profile').click();
+    await page.locator('#profile-editor').waitFor({ state: 'hidden' });
+    const [profile] = await page.evaluate(async (module) => (await import(module)).listProfiles(), source('profile-store.js'));
+    assert.deepEqual(profile.components.map(({ items }) => items.length), [2, 7, 3, 2]);
+    const expected = form.blocks.filter(({ kind }) => kind === 'mc').flatMap(({ items }) => items);
+    const offsets = profile.components.flatMap(({ items }) => items).flatMap(({ id, choices }) => choices.map(({ symbol, x, y }) => {
+      const point = expected.find((item) => item.id === id).choices.find((choice) => choice.symbol === symbol);
+      return Math.hypot(x - point.x, y - point.y) / point.radius;
+    }));
+    assert(Math.max(...offsets) < .35, `Saved centers are displaced up to ${Math.max(...offsets)} bubble radii`);
+
+    const resultRows = page.locator('#recognition-results [data-item-id]');
+    const pose = page.locator('[data-stage="page-pose"]');
+    async function assertRead() {
+      const rows = await resultRows.evaluateAll((nodes) => nodes.map((row) => ({
+        id: row.dataset.itemId, state: row.dataset.status, review: row.dataset.review === 'true',
+        rawText: row.querySelector('[data-raw-text]')?.dataset.rawText ?? null,
+      })));
+      assert.deepEqual(rows, photos.truth.filter(({ kind }) => kind === 'mc').map(({ kind, ...item }) => item));
+      assert.equal(await page.locator('[data-stage="response-geometry"]').getAttribute('data-status'), 'verified');
+    }
+    async function manual(photo, status) {
+      await page.locator('#manual-corners').click();
+      const canvas = page.locator('#scan-corner-canvas');
+      await canvas.scrollIntoViewIfNeeded();
+      const rect = await canvas.boundingBox();
+      const at = ({ x, y }) => ({ x: rect.x + x * rect.width / photo.width, y: rect.y + y * rect.height / photo.height });
+      for (const [index, corner] of photo.corners.entries()) {
+        const seed = JSON.parse(await canvas.getAttribute('data-corners'))[index];
+        const start = at(seed);
+        const end = at(corner);
+        await page.mouse.move(start.x, start.y);
+        await page.mouse.down();
+        await page.mouse.move(end.x, end.y, { steps: 3 });
+        await page.mouse.up();
+      }
+      const entered = JSON.parse(await canvas.getAttribute('data-corners'));
+      assert(entered.every(({ x, y }, index) => Math.hypot(x - photo.corners[index].x, y - photo.corners[index].y) < 6));
+      await page.locator('#apply-scan-corners').click();
+      await page.locator(`#recognition-status[data-status="${status}"]`).waitFor();
+      await page.locator('[data-stage="page-pose"][data-path="manual-corners"]').waitFor({ state: 'attached' });
+    }
+
+    await page.locator('#scan-completed').click();
+    for (const [index, photo] of photos.scans.entries()) {
+      if (index) await page.locator('#scan-next').click();
+      await recognize(page, portfolioFile(photo.file));
+      assert.equal(await pose.getAttribute('data-path'), 'page-boundary');
+      await assertRead();
+      await manual(photo, 'read');
+      await assertRead();
+    }
+    await page.locator('#scan-next').click();
+    await recognize(page, portfolioFile(photos.wrong.file), 'retake');
+    assert.equal(await resultRows.count(), 0);
+    await manual(photos.wrong, 'retake');
+    assert.equal(await resultRows.count(), 0);
+    assert.equal(await page.locator('[data-stage="response-geometry"]').getAttribute('data-status'), 'failed');
+    console.log(`  56 saved centers, max error ${Math.max(...offsets).toFixed(3)}r; three independent captures passed both corner paths.`);
+  });
+
   await group('MC-only mixed sheet keeps a mapped block and exports revisioned category scores', async (page) => {
     const form = portfolio.find(({ variant }) => variant === 'document');
     await chooseImage(page, '#setup-profile', portfolioFile(form.blank));

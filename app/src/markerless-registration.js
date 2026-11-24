@@ -190,8 +190,20 @@ function pageCorners(gray, weakEdge = false) {
   return plausible(proposed, gray) ? refinePageEdges(gray, proposed, step, weakEdge ? 4 : 24) : null;
 }
 
+function preferredPageCorners(gray) {
+  const measured = pageCorners(gray);
+  if (measured?.[0].x !== 0 || measured[0].y !== 0 ||
+      measured[2].x !== gray.width - 1 || measured[2].y !== gray.height - 1) return measured;
+  // A pale desk can look like paper at the photo corners. Prefer a physical
+  // boundary over the full-frame assumption only when all four edges agree.
+  const faint = pageCorners(gray, true);
+  const step = Math.max(1, Math.ceil(Math.max(gray.width, gray.height) / 550));
+  return faint?.every((point, index) => nativeEdge(gray, point, faint[(index + 1) % 4], step, 4))
+    ? faint : measured;
+}
+
 export function proposePageCorners(image) {
-  return pageCorners(toGrayImage(image));
+  return preferredPageCorners(toGrayImage(image));
 }
 
 export function proposeWeakPageCorners(image) {
@@ -658,7 +670,7 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
     return failure('batch-not-confirmed', { diagnostics: stages(null, null, 'unchecked', 'unchecked', 'unchecked') });
   }
   const gray = toGrayImage(image);
-  const measured = corners ?? pageCorners(gray);
+  const measured = corners ?? preferredPageCorners(gray);
   let path = corners ? 'manual-corners' : 'page-boundary';
   let discardedOutline;
   if (corners && !plausible(corners, gray)) {

@@ -97,7 +97,7 @@ def render(components, writer_areas, name):
     return image
 
 
-def marked(blank, components, written, tokens):
+def marked(blank, components, written, tokens, pencil=False):
     image = blank.copy()
     draw = ImageDraw.Draw(image)
     facts = []
@@ -108,25 +108,44 @@ def marked(blank, components, written, tokens):
             for group, symbol in zip(groups, value or ''):
                 if symbol == ' ':
                     continue
-                outline(draw, next(choice for choice in group if choice['symbol']==symbol), .78, mark=True)
+                choice = next(choice for choice in group if choice['symbol'] == symbol)
+                if not pencil:
+                    outline(draw, choice, .78, mark=True)
+                    continue
+                x, y, radius = choice['x'], choice['y'], choice['radius']
+                shade = 44 + (ord(symbol) % 5) * 7
+                draw.ellipse(scaled((x - .74*radius, y - .70*radius, x + .78*radius, y + .76*radius)),
+                             fill=(shade, shade+2, shade+4))
+                draw.line(scaled((x - .47*radius, y + .26*radius, x + .48*radius, y - .30*radius)),
+                          fill=(shade+35, shade+35, shade+35), width=1)
             facts.append({'id': item['id'], 'kind': item['kind'], 'state': 'single' if (value or '').strip() else 'blank',
                           'rawText': value, 'review': False})
     for number, area in enumerate(written):
         y = area['y'] + 32
         points = [(54, y+12), (68, y), (82, y+7), (96,y+4), (115,y+11), (141,y+6), (150,y+10)]
         draw.line([scaled(p) for p in points], fill=(50,66,82), width=3)
-        text(draw, 66, y+31, f'Working line {number+1}', 11)
+        if pencil:
+            for column in range(9):
+                x = 56 + 11*column
+                draw.line([scaled((x, y+31)), scaled((x+3, y+23+column%4)),
+                           scaled((x+7, y+30)), scaled((x+9, y+27))], fill=(65, 69, 76), width=2)
+        else:
+            text(draw, 66, y+31, f'Working line {number+1}', 11)
     return image, facts
 
 
-def capture(image, projection):
+def capture(image, projection, desk=(159, 164, 167), shade=0):
     if projection is None:
         return image
     corners, dimensions = projection
     source = [(0,0),(RASTER[0]-1,0),(RASTER[0]-1,RASTER[1]-1),(0,RASTER[1]-1)]
     inverse = pose_math.homography(corners, source)
     transformed = image.transform(dimensions, Image.Transform.PERSPECTIVE, inverse, Image.Resampling.BICUBIC,
-                                  fillcolor=(159, 164, 167))
+                                  fillcolor=desk)
+    if shade:
+        light = Image.linear_gradient('L').rotate(90).resize(dimensions).point(
+            lambda value: round(shade * value / 255))
+        transformed = Image.composite(Image.new('RGB', dimensions, (30, 36, 48)), transformed, light)
     return transformed.filter(ImageFilter.GaussianBlur(.38))
 
 
@@ -160,9 +179,37 @@ def generate():
             'corners': [{'x':x,'y':y} for x,y in corners], 'writtenAreas': written,
             'key': {'MC1':'B','MC10':'D','NR1':'0.25','NR2':'23.7','NR3':'4','NR4':'0'},
         })
+        if variant == 'camera':
+            generate_independent(blank, blocks, written, values)
     (OUT / 'portfolio-oracles.json').write_text(json.dumps(records, indent=2)+'\n')
     print('Generated two synthetic top-loaded document and camera response layouts, with marked pairs and literal keys.')
 
+
+def generate_independent(blank, blocks, written, values):
+    # A close enrollment photo on a light desk still has visible page edges.
+    # Each completed capture uses an independently selected physical page quad.
+    enrollment = ([(28, 62), (1490, 43), (1500, 1931), (38, 1944)], (1530, 1980))
+    photos = [
+        ('angled', ([(224, 179), (1298, 73), (1513, 1734), (216, 1872)], (1650, 2020)), (128, 132, 137), 26),
+        ('distant', ([(393, 94), (1320, 220), (1108, 1561), (144, 1495)], (1550, 1800)), (164, 159, 153), 41),
+        ('light-desk', ([(50, 46), (1500, 32), (1475, 1950), (41, 1924)], (1550, 2010)), (232, 233, 232), 0),
+    ]
+    def save_photo(name, image, projection, desk, shade):
+        file = f'independent-{name}.jpg'
+        capture(image, projection, desk, shade).save(OUT / file, quality=90)
+        return {'file': file, 'width': projection[1][0], 'height': projection[1][1], 'corners': [dict(x=x, y=y) for x, y in projection[0]]}
+
+    filled, truth = marked(blank, blocks, written, values, pencil=True)
+    captures = [save_photo(name, filled, projection, desk, shade) for name, projection, desk, shade in photos]
+    # A genuine wrong layout, with a printed response row moved on the page.
+    wrong_blocks = [mc_block('left', 78, [91.5,112.5,133.75,176,197.25,218.5,240,261,282.25], 1), *blocks[1:]]
+    wrong, _ = marked(render(wrong_blocks, written, 'wrong layout'), wrong_blocks, written, values, pencil=True)
+    _, projection, desk, shade = photos[0]
+    (OUT / 'independent-oracle.json').write_text(json.dumps({
+        'blank': save_photo('enrollment', blank, enrollment, (232, 233, 232), 0),
+        'scans': captures, 'wrong': save_photo('wrong', wrong, projection, desk, shade),
+        'truth': truth,
+    }, indent=2)+'\n')
 
 if __name__ == '__main__':
     generate()
