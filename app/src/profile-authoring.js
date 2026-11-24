@@ -212,7 +212,7 @@ function fail(condition, message) {
   if (!condition) throw new TypeError(message);
 }
 
-export function createMarkerlessProfile({ id, revision, name, page, components, features = [], allowManualIdentity = false, scope, exclusions = [] }) {
+export function createMarkerlessProfile({ id, revision, name, page, components, features = [], allowManualIdentity = false, scope, exclusions = [], mcCompleteness }) {
   fail(typeof id === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(id) && Number.isInteger(revision) && revision > 0,
     'The profile needs a valid ID and revision.');
   fail(typeof name === 'string' && name.trim() && name.trim().length <= 80, 'Enter a name of up to 80 characters.');
@@ -223,6 +223,8 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
   const frame = { x: 0, y: 0, width: page.width, height: page.height };
   fail(scope === undefined || (scope === 'mc-only' && components.every(({ kind }) => kind === 'mc')),
     'An MC-only profile can contain only multiple-choice blocks.');
+  fail(mcCompleteness === undefined || (scope === 'mc-only' && ['complete', 'partial'].includes(mcCompleteness)),
+    'Choose a valid MC coverage decision.');
   fail(Array.isArray(exclusions) && exclusions.length <= 24 &&
     exclusions.every((bounds) => validBounds(bounds) && contains(frame, bounds)),
     'Discovery exclusions must be on-page rectangles (up to 24).');
@@ -315,6 +317,7 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
     },
     components: verified, features: sanitized, allowManualIdentity: Boolean(allowManualIdentity),
     ...(scope ? { scope } : {}),
+    ...(mcCompleteness ? { mcCompleteness } : {}),
     ...(exclusions.length ? { exclusions: exclusions.map(({ x, y, width, height }) => ({ x, y, width, height })) } : {}),
     provenance: { source: 'teacher-confirmed-blank' },
   };

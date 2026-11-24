@@ -20,7 +20,8 @@ export function exportCsv(scans) {
     const { grade } = scan;
     const prefix = [scan.id, scan.label, scan.template.id, scan.template.revision, scan.keyId,
       grade.score, grade.denominator, grade.pending, grade.status];
-    const scope = scan.template.scope === 'mc-only' ? 'MC only (NR and WR excluded)' : '';
+    const scope = scan.template.scope === 'mc-only' ? 'MC only (NR and WR excluded)' +
+      (scan.template.mcCompleteness === 'partial' ? ' · partial mapping' : '') : '';
     const dimensions = grade.categories?.dimensions;
     const category = (i, value) => [dimensions?.[i].name, dimensions ? value ?? '(Unassigned)' : ''];
     return [
@@ -91,6 +92,8 @@ function validateTemplate(template) {
   requireValid(text(template?.id) && text(template.name) && Number.isSafeInteger(template.revision) &&
     template.revision > 0, 'Invalid template reference.');
   unique(template.items, 'question');
+  requireValid(template.mcCompleteness === undefined || (template.scope === 'mc-only' &&
+    ['complete', 'partial'].includes(template.mcCompleteness)), 'Invalid template coverage.');
   requireValid(template.scope === undefined || (template.scope === 'mc-only' &&
     template.items.every(({ kind }) => kind === 'mc')), 'Invalid grading scope.');
   requireValid(template.items.length > 0 && template.items.every((item) => {

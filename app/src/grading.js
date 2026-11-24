@@ -9,11 +9,12 @@ export function templateItems(profile) {
 
 export function templateSnapshot(profile) {
   const { id, revision, name } = profile;
-  return { id, revision, name, items: templateItems(profile), ...(profile.scope === 'mc-only' ? { scope: profile.scope } : {}) };
+  return { id, revision, name, items: templateItems(profile), ...(profile.scope === 'mc-only' ? { scope: profile.scope } : {}),
+    ...(profile.mcCompleteness ? { mcCompleteness: profile.mcCompleteness } : {}) };
 }
 
 export function sameTemplate(a, b) {
-  return Boolean(a && b && a.id === b.id && a.revision === b.revision && a.scope === b.scope &&
+  return Boolean(a && b && a.id === b.id && a.revision === b.revision && a.scope === b.scope && a.mcCompleteness === b.mcCompleteness &&
     JSON.stringify(a.items) === JSON.stringify(b.items));
 }
 
