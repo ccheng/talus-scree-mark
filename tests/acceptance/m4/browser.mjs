@@ -30,6 +30,11 @@ async function chooseImage(page, selector, path) {
   await (await event).setFiles(path);
 }
 
+async function openOptions(page, selector) {
+  const panel = page.locator(selector);
+  if (!(await panel.evaluate((element) => element.open))) await panel.locator(':scope > summary').click();
+}
+
 async function recognize(page, path, expected = 'read') {
   await chooseImage(page, '#choose-image', path);
   const status = page.locator('#recognition-status:is([data-status="read"], [data-status="retake"], [data-status="error"])');
@@ -183,6 +188,7 @@ try {
     const kept = await firstBlock.getAttribute('data-profile-block');
     await firstBlock.getByRole('button', { name: 'Keep block on rediscovery' }).click();
     await page.locator('#profile-mc-only').check();
+    await openOptions(page, '#region-coordinate-details');
     async function box(x, y, width, height) {
       for (const [field, value] of Object.entries({ x, y, width, height })) {
         await page.locator('#region-' + field).fill(String(value));
@@ -298,6 +304,7 @@ try {
     const kept = await mc.first().getAttribute('data-profile-block');
     await mc.first().getByRole('button', { name: 'Keep block on rediscovery' }).click();
     const mask = { x: 300, y: 85, width: 300, height: 205 };
+    await openOptions(page, '#region-coordinate-details');
     for (const [field, value] of Object.entries(mask)) await page.locator('#region-' + field).fill(String(value));
     await page.locator('#add-exclusion').click();
     assert.equal(await page.locator('#profile-exclusions li').count(), 1);
@@ -320,6 +327,8 @@ try {
     assert.match(await mc.nth(1).textContent(), /MC13–MC14/);
     const originalGrid = [right.items[0].choices[0], right.items[0].choices.at(-1), right.items[2].choices[0]];
     async function placeReplacement(first) {
+      await openOptions(page, '#region-coordinate-details');
+      await openOptions(page, '#legacy-grid-details');
       await page.locator('#block-kind').selectOption('mc');
       for (const [field, number] of Object.entries({ x: 198, y: 84, width: 67, height: 57 })) {
         await page.locator('#region-' + field).fill(String(number));
@@ -379,6 +388,87 @@ try {
     assert.equal(rows.length, 14);
     for (const { kind, ...literal } of expected) assert.deepEqual(rows.find(({ id }) => id === literal.id), literal);
     await waitGrade(page, '5/5 · 0 pending · final');
+  });
+
+  await group('M4 bounded MC fit estimates one outline only after teacher acceptance', async (page) => {
+    const form = portfolio.find(({ variant }) => variant === 'document');
+    const missing = form.blocks.find(({ kind, items }) => kind === 'mc' && items[0].id === 'MC10')
+      .items[1].choices.find(({ symbol }) => symbol === 'D');
+    const damaged = await page.evaluate(async ({ raw, missing }) => {
+      const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(raw), (byte) => byte.charCodeAt(0))]));
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const context = canvas.getContext('2d');
+      context.drawImage(bitmap, 0, 0);
+      bitmap.close();
+      const scale = canvas.width / 612;
+      const edge = missing.radius + 1;
+      context.fillStyle = 'rgb(250,249,247)';
+      context.fillRect(Math.floor((missing.x - edge) * scale), Math.floor((missing.y - edge) * scale),
+        Math.ceil(2 * edge * scale) + 1, Math.ceil(2 * edge * scale) + 1);
+      return canvas.toDataURL('image/png').split(',')[1];
+    }, { raw: await readFile(portfolioFile(form.blank), 'base64'), missing });
+    await chooseImage(page, '#setup-profile', { name: 'synthetic-fit-qa.png', mimeType: 'image/png', buffer: Buffer.from(damaged, 'base64') });
+    await page.locator('#discovery-status:is([data-status="proposed"], [data-status="review"])').waitFor();
+    await page.locator('#profile-name').fill('Synthetic bounded MC fit');
+    await page.locator('#profile-mc-only').check();
+    await page.locator('#mc-expected-count').fill('14');
+    assert.equal(await page.locator('#region-coordinate-details').evaluate((details) => details.open), false);
+    assert.equal(await page.locator('#legacy-grid-details').evaluate((details) => details.open), false);
+    await page.locator('#rediscover-layout').click();
+    await page.locator('#discovery-status[data-status="review"]').waitFor();
+    const rows = page.locator('#profile-blocks [data-block-kind="mc"]');
+    assert.equal(await rows.count(), 3);
+    await rows.first().getByRole('button', { name: 'Keep block on rediscovery' }).click();
+    await rows.last().getByRole('button', { name: 'Renumber block' }).click();
+    await page.locator('#block-first-number').fill('13');
+    await page.locator('#apply-block-renumber').click();
+    await page.locator('#clear-discovery').click();
+    assert.equal(await rows.count(), 2);
+    await openOptions(page, '#region-coordinate-details');
+    for (const [field, number] of Object.entries({ x: 198, y: 84, width: 67, height: 57 })) {
+      await page.locator('#region-' + field).fill(String(number));
+    }
+    await page.locator('#grid-rows').fill('3');
+    await page.locator('#grid-columns').fill('4');
+    await page.locator('#item-start').fill('10');
+    await page.locator('#fit-mc-grid').click();
+    const fitted = page.locator('#mc-fit-status');
+    await fitted.filter({ hasText: /11 detected bubbles.*1 estimated position/i }).waitFor();
+    const marker = await page.locator('#profile-canvas').evaluate((canvas, point) => {
+      const scale = canvas.width / 612;
+      const scaleY = canvas.height / 792;
+      const edge = Math.ceil(11 * scale);
+      const { data } = canvas.getContext('2d').getImageData(Math.round(point.x * scale) - edge,
+        Math.round(point.y * scaleY) - edge, 2 * edge, 2 * edge);
+      for (let index = 0; index < data.length; index += 4) {
+        const [r, g, b] = data.slice(index, index + 3);
+        if (r >= 175 && r - g > 65 && g - b > 25) return true;
+      }
+      return false;
+    }, missing);
+    assert(marker, 'Estimated choice should have an orange marker at the missing outline');
+    await page.locator('#confirm-block').click();
+    await page.locator('#block-confirm-status').filter({ hasText: /missing|estimated/i }).waitFor();
+    assert.equal(await rows.count(), 2);
+    await page.locator('#accept-mc-fit').click();
+    await fitted.filter({ hasText: /1 estimated position.*accepted/i }).waitFor();
+    await page.locator('#confirm-block').click();
+    await rows.filter({ hasText: 'MC10–MC12' }).waitFor();
+    await page.locator('#mc-completeness').selectOption('complete');
+    await page.locator('#enroll-profile').click();
+    await page.locator('#profile-editor').waitFor({ state: 'hidden' });
+    await page.locator('#scan-completed').click();
+    await recognize(page, portfolioFile(form.marked));
+    const result = await page.locator('#recognition-results [data-item-id]').evaluateAll((nodes) => nodes.map((row) => [
+      row.dataset.itemId, row.querySelector('[data-raw-text]')?.dataset.rawText ?? null, row.dataset.review,
+    ]));
+    assert.equal(result.length, 14);
+    for (const { id, rawText } of form.truth.filter(({ kind }) => kind === 'mc')) {
+      assert.deepEqual(result.find(([observed]) => observed === id), [id, rawText, 'false']);
+    }
+    console.log('  One successful fit, one attempted early confirm, one acceptance, one final block confirm.');
   });
 
   await group('M4 selected-box fallback preserves one Alberta grid without absorbing adjacent responses', async (page) => {
