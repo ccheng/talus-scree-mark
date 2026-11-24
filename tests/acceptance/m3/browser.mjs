@@ -731,7 +731,8 @@ try {
     await page.locator('#scan-completed').tap();
     await verifyRead(first.filled, 'verified');
     await next();
-    await verifyRead(weak.filled, 'recovered');
+    await verifyRead(weak.filled, 'verified');
+    assert.equal(await stage('page-pose').getAttribute('data-path'), 'page-boundary');
     await next();
     await capture(poses.missingBlock);
     await retake.waitFor();
