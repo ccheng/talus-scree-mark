@@ -37,3 +37,38 @@ Median independent **local processing** time in milliseconds, automatic / exact 
 ## Disposition
 
 Keep this as a research comparison and retain the current preview and PR separately. The independent result supports bounded block refinement as the next candidate. Before choosing a mobile implementation, compare it with a corners-plus-block-refinement ablation to learn whether SIFT and line matching justify their cost. Make form identity explicit using a nominated printed region or deliberate version confirmation so identical-looking and heading-only variants cannot silently use the wrong key. Add those controls to the independent holdout, broaden the family count, and measure the smallest passing candidate in offline iPhone Safari before requesting acceptance. A flexible whole-page warp remains an option if residuals within a block justify it.
+
+## Second round — corner-seeded refinement and form identity
+
+The second round added a fourth path, `corners-block`. It replaces SIFT and line matching with the existing automatic corner proposal or the supplied corner oracle. It reuses the same projected print checks, block refinement, held-out grid checks and mark reader. The prototype gate runs after geometry verification and before reading marks. It accepts a strong match in an enrolled printed region or a per-scan matching confirmation in the explicitly configured manual mode. Legacy manifests without identity metadata still support research comparison. They only produce ungraded observations and do not demonstrate a safe identity decision.
+
+Run the new tuning set and focused identity tests using the same dependencies.
+
+```sh
+python -B experiments/registration/fixtures.py /tmp/scree-identity --identity
+python -B experiments/registration/benchmark.py /tmp/scree-identity/manifest.json /tmp/scree-identity/results
+python -B -m unittest discover -s experiments/registration -p 'test_*.py'
+```
+
+The tester froze three new synthetic form families before receiving candidate `ef09ff3`. This set contained 19 captures, tested in two corner modes. Sixteen paths were eligible to read with the expected identity or confirmation. The other paths used wrong geometry, changed printed identifiers, unreadable identifiers, or missing/incorrect confirmation. Exact manual corners measure alignment from ideal corner placement. The two modes reuse each capture.
+
+| Method | Eligible paths accepted | Exact / 230 | Review | Wrong auto-accepts on eligible paths | Pooled center p95, radii | Median desktop processing |
+|---|---:|---:|---:|---:|---:|---:|
+| Current | 6/16 | 86 | 0 | 0 | 1.598 | 122 ms |
+| Global feature fit | 8/16 | 98 | 16 | 0 | 1.001 | 1505 ms |
+| Feature fit plus blocks | 16/16 | 222 | 8 | 0 | 0.340 | 1543 ms |
+| Corners plus blocks | 16/16 | 219 | 11 | 0 | 0.373 | 131 ms |
+
+All four methods rejected the 10 altered-geometry paths. Both block methods accepted the four changed-code paths at first. The printed gate blocked all four unreadable-code paths. Manual identity mode blocked all four byte-identical paths with missing or mismatched per-scan confirmation.
+
+The bounded correction `6681cdf` checks significant printed ink components separately. On the focused retest, both block methods blocked the four wrong-code paths that the first version accepted, and preserved the original eight tested curl paths. A separate, previously unseen reserve of eight additional captures from the printed form families tested valid flat and curled sheets, changed but visually similar codes, and unreadable codes in both corner modes:
+
+- Corners plus blocks accepted all eight valid paths, with 112 exact reads and four reviews out of 116 expected answers. Feature fit plus blocks also accepted all eight, with 108 exact and eight reviews. Neither produced a wrong auto-accepted answer on valid sheets. Their oracle p95 errors were 0.350 and 0.341 bubble radii respectively.
+- Each experimental path still accepted the same wrong code in two of four wrong-code paths. The code contained a nearly indistinguishable zero/letter O pair. All four unreadable-code paths were held.
+- The original independent family from the first round also ran through the new geometry path without an identity configuration: both block methods accepted 6/6 valid paths and rejected the 4/4 geometry negatives. Corners plus blocks returned 114 exact and 6 reviewed, versus 112 and 8 with the feature-seeded path. Both rejected the strongest curl on the original tuning family.
+
+### Second-round disposition
+
+Carry forward corner-seeded refinement as the primary geometry candidate. Keep the full matcher available in research to establish whether it helps on captures where the corners cannot be recovered. For automatic version binding, use a deliberately distinguishable machine-readable identifier with exact validation. Where printing cannot distinguish versions, use explicit per-sheet key confirmation. The tested appearance matcher remains unsuitable as the sole gate.
+
+The independent reserve false accept blocks the move to the mobile acceptance preview. The exact failed Physics photo pair remains unavailable and physical iPhone Safari timing was not measured. PR #8, the app bundle, and the preview are unchanged. All 57 existing Node tests and three focused Python identity tests passed. The independent fixture images, manifests and scan records were kept outside the repository.
