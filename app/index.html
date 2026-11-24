@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="ec88f03f9bd673f008c84263">
+  <meta name="scree-release" content="8be0285bf32f340611585487">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -113,7 +113,7 @@
         <div id="profile-mc-review" hidden>
           <label>Expected MC questions (optional) <input id="mc-expected-count" type="number" min="1" max="1536" step="1" inputmode="numeric"></label>
           <p id="mc-expected-status" role="status"></p>
-          <p>Draw around one group of MC bubbles, including missing rows and leaving out headings. Use the block options below the page to fit the grid.</p>
+          <p>Draw a box around one group of MC bubbles, including missing rows and a little margin. Use the controls below the page to fit the block.</p>
         </div>
         <p id="editor-status" role="status"></p>
         <p id="discovery-status" role="status" class="capture-status" data-status="idle"></p>
@@ -131,7 +131,7 @@
         </div>
         <div class="profile-viewport"><canvas id="profile-canvas" width="1" height="1" aria-label="Blank reference image and layout marks"></canvas></div>
         <div id="profile-grid-controls" hidden>
-          <fieldset>
+          <fieldset id="profile-region-options">
             <legend>Response region</legend>
             <p>Drag across the preview to select one response block, or enter its bounds in Letter points. For numerical response, box one question at a time, including its decimal bubbles. Leave names and headings outside the region.</p>
             <details id="region-coordinate-details" open>
@@ -151,7 +151,7 @@
             <p>Exclusions affect discovery only. Mark a response block as kept to retain it during another search.</p>
             <ol id="profile-exclusions"></ol>
           </fieldset>
-          <fieldset>
+          <fieldset id="profile-block-options">
             <legend>Set up a response block</legend>
             <div class="editor-fields">
               <label>Questions / rows <input id="grid-rows" type="number" value="8" min="1" max="64"></label>

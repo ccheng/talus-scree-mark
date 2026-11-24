@@ -420,12 +420,14 @@ try {
     await page.locator('#discovery-status[data-status="review"]').waitFor();
     const rows = page.locator('#profile-blocks [data-block-kind="mc"]');
     assert.equal(await rows.count(), 3);
+    await page.locator('#mc-completeness').selectOption('complete');
+    assert(await page.locator('#enroll-profile').isDisabled());
+    assert.match(await page.locator('#template-save-status').textContent(), /Mapped 13 of 14/);
     await rows.first().getByRole('button', { name: 'Keep block on rediscovery' }).click();
     await rows.last().getByRole('button', { name: 'Renumber block' }).click();
     await page.locator('#block-first-number').fill('13');
     await page.locator('#apply-block-renumber').click();
-    await page.locator('#clear-discovery').click();
-    assert.equal(await rows.count(), 2);
+    assert.equal(await rows.count(), 3);
     await openOptions(page, '#region-coordinate-details');
     for (const [field, number] of Object.entries({ x: 198, y: 84, width: 67, height: 57 })) {
       await page.locator('#region-' + field).fill(String(number));
@@ -435,6 +437,9 @@ try {
     await page.locator('#item-start').fill('10');
     await page.locator('#fit-mc-grid').click();
     const fitted = page.locator('#mc-fit-status');
+    assert.match(await fitted.textContent(), /overlaps MC10–MC11.*remove the proposal/);
+    await rows.nth(1).getByRole('button', { name: 'Remove', exact: true }).click();
+    await page.locator('#fit-mc-grid').click();
     await fitted.filter({ hasText: /11 detected bubbles.*1 estimated position/i }).waitFor();
     const marker = await page.locator('#profile-canvas').evaluate((canvas, point) => {
       const scale = canvas.width / 612;
@@ -456,9 +461,14 @@ try {
     await fitted.filter({ hasText: /1 estimated position.*accepted/i }).waitFor();
     await page.locator('#confirm-block').click();
     await rows.filter({ hasText: 'MC10–MC12' }).waitFor();
+    assert.equal(await rows.count(), 3);
+    assert(await page.locator('#enroll-profile').isDisabled());
     await page.locator('#mc-completeness').selectOption('complete');
+    assert.match(await page.locator('#discovery-status').textContent(), /Reviewed mapping covers all 14/);
     await page.locator('#enroll-profile').click();
     await page.locator('#profile-editor').waitFor({ state: 'hidden' });
+    const [profile] = await page.evaluate(async (module) => (await import(module)).listProfiles(), source('profile-store.js'));
+    assert.equal(profile.mcExpectedCount, 14);
     await page.locator('#scan-completed').click();
     await recognize(page, portfolioFile(form.marked));
     const result = await page.locator('#recognition-results [data-item-id]').evaluateAll((nodes) => nodes.map((row) => [

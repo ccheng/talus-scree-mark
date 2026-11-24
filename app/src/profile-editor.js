@@ -166,10 +166,10 @@ export function createProfileEditor({ onSave, onClose }) {
   }
 
   function mcCoverage() {
-    const entered = value('mc-expected-count');
-    const expected = entered ? number('mc-expected-count') : null;
+    const field = byId('mc-expected-count');
+    const expected = field.value ? field.valueAsNumber : null;
     const mapped = mcCount(state.blocks);
-    const invalid = expected !== null && (!Number.isInteger(expected) || expected < 1 || expected > 1536);
+    const invalid = !field.validity.valid;
     return { expected, mapped, invalid, mismatch: !invalid && expected !== null && expected !== mapped };
   }
 
@@ -184,9 +184,6 @@ export function createProfileEditor({ onSave, onClose }) {
         state.exclusionEdit !== undefined || state.endpoints) {
       return 'Confirm or cancel the open grid, numbering, or exclusion edit.';
     }
-    if (state.discoveryIssues.length) {
-      return describeIssues(state.discoveryIssues) + ' Review the discovery warning before saving.';
-    }
     if (!state.blocks.length) return 'Confirm at least one response block before saving.';
     if (state.scope && state.blocks.some(({ kind }) => kind !== 'mc')) {
       return 'Remove numerical response blocks or rediscover with exclusions before saving an MC-only profile.';
@@ -198,6 +195,9 @@ export function createProfileEditor({ onSave, onClose }) {
     }
     if (state.scope && state.coverageReview && !value('mc-completeness')) {
       return 'Check the overlay and choose whether all intended MC questions are mapped or only a subset.';
+    }
+    if (state.discoveryIssues.length) {
+      return describeIssues(state.discoveryIssues) + ' Review the discovery warning before saving.';
     }
     if (!value('profile-name').trim() || value('profile-name').trim().length > 80) {
       return 'Enter a template name of 1–80 characters.';
@@ -227,6 +227,15 @@ export function createProfileEditor({ onSave, onClose }) {
       state.coverageReview = true;
       byId('mc-completeness').value = '';
     }
+  }
+
+  function arrangeBlockOptions() {
+    const region = byId('profile-region-options');
+    const block = byId('profile-block-options');
+    if (state.scope) region.before(block);
+    else block.before(region);
+    byId('region-coordinate-details').open = !state.scope;
+    byId('legacy-grid-details').open = !state.scope;
   }
 
   function show(message) {
@@ -630,10 +639,12 @@ export function createProfileEditor({ onSave, onClose }) {
     const inside = (point) => point.x >= region.x && point.x <= region.x + region.width &&
       point.y >= region.y && point.y <= region.y + region.height;
     const overlapping = state.blocks.filter((block) => intersects(region, block.bounds));
-    if (overlapping.some((block) => state.kept.has(block.id) || block.kind !== 'mc' ||
-      !block.items.every((item) => item.choices.every(inside)))) {
-      throw new Error('The box overlaps a kept or partly covered block. Release a block you intend to replace, or draw only around missing rows.');
-    }
+    const protectedBlock = overlapping.find((block) => state.kept.has(block.id));
+    if (protectedBlock) throw new Error(`The box overlaps kept block ${itemLabel(protectedBlock)}. Release it if you intend to replace it, or tighten the box.`);
+    const partlyCovered = overlapping.find((block) => block.kind !== 'mc' ||
+      !block.items.every((item) => item.choices.every(inside)));
+    if (partlyCovered) throw new Error(`The box overlaps ${itemLabel(partlyCovered)} and cannot replace it as drawn. ` +
+      'Draw around the whole MC block, or remove the proposal if it includes incorrect rows.');
     if (fit.missing.some((missing) => fit.cells.filter(({ row }) => row === missing.row).length < 2 ||
         fit.cells.filter(({ column }) => column === missing.column).length < 2)) {
       throw new Error('Some estimated positions have too little support. Fit a smaller block or use the endpoint controls.');
@@ -1093,15 +1104,15 @@ export function createProfileEditor({ onSave, onClose }) {
       return say('Remove kept NR blocks before switching this template to MC-only grading.');
     }
     state.scope = event.target.checked ? 'mc-only' : undefined;
-    byId('region-coordinate-details').open = !state.scope;
-    byId('legacy-grid-details').open = !state.scope;
+    arrangeBlockOptions();
     byId('mc-completeness').value = '';
     state.discoveryStale = state.blocks.some(({ id }) => !state.kept.has(id));
     if (state.scope && value('block-kind') === 'nr' && !state.grid) {
       byId('block-kind').value = 'mc';
       byId('block-kind').dispatchEvent(new Event('change'));
     }
-    show('Find blocks again after excluding any non-MC areas, or review the existing response blocks.');
+    show(state.scope ? 'Review the MC overlay, or draw a box to fit each incomplete block.' :
+      'Find blocks again after updating the exclusions, or review the existing response blocks.');
   };
   handle('clear-discovery', () => {
     stopDiscovery();
@@ -1110,6 +1121,7 @@ export function createProfileEditor({ onSave, onClose }) {
     if (removed.length) recheckCoverage();
     state.discoveryStale = false;
     for (const id of state.drafts.keys()) if (!state.kept.has(id)) state.drafts.delete(id);
+    clearMcFit();
     state.grid = null;
     state.region = null;
     state.editing = null;
@@ -1176,7 +1188,18 @@ export function createProfileEditor({ onSave, onClose }) {
     byId('mc-completeness').value = '';
     renderSaveStatus();
   };
-  byId('mc-completeness').onchange = renderSaveStatus;
+  byId('mc-completeness').onchange = () => {
+    const { expected, invalid, mismatch } = mcCoverage();
+    if (value('mc-completeness') === 'complete' && expected !== null && !invalid && !mismatch &&
+        state.blocks.every(({ id }) => state.kept.has(id)) && state.discoveryIssues.length &&
+        !state.discoveryIssues.some((issue) => issue === 'page-corners' || issue === 'frame-aspect')) {
+      state.discoveryIssues = [];
+      state.discoveryDiagnostics = [];
+      discoveryMessage('manual-review', `Reviewed mapping covers all ${expected} expected MC questions.`);
+      paint();
+    }
+    renderSaveStatus();
+  };
   handle('cancel-profile-editor', () => { close(); onClose(); });
   handle('enroll-profile', async () => {
     const blocked = saveBlocker();
@@ -1188,6 +1211,7 @@ export function createProfileEditor({ onSave, onClose }) {
         id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,
         name: value('profile-name'), page: page(), components, scope: state.scope, exclusions: state.exclusions,
         mcCompleteness: state.scope ? value('mc-completeness') || undefined : undefined,
+        mcExpectedCount: state.scope ? mcCoverage().expected ?? undefined : undefined,
       });
       const draft = state;
       draft.saving = true;
@@ -1291,13 +1315,12 @@ export function createProfileEditor({ onSave, onClose }) {
       drafts: new Map(), discoveryIssues: [], discoveryDiagnostics: [],
     };
     clearMcFit();
-    byId('mc-expected-count').value = '';
+    byId('mc-expected-count').value = prior?.mcExpectedCount ?? '';
     byId('profile-name').value = prior?.name ?? '';
     byId('mc-completeness').value = prior?.mcCompleteness ?? '';
     byId('block-confirm-status').textContent = '';
     byId('profile-mc-only').checked = prior?.scope === 'mc-only';
-    byId('region-coordinate-details').open = !state.scope;
-    byId('legacy-grid-details').open = !state.scope;
+    arrangeBlockOptions();
     byId('profile-orientation').value = prior?.page.orientation ?? (image.width > image.height ? 'landscape' : 'portrait');
     state.orientation = value('profile-orientation');
     panel.hidden = false;
