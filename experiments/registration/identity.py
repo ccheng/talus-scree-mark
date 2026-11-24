@@ -25,6 +25,14 @@ class FormIdentity:
         self.patch = reference.image[y:y+height, x:x+width]
         if not self.readable(self.patch) or not np.all(reference.mask[y:y+height, x:x+width]):
             raise ValueError('Identity region must contain distinctive print outside the answer bubbles.')
+        # Whole-patch correlation can let shared glyphs hide a changed digit.
+        # A second check requires support at every significant ink component.
+        ink = cv.threshold(self.patch, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
+        _, _, stats, _ = cv.connectedComponentsWithStats(ink)
+        self.components = [(cx, cy, cw, ch) for cx, cy, cw, ch, area in stats[1:]
+                           if area >= 10 and cw >= 2 and ch >= 3]
+        if not self.components:
+            raise ValueError('Identity region needs at least one clear ink component.')
 
     @staticmethod
     def readable(patch):
@@ -52,5 +60,15 @@ class FormIdentity:
         _, score, _, (column,row) = cv.minMaxLoc(scores)
         observed = window[row:row+height, column:column+width]
         in_frame = np.all(coverage[row:row+height, column:column+width] == 255)
-        accepted = in_frame and self.readable(observed) and score >= .88
-        return {'status': 'verified' if accepted else 'mismatch-or-unreadable', 'score': round(score, 3)}
+        component_scores = []
+        if in_frame and self.readable(observed) and score >= .88:
+            for cx, cy, cw, ch in self.components:
+                x0, y0 = max(0, cx-2), max(0, cy-2)
+                x1, y1 = min(width, cx+cw+2), min(height, cy+ch+2)
+                template = self.patch[y0:y1, x0:x1]
+                sample = observed[max(0,y0-1):min(height,y1+1), max(0,x0-1):min(width,x1+1)]
+                component_scores.append(float(cv.matchTemplate(sample, template, cv.TM_CCOEFF_NORMED).max()))
+        weakest = min(component_scores) if component_scores else None
+        accepted = weakest is not None and weakest >= .90
+        return {'status': 'verified' if accepted else 'mismatch-or-unreadable', 'score': round(score, 3),
+                'weakestComponent': round(weakest, 3) if weakest is not None else None}
