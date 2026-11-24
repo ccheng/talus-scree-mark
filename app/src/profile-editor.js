@@ -331,6 +331,7 @@ export function createProfileEditor({ onSave, onClose }) {
         });
         return { ...block, id, items };
       });
+      for (const id of state.drafts.keys()) if (!state.kept.has(id)) state.drafts.delete(id);
       state.blocks = [...kept, ...added];
       state.discoveryStale = false;
       state.discoveryDiagnostics = [
