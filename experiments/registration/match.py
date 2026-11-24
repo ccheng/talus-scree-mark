@@ -180,11 +180,20 @@ class Reference:
             return None, {**evidence, 'reason': 'held-out-feature-geometry'}
         return matrix, evidence
 
-    def register(self, scan, corners, refine, manual):
-        matrix, evidence = self.global_fit(gray(scan), corners, manual)
+    def register(self, scan, corners, refine, manual, corners_only=False):
+        image = gray(scan)
+        if corners_only:
+            if not corners:
+                return None, None, [], {'reason': 'no-corner-hint'}
+            matrix = cv.getPerspectiveTransform(self.page, np.float32(list(map(xy, corners))))
+            evidence = {'pose': 'supplied-corners' if manual else 'detected-corners'}
+            if not plausible_page(matrix, self.page, image.shape):
+                return None, None, [], {**evidence, 'reason': 'implausible-global-pose'}
+        else:
+            matrix, evidence = self.global_fit(image, corners, manual)
         if matrix is None:
             return None, None, [], evidence
-        rectified = cv.warpPerspective(gray(scan), np.linalg.inv(matrix), self.size, borderValue=255)
+        rectified = cv.warpPerspective(image, np.linalg.inv(matrix), self.size, borderValue=255)
         scores = []
         for x, y, patch in self.patches:
             pad = 14

@@ -42,9 +42,12 @@ def photograph(image, quad, size, strength, shade):
     return cv.GaussianBlur((photo*light).astype(np.uint8), (3,3), .42), matrix
 
 
-def layout(blocks, written, label):
+def layout(blocks, written, label, version=None):
     image = portfolio.render(blocks, written, label)
     draw = ImageDraw.Draw(image)
+    if version:
+        portfolio.text(draw, 476, 35, 'Form ID', 10)
+        portfolio.text(draw, 537, 28, version, 23, True)
     for x, y, words in [(43, 306, 'Part two: explain your method'), (315, 390, 'Use the reference values shown above'),
                         (45, 586, 'End of assessment — check all responses'), (326, 696, 'Proctor only  /  version record')]:
         portfolio.text(draw, x, y, words, 10, True)
@@ -52,7 +55,7 @@ def layout(blocks, written, label):
     return image
 
 
-def generate(output):
+def generate(output, identity=False):
     output.mkdir(parents=True, exist_ok=True)
     mc = [portfolio.mc_block('a', 82, [102,124], 1), portfolio.mc_block('b', 82, [165,187,209,231,253,275,297], 3),
           portfolio.mc_block('c', 218, [102,124,146], 10), portfolio.mc_block('d', 218, [198,220], 13)]
@@ -62,12 +65,12 @@ def generate(output):
                    page=dict(width=612, height=792, units='pt', origin='top-left', orientation='portrait'), components=mc)
     answers = {f'MC{i}': (None if i in (4,11) else 'BCAD'[i%4]) for i in range(1,15)}
     tokens = {**answers, 'NR1': '123 '}
-    blank = layout(mc+nr, written, 'mechanical systems / FORM K')
+    blank = layout(mc+nr, written, 'mechanical systems / FORM K', 'K' if identity else None)
     blank_quad = [(62,48), (1480,107), (1430,1920), (35,1830)]
     photo, _ = photograph(blank, blank_quad, (1520,1970), 0, .04)
     cv.imwrite(str(output/'blank.jpg'), photo, [cv.IMWRITE_JPEG_QUALITY, 93])
     cases = []
-    for name, quad, size, curl, shadow, valid in [
+    captures = [
         ('flat', [(166,60),(1290,90),(1380,1750),(90,1800)], (1460,1860), 0, .09, True),
         ('distance', [(290,169),(1170,87),(1260,1290),(244,1420)], (1520,1570), 0, .18, True),
         ('curl', [(73,98),(1412,40),(1510,1840),(135,1970)], (1580,2010), 11, .13, True),
@@ -75,14 +78,22 @@ def generate(output):
         ('one-row-shift', [(166,60),(1290,90),(1380,1750),(90,1800)], (1460,1860), 0, .09, False),
         ('similar-layout', [(110,64),(1390,90),(1422,1730),(90,1800)], (1480,1860), 0, .13, False),
         ('heading-only', [(110,64),(1390,90),(1422,1730),(90,1800)], (1480,1860), 0, .13, False),
-    ]:
+    ]
+    if identity:
+        for name in ('short-code-only', 'unreadable-code'):
+            _, quad, size, curl, shadow, _ = captures[-1]
+            captures.append((name, quad, size, curl, shadow, False))
+    for name, quad, size, curl, shadow, valid in captures:
         use = mc
         if name == 'one-row-shift':
             use = mc[:1]+[portfolio.mc_block('b', 82, [187,209,231,253,275,297,319], 3)]+mc[2:]
         if name == 'similar-layout':
             use = mc[:3]+[portfolio.mc_block('d', 218, [208,230], 13)]
         label = 'thermal energy / FORM Z' if name in ('similar-layout', 'heading-only') else 'mechanical systems / FORM K'
-        filled, _ = portfolio.marked(layout(use+nr, written, label), use+nr, written, tokens, pencil=True)
+        version = None
+        if identity and name != 'unreadable-code':
+            version = 'R' if name in ('heading-only', 'short-code-only', 'similar-layout') else 'K'
+        filled, _ = portfolio.marked(layout(use+nr, written, label, version), use+nr, written, tokens, pencil=True)
         photo, matrix = photograph(filled, quad, size, curl, shadow)
         file = f'{name}.jpg'
         cv.imwrite(str(output/file), photo, [cv.IMWRITE_JPEG_QUALITY, 89])
@@ -94,8 +105,12 @@ def generate(output):
             projected = warp_points(matrix, points+bend(points,curl))
             case.update(answers=answers, centers=dict(zip((key for key,_ in choices), corners(projected))))
         cases.append(case)
-    (output/'manifest.json').write_text(json.dumps(dict(blank='blank.jpg', blankCorners=corners(blank_quad), profile=profile, cases=cases),indent=2)+'\n')
+    manifest = dict(blank='blank.jpg', blankCorners=corners(blank_quad), profile=profile, cases=cases)
+    if identity:
+        manifest['identity'] = {'mode':'printed', 'bounds':portfolio.bounds(534, 25, 24, 26)}
+    (output/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+
 
 
 if __name__ == '__main__':
-    generate(Path(sys.argv[1]) if len(sys.argv)>1 else HERE/'generated')
+    generate(Path(sys.argv[1]) if len(sys.argv)>1 else HERE/'generated', '--identity' in sys.argv[2:])
