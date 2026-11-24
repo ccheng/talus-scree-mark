@@ -110,7 +110,7 @@ test('discovery exclusions remove NR evidence and preserve original pixels and s
 });
 
 test('MC-only discovery refines pitch without dropping the furthest printed choice', () => {
-  const blank = syntheticBlank({ choiceOffsets: [-.50, .60, 0, 0] });
+  const blank = syntheticBlank({ choiceOffsets: [-.40, .40, 0, 0] });
   const proposal = discoverBlankLayout(blank, page, undefined, { scope: 'mc-only' });
   assert.equal(proposal.status, 'proposed');
   assert.equal(proposal.components.length, 1);
@@ -138,6 +138,9 @@ test('a missing bubble in a repeated row is exposed for teacher review', () => {
   const proposal = discoverBlankLayout(syntheticBlank({ missing: true }), page);
   assert.equal(proposal.status, 'review');
   assert(proposal.issues.includes('interrupted-grid'));
+  const scoped = discoverBlankLayout(syntheticBlank({ missing: true }), page, undefined, { scope: 'mc-only' });
+  assert.equal(scoped.status, 'review');
+  assert(scoped.issues.includes('check-mc-choice-counts'));
 });
 
 test('invalid or reversed corners cannot create an automatic proposal', () => {
