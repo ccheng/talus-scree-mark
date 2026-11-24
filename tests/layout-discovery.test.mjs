@@ -185,15 +185,18 @@ function weakEdgePhoto(image, background = 244, {
 }
 
 test('faint page edges recover a complete blank and a verified marked pose', () => {
-  const proposal = discoverBlankLayout(weakEdgePhoto(syntheticBlank({ numeric: true })), page);
+  const blank = weakEdgePhoto(syntheticBlank({ numeric: true }));
+  const proposal = discoverBlankLayout(blank, page);
   assert.equal(proposal.status, 'proposed', JSON.stringify(proposal.issues));
-  assert.equal(proposal.pagePose, 'faint-boundary');
+  // Visible faint edges now establish the physical frame before the layout is inspected.
+  assert(proposal.corners.every(({ x, y }, index) =>
+    Math.hypot(x - blank.corners[index].x, y - blank.corners[index].y) < 3));
   assert.deepEqual(proposal.components.map(({ kind }) => kind), ['mc', 'nr']);
   const profile = createMarkerlessProfile({ id: 'recovered-layout', revision: 1, name: 'Synthetic', page, components: proposal.components });
   const batch = { profileId: profile.id, revision: profile.revision };
   const result = readProfileSheet(weakEdgePhoto(syntheticBlank({ numeric: true, marks: true })), profile, { batch });
   assert.equal(result.status, 'read', JSON.stringify(result.registration.reasons));
-  assert.equal(result.registration.cornerPath, 'bubble-fit');
+  assert.equal(result.registration.cornerPath, 'page-boundary');
   assert.equal(result.registration.diagnostics.orientation.status, 'verified');
   assert.deepEqual(result.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null, '7   ']);
 
