@@ -1,5 +1,5 @@
 import { pageTransform, proposePageCorners } from './markerless-registration.js';
-import { conflictingResponseIds, createMarkerlessProfile, manualGrid, proposeGrid, renumberProfileBlock, validBounds } from './profile-authoring.js';
+import { conflictingResponseIds, createMarkerlessProfile, intersects, manualGrid, proposeGrid, renumberProfileBlock, validBounds } from './profile-authoring.js';
 import { cross, project } from './projective.js';
 import { discoverBoxedAlberta } from './layout-discovery.js';
 import { measureNumericalBlankInk } from './marks.js';
@@ -136,10 +136,26 @@ export function createProfileEditor({ onSave, onClose }) {
   }
 
   function show(message) {
+    const placingCorners = Boolean(state.cornerEdit);
+    byId('cancel-blank-corners').hidden = !placingCorners;
+    byId('profile-orientation').disabled = placingCorners;
+    byId('reset-blank-corners').disabled = state.saving || Boolean(state.discoveryWorker);
+    byId('review-discovery').hidden = placingCorners || state.discoveryStale || discoveryStatus.dataset.status !== 'review' ||
+      !state.discoveryIssues.length || state.discoveryIssues.includes('frame-aspect');
+    saveTemplate.disabled = !state.matrix || state.saving || state.discoveryStale ||
+      Boolean(state.discoveryWorker) || conflictingResponseIds(state.blocks).size > 0;
+    const finding = Boolean(state.discoveryWorker);
+    byId('profile-mc-only').disabled = placingCorners || finding;
+    byId('profile-mc-review').hidden = !state.scope;
+    byId('rediscover-layout').hidden = !state.matrix || finding ||
+      !(state.scope || state.exclusions.length || state.blocks.length || state.prior);
+    byId('add-exclusion').disabled = finding;
+    byId('cancel-exclusion-edit').hidden = state.exclusionEdit === undefined;
+    byId('block-kind').querySelector('[value="nr"]').disabled = Boolean(state.scope);
     byId('profile-grid-controls').hidden = !state.matrix;
     byId('apply-blank-corners').disabled = state.corners.length !== 4 || Boolean(state.matrix);
-    byId('discover-layout').hidden = Boolean(state.prior || state.discoveryWorker || state.blocks.length);
-    byId('clear-discovery').hidden = Boolean(state.prior) || !state.blocks.length;
+    byId('discover-layout').hidden = Boolean(placingCorners || state.prior || state.discoveryWorker || state.blocks.length);
+    byId('clear-discovery').hidden = placingCorners || Boolean(state.prior) || !state.blocks.length;
     if (message) say(message);
     paint();
   }
@@ -171,6 +187,9 @@ export function createProfileEditor({ onSave, onClose }) {
       paintCornerMarkers(ctx, logical, state.corners, canvas.getBoundingClientRect().width, state.cornerDrag);
       return;
     }
+    ctx.setLineDash([4, 3]);
+    state.exclusions.forEach((bounds, index) => box(bounds, '#8c4519', `Excluded ${index + 1}`));
+    ctx.setLineDash([]);
     for (const block of state.blocks) {
       box(block.bounds, '#287651', itemLabel(block));
       for (const item of block.items) {
@@ -218,19 +237,53 @@ export function createProfileEditor({ onSave, onClose }) {
     show('Tap the blank page corners in sheet order. Existing regions still use the same sheet coordinates.');
   }
 
+  function beginCornerEdit() {
+    if (!state.cornerEdit) state.cornerEdit = { corners: state.corners, matrix: state.matrix };
+    state.matrix = null;
+    state.drag = null;
+    state.cornerDrag = -1;
+    state.corners = proposePageCorners(state.image) ?? insetCorners(state.image);
+    sourceOnCanvas(background, state.image);
+    show('Drag the numbered handles, then use these corners or cancel.');
+  }
+
+  function cancelCornerEdit() {
+    if (!state.cornerEdit) return;
+    const { corners, matrix } = state.cornerEdit;
+    state.cornerEdit = null;
+    state.corners = corners;
+    state.matrix = matrix;
+    state.drag = null;
+    state.cornerDrag = -1;
+    if (matrix) {
+      rectifiedOnCanvas(background, state.image, matrix, page(), canvas.dataset.pose === 'virtual-corners');
+    }
+    show(matrix ? 'Restored the previous corners and response adjustments.' : 'Corner placement canceled.');
+  }
+
   function confirmCorners() {
     const ordered = state.corners.length === 4 && state.corners.every((point, index, corners) =>
       cross(point, corners[(index + 1) % 4], corners[(index + 2) % 4]) > 0);
     if (!ordered) return say('Place the corners clockwise in sheet order, starting at top left.');
     const matrix = pageTransform(page(), state.corners);
     if (!matrix) return say('The corners do not form a usable page. Place them again.');
+    if (state.cornerEdit) {
+      state.cornerEdit = null;
+      delete canvas.dataset.pose;
+      delete discoveryStatus.dataset.pose;
+    }
     state.matrix = matrix;
     rectifiedOnCanvas(background, state.image, matrix, page());
     show('Draw a box around one answer block.');
   }
 
   function findLayout(useExistingCorners = false) {
-    if (state.prior || state.discoveryWorker) return;
+    if (state.discoveryWorker || state.cornerEdit) return;
+    if (state.grid || state.editing || state.mappingBlock || state.renumberBlock || state.exclusionEdit !== undefined) {
+      return say('Finish the current edit before finding more blocks.');
+    }
+    const kept = state.blocks.filter(({ id }) => state.kept.has(id));
+    const exclusions = [...state.exclusions, ...kept.map(({ bounds }) => bounds)];
     const original = state;
     const jobId = ++nextJob;
     const worker = new Worker(new URL('./omr-worker.js', import.meta.url), { type: 'module' });
@@ -242,7 +295,8 @@ export function createProfileEditor({ onSave, onClose }) {
       if (state !== original || state.discoveryWorker !== worker) return;
       stopDiscovery();
       if (!result || result.status === 'needs-corners') {
-        state.corners = result?.corners ?? [];
+        if (!state.matrix) state.corners = result?.corners ?? [];
+        if (!state.blocks.length) state.discoveryIssues = ['page-corners'];
         discoveryMessage('needs-corners', 'Page corners could not be used for discovery. Place or adjust them, then find the blocks again.');
         show();
         return;
@@ -258,10 +312,34 @@ export function createProfileEditor({ onSave, onClose }) {
       state.region = null;
       state.grid = null;
       state.editing = null;
-      state.blocks = result.components;
-      state.drafts.clear();
-      state.discoveryDiagnostics = result.diagnostics;
-      state.discoveryIssues = result.issues;
+      const ids = new Set(kept.flatMap(({ id, items }) => [id, ...items.flatMap((item) => [item.id,
+        ...(item.slots ?? []).map(({ id: slot }) => slot)])]));
+      const counters = { mc: 1, nr: 1 };
+      const added = result.components.map((block) => {
+        let id = block.id;
+        while (ids.has(id)) id += '-new';
+        ids.add(id);
+        const items = block.items.map((item) => {
+          let itemId, slots;
+          do {
+            itemId = item.kind.toUpperCase() + counters[item.kind]++;
+            slots = item.slots?.map((slot, i) => ({ ...slot, id: `${itemId}.${i + 1}` }));
+          } while (ids.has(itemId) || slots?.some((slot) => ids.has(slot.id)));
+          ids.add(itemId);
+          slots?.forEach((slot) => ids.add(slot.id));
+          return { ...item, id: itemId, ...(slots ? { slots } : {}) };
+        });
+        return { ...block, id, items };
+      });
+      state.blocks = [...kept, ...added];
+      state.discoveryStale = false;
+      state.discoveryDiagnostics = [
+        ...(state.discoveryDiagnostics ?? []).filter(({ id }) => state.kept.has(id)),
+        ...(result.diagnostics ?? []).map((data) => ({
+          ...data, id: added[result.components.findIndex(({ id }) => id === data.id)]?.id ?? data.id,
+        })),
+      ];
+      state.discoveryIssues = kept.length && result.issues.length === 1 && result.issues[0] === 'no-grid' ? [] : result.issues;
       discoveryStatus.dataset.pose = result.pagePose ?? 'page-boundary';
       canvas.dataset.pose = discoveryStatus.dataset.pose;
       closeMapping();
@@ -275,7 +353,8 @@ export function createProfileEditor({ onSave, onClose }) {
         : count
         ? `Found ${count} response block${count === 1 ? '' : 's'}. Check the page orientation, numbering and symbol order in the overlay.`
         : 'No complete response blocks were found. Place the expected blocks manually.';
-      discoveryMessage(result.status, instructions + (result.issues.length ? ' Check for incomplete or extra geometry before saving.' : ''));
+      const progress = kept.length && !state.discoveryIssues.length ? 'proposed' : result.status;
+      discoveryMessage(progress, instructions + (state.discoveryIssues.length ? ' Check for incomplete or extra geometry before saving.' : ''));
       show();
     }
     worker.addEventListener('message', ({ data }) => { if (data?.jobId === jobId) finish(data.result); });
@@ -283,7 +362,9 @@ export function createProfileEditor({ onSave, onClose }) {
     worker.addEventListener('messageerror', () => finish());
     try {
       worker.postMessage({
-        type: 'discover-layout', jobId, page: page(), corners: useExistingCorners ? state.corners : undefined,
+        type: 'discover-layout', jobId, page: page(),
+        corners: useExistingCorners && canvas.dataset.pose !== 'virtual-corners' ? state.corners : undefined,
+        options: { scope: state.scope, exclusions },
         image: { id: state.image.id, width: state.image.width, height: state.image.height, pixels: state.image.pixels.data },
       });
     } catch { finish(); }
@@ -477,6 +558,7 @@ export function createProfileEditor({ onSave, onClose }) {
     const bounds = inputRegion();
     if (!state.grid) throw new TypeError('Find or place the bubble grid before confirming.');
     const kind = value('block-kind');
+    if (state.scope && kind !== 'mc') throw new TypeError('Confirm only MC blocks in this profile.');
     const prefix = value('item-prefix').trim();
     const start = number('item-start');
     if (!/^[A-Za-z0-9_.-]{0,30}$/.test(prefix) || !Number.isInteger(start) || start < 1) {
@@ -506,6 +588,7 @@ export function createProfileEditor({ onSave, onClose }) {
       id: 'draft', revision: 1, name: 'Draft', page: page(), components: next,
     });
     state.blocks = next;
+    state.kept.add(block.id);
     state.drafts.set(block.id, {
       grid: structuredClone(state.grid), fields: Object.fromEntries([
         'block-kind', 'grid-axis', 'grid-symbols', 'decimal-slots', 'item-prefix', 'item-start',
@@ -617,6 +700,7 @@ export function createProfileEditor({ onSave, onClose }) {
     const block = state.blocks.find(({ id }) => id === state.renumberBlock);
     if (!block) return;
     state.blocks = renumberProfileBlock(page(), state.blocks, block.id, number('block-first-number'), { draft: true });
+    state.kept.add(block.id);
     state.drafts.delete(block.id);
     closeMapping();
     lists();
@@ -679,6 +763,7 @@ export function createProfileEditor({ onSave, onClose }) {
     const components = state.blocks.map((entry) => entry === block ? { ...block, items } : entry);
     createMarkerlessProfile({ id: 'draft', revision: 1, name: 'Draft', page: page(), components });
     state.blocks = components;
+    state.kept.add(block.id);
     state.drafts.delete(block.id);
     closeMapping();
     lists(); paint();
@@ -689,7 +774,29 @@ export function createProfileEditor({ onSave, onClose }) {
     const conflicts = conflictingResponseIds(state.blocks);
     conflictStatus.hidden = conflicts.size === 0;
     conflictStatus.textContent = conflicts.size ? `Duplicate identifiers in this draft: ${[...conflicts].join(', ')}. Renumber an affected block before saving.` : '';
-    saveTemplate.disabled = Boolean(conflicts.size || state.saving);
+    saveTemplate.disabled = Boolean(conflicts.size || !state.matrix || state.saving || state.discoveryStale || state.discoveryWorker);
+    const zones = byId('profile-exclusions');
+    zones.replaceChildren();
+    state.exclusions.forEach((bounds, index) => {
+      const row = listEntry(zones, `Exclusion ${index + 1}`, [
+        ['Edit', () => {
+          if (state.discoveryWorker || state.grid || state.editing) return;
+          state.exclusionEdit = index;
+          setRegion(bounds);
+          show('Resize or redraw the exclusion, then save the box.');
+        }],
+        ['Remove', () => {
+          if (state.discoveryWorker) return;
+          state.exclusions.splice(index, 1);
+          state.discoveryStale = state.blocks.some(({ id }) => !state.kept.has(id));
+          state.exclusionEdit = undefined;
+          state.region = null;
+          lists();
+          show('Exclusion removed. Find blocks again to search that area.');
+        }],
+      ]);
+      row.dataset.exclusion = String(index);
+    });
     blocksList.replaceChildren();
     for (const [index, block] of state.blocks.entries()) {
       const move = (delta) => {
@@ -699,13 +806,19 @@ export function createProfileEditor({ onSave, onClose }) {
       };
       const caption = itemLabel(block) + (block.kind === 'nr' ? ' · Numerical response' : ' · Multiple choice');
       const row = listEntry(blocksList, caption, [
+        [state.kept.has(block.id) ? 'Release block for rediscovery' : 'Keep block on rediscovery', () => {
+          if (state.discoveryWorker) return;
+          if (state.kept.has(block.id)) state.kept.delete(block.id);
+          else state.kept.add(block.id);
+          lists();
+        }, 'keep-block'],
         ['Renumber block', () => startRenumber(block), 'renumber-block'],
         ['Edit numbering and symbols', () => editMapping(block)],
         ['Edit block', () => chooseDraft(block)],
         ...(index ? [['Move up', () => move(-1)]] : []),
         ...(index + 1 < state.blocks.length ? [['Move down', () => move(1)]] : []),
         ['Remove', () => {
-          state.blocks.splice(index, 1); closeMapping(); lists(); show();
+          state.kept.delete(block.id); state.blocks.splice(index, 1); closeMapping(); lists(); show();
         }],
       ]);
       row.dataset.profileBlock = block.id;
@@ -729,30 +842,65 @@ export function createProfileEditor({ onSave, onClose }) {
     paint();
     say(state.pan ? 'Drag to pan the preview.' : 'Tap corners or drag a region on the sheet.');
   });
-  handle('reset-blank-corners', resetCorners);
-  byId('reset-blank-corners').addEventListener('click', () => {
-    if (!state) return;
-    state.corners = proposePageCorners(state.image) ?? insetCorners(state.image);
-    show('Drag the numbered handles to the matching corners, then use these corners.');
-  });
+  handle('reset-blank-corners', beginCornerEdit);
+  handle('cancel-blank-corners', cancelCornerEdit);
   handle('apply-blank-corners', confirmCorners);
   handle('discover-layout', () => findLayout(state.corners.length === 4));
+  handle('rediscover-layout', () => findLayout(state.corners.length === 4));
+  handle('add-exclusion', () => {
+    if (state.discoveryWorker || state.grid || state.editing) throw new Error('Finish the current block edit first.');
+    const bounds = inputRegion();
+    if (state.exclusionEdit === undefined) {
+      if (state.exclusions.length >= 24) throw new Error('Use up to 24 exclusion zones.');
+      state.exclusions.push(bounds);
+    } else state.exclusions[state.exclusionEdit] = bounds;
+    state.exclusionEdit = undefined;
+    state.region = null;
+    state.discoveryStale = state.blocks.some(({ id }) => !state.kept.has(id));
+    lists();
+    const overlaps = state.blocks.some((block) => state.kept.has(block.id) && intersects(bounds, block.bounds));
+    show(overlaps ? 'Exclusion saved. The overlapping kept block is still mapped.' :
+      'Exclusion saved. Find blocks outside exclusions to update the proposal.');
+  });
+  handle('cancel-exclusion-edit', () => {
+    state.exclusionEdit = undefined;
+    state.region = null;
+    show('Exclusion edit canceled.');
+  });
+  byId('profile-mc-only').onchange = (event) => {
+    if (!state) return;
+    if (event.target.checked && state.blocks.some((block) => block.kind !== 'mc' && state.kept.has(block.id))) {
+      event.target.checked = false;
+      return say('Remove kept NR blocks before switching this template to MC-only grading.');
+    }
+    state.scope = event.target.checked ? 'mc-only' : undefined;
+    state.discoveryStale = state.blocks.some(({ id }) => !state.kept.has(id));
+    if (state.scope && value('block-kind') === 'nr' && !state.grid) {
+      byId('block-kind').value = 'mc';
+      byId('block-kind').dispatchEvent(new Event('change'));
+    }
+    show('Find blocks again after excluding any non-MC areas, or review the existing response blocks.');
+  };
   handle('clear-discovery', () => {
     stopDiscovery();
-    state.blocks = [];
-    state.drafts.clear();
+    state.blocks = state.blocks.filter(({ id }) => state.kept.has(id));
+    state.discoveryStale = false;
+    for (const id of state.drafts.keys()) if (!state.kept.has(id)) state.drafts.delete(id);
     state.grid = null;
     state.region = null;
     state.editing = null;
     state.endpoints = null;
     state.discoveryIssues = [];
-    state.discoveryDiagnostics = [];
+    state.discoveryDiagnostics = state.discoveryDiagnostics.filter(({ id }) => state.kept.has(id));
     closeMapping();
     discoveryMessage('idle');
     lists(); show('Place the response blocks or find them again.');
   });
   handle('review-discovery', () => {
     state.discoveryIssues = [];
+    state.blocks.forEach(({ id }) => state.kept.add(id));
+    state.discoveryStale = false;
+    lists();
     discoveryMessage('manual-review', 'Check the full sheet and use the manual controls to correct any missing or extra regions.');
   });
   handle('apply-block-mapping', saveMapping);
@@ -773,12 +921,15 @@ export function createProfileEditor({ onSave, onClose }) {
   handle('confirm-block', confirmBlock);
   handle('cancel-profile-editor', () => { close(); onClose(); });
   handle('enroll-profile', async () => {
-    if (state.saving || conflictingResponseIds(state.blocks).size) return;
+    if (!state.matrix || state.saving || state.discoveryStale || conflictingResponseIds(state.blocks).size) return;
     if (state.discoveryWorker || state.discoveryIssues?.length) {
       say('Resolve the outstanding layout review before saving.');
       return;
     }
-    if (state.grid || state.editing || state.mappingBlock || state.renumberBlock) {
+    if (state.scope && state.blocks.some(({ kind }) => kind !== 'mc')) {
+      return say('Remove non-MC blocks or run discovery with the appropriate exclusions before saving.');
+    }
+    if (state.grid || state.editing || state.mappingBlock || state.renumberBlock || state.exclusionEdit !== undefined) {
       say('Apply or cancel the open block edits before saving.');
       return;
     }
@@ -787,7 +938,7 @@ export function createProfileEditor({ onSave, onClose }) {
         measureNumericalBlankInk(toGrayImage(state.image), state.matrix, state.blocks);
       const profile = createMarkerlessProfile({
         id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,
-        name: value('profile-name'), page: page(), components,
+        name: value('profile-name'), page: page(), components, scope: state.scope, exclusions: state.exclusions,
       });
       const draft = state;
       draft.saving = true;
@@ -799,7 +950,15 @@ export function createProfileEditor({ onSave, onClose }) {
       }
     } catch (error) { if (state) say(error.message); }
   });
-  byId('profile-orientation').addEventListener('change', () => { if (state) resetCorners(); });
+  byId('profile-orientation').addEventListener('change', (event) => {
+    if (!state) return;
+    if (state.exclusions.length || state.kept.size) {
+      event.target.value = state.orientation;
+      return say('Remove existing exclusions and release kept blocks before changing orientation.');
+    }
+    state.orientation = event.target.value;
+    resetCorners();
+  });
   byId('cell-selector').addEventListener('change', selectCell);
   byId('block-kind').addEventListener('change', () => {
     const mc = value('block-kind') === 'mc';
@@ -873,10 +1032,14 @@ export function createProfileEditor({ onSave, onClose }) {
     stopDiscovery();
     state = {
       image, prior, matrix: null, zoom: 1, pan: false, blocks: structuredClone(prior?.components ?? []),
+      scope: prior?.scope, exclusions: structuredClone(prior?.exclusions ?? []),
+      kept: new Set(prior?.components.map(({ id }) => id)),
       drafts: new Map(), discoveryIssues: [], discoveryDiagnostics: [],
     };
     byId('profile-name').value = prior?.name ?? '';
+    byId('profile-mc-only').checked = prior?.scope === 'mc-only';
     byId('profile-orientation').value = prior?.page.orientation ?? (image.width > image.height ? 'landscape' : 'portrait');
+    state.orientation = value('profile-orientation');
     panel.hidden = false;
     byId('editor-pan').setAttribute('aria-pressed', 'false');
     resetCorners();

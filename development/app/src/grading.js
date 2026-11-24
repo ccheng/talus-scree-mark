@@ -9,11 +9,11 @@ export function templateItems(profile) {
 
 export function templateSnapshot(profile) {
   const { id, revision, name } = profile;
-  return { id, revision, name, items: templateItems(profile) };
+  return { id, revision, name, items: templateItems(profile), ...(profile.scope === 'mc-only' ? { scope: profile.scope } : {}) };
 }
 
 export function sameTemplate(a, b) {
-  return Boolean(a && b && a.id === b.id && a.revision === b.revision &&
+  return Boolean(a && b && a.id === b.id && a.revision === b.revision && a.scope === b.scope &&
     JSON.stringify(a.items) === JSON.stringify(b.items));
 }
 
@@ -42,6 +42,49 @@ export function validateKey(template, answers) {
     if (!item || normalizeAnswer(item, answer).status !== 'valid') throw new Error(`Invalid key for ${id}.`);
   }
   return { ...answers };
+}
+
+export function validateCategories(template, categories) {
+  if (categories === undefined) return undefined;
+  const label = (value) => typeof value === 'string' && value.length > 0 &&
+    value.length <= 60 && value.trim() === value && !/[\u0000-\u001f]/.test(value);
+  const { dimensions, assignments } = categories ?? {};
+  if (!Array.isArray(dimensions) || dimensions.length !== 2 ||
+      dimensions.some((dimension) => !label(dimension?.name) || !Array.isArray(dimension.values) ||
+        !dimension.values.length || dimension.values.length > 30 || !dimension.values.every(label) ||
+        new Set(dimension.values).size !== dimension.values.length) ||
+      dimensions[0].name === dimensions[1].name ||
+      !assignments || typeof assignments !== 'object' || Array.isArray(assignments)) {
+    throw new Error('Enter two different category dimension names and unique category values (up to 30 per dimension).');
+  }
+  const itemIds = new Set(template.items.map(({ id }) => id));
+  for (const [id, values] of Object.entries(assignments)) {
+    if (!itemIds.has(id) || !Array.isArray(values) || values.length !== 2 ||
+        values.some((value, i) => value !== null && !dimensions[i].values.includes(value))) {
+      throw new Error(`Invalid category assignment for ${id}.`);
+    }
+  }
+  return categories;
+}
+
+function categorize(template, tally, categories) {
+  const { dimensions, assignments } = validateCategories(template, categories);
+  const buckets = new Map();
+  function bucket(dimension, values) {
+    const id = JSON.stringify([dimension, values]);
+    if (!buckets.has(id)) buckets.set(id, { dimension, values, score: 0, denominator: 0, pending: 0 });
+    return buckets.get(id);
+  }
+  for (const item of tally.items) {
+    const values = Object.hasOwn(assignments, item.id) ? assignments[item.id] : [null, null];
+    item.categories = [...values];
+    for (const subtotal of [bucket(1, [values[0], null]), bucket(2, [null, values[1]]), bucket(null, [...values])]) {
+      subtotal.score += item.points;
+      subtotal.denominator += Number(item.keyed);
+      subtotal.pending += Number(item.pending);
+    }
+  }
+  return { dimensions, subtotals: [...buckets.values()] };
 }
 
 export function gradeScan(scan, key) {
@@ -78,6 +121,7 @@ export function gradeScan(scan, key) {
       reason: parsed.reason ?? raw?.reasons?.join(', ') ?? '' });
   }
   if (tally.pending) tally.status = 'provisional';
+  if (key?.categories !== undefined) tally.categories = categorize(scan.template, tally, key.categories);
   return tally;
 }
 

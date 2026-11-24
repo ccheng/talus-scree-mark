@@ -1,4 +1,4 @@
-import { addDecision, gradeScan, sameTemplate, templateSnapshot, validateKey } from './grading.js';
+import { addDecision, gradeScan, sameTemplate, templateSnapshot, validateCategories, validateKey } from './grading.js';
 import { deleteScans, loadGrading, restoreGrading, saveKey, saveScan } from './grading-store.js';
 import { exportBackup, exportCsv, parseBackup } from './grading-export.js';
 
@@ -71,6 +71,20 @@ export function createGradingView() {
     setPhoto(scan);
     if (!scan) return;
     const { grade } = scan;
+    const scope = byId('grading-scope');
+    scope.hidden = scan.template.scope !== 'mc-only';
+    scope.textContent = scope.hidden ? '' : 'MC only · NR and WR excluded';
+    const categories = grade.categories;
+    byId('grading-subtotals-panel').hidden = !categories;
+    const names = categories?.dimensions.map(({ name }) => name);
+    byId('grading-subtotals').replaceChildren(...[...(categories?.subtotals ?? [])].sort((a, b) =>
+      (a.dimension ?? 3) - (b.dimension ?? 3)).map(({ dimension, values, score, denominator, pending }) => {
+      const row = node('tr');
+      const label = (i) => `${names[i]} — ${values[i] ?? '(Unassigned)'}`;
+      row.append(node('td', dimension === null ? [label(0), label(1)].join(' × ') : label(dimension - 1)),
+        node('td', `${score}/${denominator}`), node('td', pending));
+      return row;
+    }));
     byId('grading-score').textContent = `${grade.score}/${grade.denominator} · ${grade.pending} pending · ${grade.status}`;
     byId('grading-label').textContent = scan.label + (isDraft(scan) ? ' · In session' : ' · Saved locally');
     byId('grading-photo-status').textContent = scan.photoStatus === 'deleted' ? 'Photograph deleted.'
@@ -177,6 +191,89 @@ export function createGradingView() {
     }
   }
 
+  const categoryRows = byId('grading-category-assignments');
+  const categoryMessage = (text) => { byId('grading-category-status').textContent = text; };
+  const categoryFields = () => [1, 2].map((i) => ({
+    name: byId('grading-category-name-' + i).value.trim(),
+    values: byId('grading-category-values-' + i).value.split(/\r?\n/).map((label) => label.trim()).filter(Boolean),
+  }));
+  const assignments = () => Object.fromEntries([...categoryRows.children].map((row) => [
+    row.dataset.categoryQuestion, [...row.querySelectorAll('select')].map(({ value }) => value || null),
+  ]));
+  const valueOptions = (values) => [new Option('(Unassigned)', ''), ...values.map((value) => new Option(value))];
+  let activeDimensions;
+
+  function updateBulkChoices() {
+    const index = Number(byId('grading-category-dimension').value);
+    byId('grading-category-value').replaceChildren(...valueOptions(activeDimensions[index].values));
+  }
+
+  function renderCategoryEditor(dimensions, storedAssignments = {}) {
+    activeDimensions = dimensions;
+    const items = keyTemplate.items;
+    byId('grading-category-controls').hidden = !dimensions;
+    categoryRows.replaceChildren();
+    if (!dimensions) return;
+    for (const id of ['grading-category-from', 'grading-category-through']) {
+      byId(id).replaceChildren(...items.map(({ id }) => new Option(id)));
+    }
+    byId('grading-category-through').selectedIndex = items.length - 1;
+    byId('grading-category-dimension').replaceChildren(...dimensions.map(({ name }, i) => new Option(name, i)));
+    updateBulkChoices();
+    categoryRows.replaceChildren(...items.map(({ id }) => {
+      const row = node('div');
+      row.dataset.categoryQuestion = id;
+      const checkLabel = node('label', id + ' ');
+      const check = node('input');
+      check.type = 'checkbox';
+      checkLabel.append(check);
+      row.append(checkLabel);
+      dimensions.forEach(({ name, values }, i) => {
+        const label = node('label', name + ' ');
+        const input = node('select');
+        input.dataset.categoryDimension = i + 1;
+        input.replaceChildren(...valueOptions(values));
+        const value = Object.hasOwn(storedAssignments, id) ? storedAssignments[id][i] : null;
+        input.value = values.includes(value) ? value : '';
+        label.append(input);
+        row.append(label);
+      });
+      return row;
+    }));
+  }
+
+  byId('grading-category-refresh').onclick = () => {
+    const dimensions = categoryFields();
+    if (dimensions.every(({ name, values }) => !name && !values.length)) {
+      renderCategoryEditor(undefined);
+      categoryMessage('Categories cleared in this draft.');
+      return;
+    }
+    try {
+      validateCategories(keyTemplate, { dimensions, assignments: {} });
+      const previous = assignments();
+      renderCategoryEditor(dimensions, previous);
+      const cleared = Object.values(previous).some((values) =>
+        values.some((value, i) => value !== null && !dimensions[i].values.includes(value)));
+      categoryMessage(cleared ? 'Assignments with removed values are now unassigned.' : 'Category choices updated.');
+    } catch (error) { categoryMessage(error.message); }
+  };
+  byId('grading-category-dimension').onchange = updateBulkChoices;
+  for (const mode of ['range', 'selected']) {
+    byId('grading-category-' + mode).onclick = () => {
+      const rows = [...categoryRows.children];
+      const first = byId('grading-category-from').selectedIndex;
+      const last = byId('grading-category-through').selectedIndex;
+      const targets = mode === 'range' && last >= first ? rows.slice(first, last + 1) :
+        mode === 'selected' ? rows.filter((row) => row.querySelector('input').checked) : [];
+      if (!targets.length) return categoryMessage('Choose questions to assign.');
+      const dimension = Number(byId('grading-category-dimension').value);
+      const value = byId('grading-category-value').value;
+      targets.forEach((row) => { row.querySelectorAll('select')[dimension].value = value; });
+      categoryMessage(`Updated ${targets.length} questions.`);
+    };
+  }
+
   function showKey(template) {
     if (!template) return;
     keyTemplate = template;
@@ -195,6 +292,14 @@ export function createGradingView() {
       label.append(input);
       return label;
     }));
+    for (const [i, field] of [1, 2].entries()) {
+      const dimension = key?.categories?.dimensions[i];
+      byId('grading-category-name-' + field).value = dimension?.name ?? '';
+      byId('grading-category-values-' + field).value = dimension?.values.join('\n') ?? '';
+    }
+    renderCategoryEditor(key?.categories?.dimensions, key?.categories?.assignments);
+    byId('grading-categories').open = Boolean(key?.categories);
+    categoryMessage('');
     keyPanel.hidden = false;
   }
 
@@ -205,7 +310,14 @@ export function createGradingView() {
     event.preventDefault();
     act(async () => {
       const answers = Object.fromEntries([...new FormData(keyPanel)].filter(([, value]) => value !== ''));
-      const key = { id: uuid(), template: keyTemplate, answers: validateKey(keyTemplate, answers), createdAt: now() };
+      const dimensions = categoryFields();
+      const configured = dimensions.some(({ name, values }) => name || values.length);
+      if (configured && JSON.stringify(dimensions) !== JSON.stringify(activeDimensions)) {
+        throw new Error('Update category choices before saving this key.');
+      }
+      const categories = configured ? validateCategories(keyTemplate, { dimensions, assignments: assignments() }) : undefined;
+      const key = { id: uuid(), template: keyTemplate, answers: validateKey(keyTemplate, answers), createdAt: now(),
+        ...(categories ? { categories } : {}) };
       await saveKey(key);
       stored.keys.push(key);
       keyPanel.hidden = true;

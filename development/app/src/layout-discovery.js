@@ -19,7 +19,7 @@ function rowsOf(candidates) {
   return rows;
 }
 
-function runsOf({ y, cells }) {
+function runsOf({ y, cells }, refinePitch) {
   const sorted = [...cells].sort((a, b) => a.x - b.x);
   const options = [];
   for (const [index, first] of sorted.entries()) {
@@ -27,12 +27,16 @@ function runsOf({ y, cells }) {
       const next = sorted[j];
       const pitch = next.x - first.x;
       if (pitch > maxColumnPitch) break;
-      if (pitch < Math.max(first.radius, next.radius) * 3 || Math.abs(first.radius - next.radius) > 1.05) continue;
+      const radiusTolerance = refinePitch ? Math.min(1.05, Math.max(first.radius, next.radius) * .20) : 1.05;
+      if (pitch < Math.max(first.radius, next.radius) * 3 || Math.abs(first.radius - next.radius) > radiusTolerance) continue;
       const run = [first, next];
       while (run.length < 13) {
-        const x = first.x + run.length * pitch;
+        // After another outline agrees, use the span of all observed
+        // columns so quantization of the first interval doesn't accumulate.
+        const step = refinePitch ? (run.at(-1).x - first.x) / (run.length - 1) : pitch;
+        const x = first.x + run.length * step;
         const candidate = sorted.find((cell) => Math.abs(cell.x - x) <= Math.max(1.3, pitch * .075) &&
-          Math.abs(cell.radius - first.radius) <= 1.05 && !run.includes(cell));
+          Math.abs(cell.radius - first.radius) <= radiusTolerance && !run.includes(cell));
         if (!candidate) break;
         run.push(candidate);
       }
@@ -47,11 +51,11 @@ function persists(a, b) {
     Math.abs(cell.x - b.cells[i].x) <= 1.65 && Math.abs(cell.radius - b.cells[i].radius) <= 1.15);
 }
 
-function latticesOf(rings) {
+function latticesOf(rings, refinePitch = false) {
   const bands = rowsOf(rings);
   const clusters = [];
   for (const band of bands) {
-    for (const row of runsOf(band)) {
+    for (const row of runsOf(band, refinePitch)) {
       const cluster = clusters.find(({ seed }) => persists(seed, row));
       if (!cluster) clusters.push({ seed: row, rows: [row] });
       else if (cluster.rows.at(-1).y < row.y - 1.3) cluster.rows.push(row);
@@ -276,7 +280,7 @@ function excludePrintedLabels(rings) {
   });
 }
 
-function inspectBlankLayout(image, page, corners) {
+function inspectBlankLayout(image, page, corners, { exclusions = [], scope, refineMcPitch = false } = {}) {
   if (!Array.isArray(corners) || corners.length !== 4 || !corners.every((corner, index) =>
     cross(corner, corners[(index + 1) % 4], corners[(index + 2) % 4]) > 0)) {
     return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
@@ -284,7 +288,7 @@ function inspectBlankLayout(image, page, corners) {
   const matrix = pageTransform(page, corners);
   if (!matrix) return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
   const gray = toGrayImage(image);
-  const options = { printedCenters: true, maxRadius: 8 };
+  const options = { printedCenters: true, maxRadius: 8, exclusions };
   const candidates = pageRingCandidates(gray, matrix, page, options);
   if (candidates.length >= 1800) return { status: 'review', corners, components: [], issues: ['too-many-candidates'] };
   const fine = pageRingCandidates(gray, matrix, page, { ...options, maxRadius: 8.6, fineOutlines: true });
@@ -293,7 +297,7 @@ function inspectBlankLayout(image, page, corners) {
   const usedAlberta = alberta.flatMap(({ cells, above }) => [...cells, ...above.filter(Boolean)]);
   const rings = excludePrintedLabels(candidates).filter((ring) =>
     !usedAlberta.some((cell) => distance(ring, cell) <= 1.8));
-  const { output, used } = latticesOf(rings);
+  const { output, used } = latticesOf(rings, refineMcPitch);
   const observedGrids = [...alberta, ...output].map((grid) => {
     if (grid.kind === 'nr') return {
       ...grid, bounds: enclosing([...grid.cells, ...grid.above.filter(Boolean)], page),
@@ -319,9 +323,28 @@ function inspectBlankLayout(image, page, corners) {
     cells.filter(({ x, y }) => x >= bounds.x - 9 && x <= bounds.x + bounds.width + 9 &&
       y >= bounds.y && y <= bounds.y + bounds.height).length > cells.length * .5));
   const unassigned = rings.filter((ring) => !used.has(ring));
-  const { blocks: proposals, interrupted } = joinMcGroups(filtered, unassigned, page);
+  const { blocks, interrupted } = joinMcGroups(filtered, unassigned, page);
+  const outsideExclusions = blocks.filter(({ bounds }) => !exclusions.some((zone) => intersects(bounds, zone)));
+  const proposals = outsideExclusions.filter(({ kind, columns }) =>
+    scope !== 'mc-only' || (kind === 'mc' && (columns === 4 || columns === 5)));
   const issues = [];
   if (!proposals.length) issues.push('no-grid');
+  if (outsideExclusions.some(({ kind, columns }) => scope === 'mc-only' && kind === 'mc' && columns !== 4 && columns !== 5)) {
+    issues.push('check-mc-choice-counts');
+  }
+  if (scope === 'mc-only') {
+    const mappedCells = new Set(proposals.flatMap(({ cells }) => cells));
+    const unmatchedRows = rowsOf(rings.filter((ring) => !mappedCells.has(ring)));
+    const possibleMissingRow = proposals.some(({ rows, columns, spacing }) => unmatchedRows.some(({ y, cells }) => {
+      const nearest = rows.reduce((best, row) => Math.abs(row.y - y) < Math.abs(best.y - y) ? row : best);
+      const gap = Math.abs(nearest.y - y);
+      if (gap < spacing * .72 || gap > spacing * 2.65) return false;
+      const matches = nearest.cells.filter((choice) => cells.some((ring) =>
+        Math.abs(ring.x - choice.x) <= 1.65 && Math.abs(ring.radius - choice.radius) <= choice.radius * .18));
+      return matches.length >= columns - 1;
+    }));
+    if (possibleMissingRow && !issues.includes('check-mc-choice-counts')) issues.push('check-mc-choice-counts');
+  }
   if (proposals.some((proposal) => proposal.issues.length)) issues.push('unusual-nr-grid');
   if (interrupted) issues.push('interrupted-grid');
   const typical = quantile(proposals.flatMap(({ cells }) => cells.map(({ radius }) => radius)), .50);
@@ -383,7 +406,15 @@ function inspectBlankLayout(image, page, corners) {
 }
 
 
-function provisionalBlank(image, page, first) {
+function inspectBlankWithRecovery(image, page, corners, options) {
+  const first = inspectBlankLayout(image, page, corners, options);
+  if (options?.scope !== 'mc-only' || !first.issues.includes('check-mc-choice-counts')) return first;
+  const refined = inspectBlankLayout(image, page, corners, { ...options, refineMcPitch: true });
+  const count = ({ components }) => components.reduce((sum, block) => sum + block.items.length, 0);
+  return refined.status === 'proposed' && count(refined) > count(first) ? refined : first;
+}
+
+function provisionalBlank(image, page, first, options) {
   // With no physical edges the exact paper origin is unobservable. Use a
   // same-aspect local coordinate frame and verify the visible layout against it.
   const scale = Math.min((image.width - 1) / page.width, (image.height - 1) / page.height);
@@ -391,7 +422,7 @@ function provisionalBlank(image, page, first) {
   const top = (image.height - 1 - scale * page.height) / 2;
   const corners = [{ x: left, y: top }, { x: left + scale * page.width, y: top },
     { x: left + scale * page.width, y: top + scale * page.height }, { x: left, y: top + scale * page.height }];
-  const found = inspectBlankLayout(image, page, corners);
+  const found = inspectBlankWithRecovery(image, page, corners, options);
   const signatures = ({ components }) => JSON.stringify(components.map(({ kind, items }) =>
     [kind, items.map((item) => item.kind === 'mc' ? item.choices.map(({ symbol }) => symbol) :
       item.slots.map(({ choices }) => choices.map(({ symbol }) => symbol)))]));
@@ -406,9 +437,9 @@ function provisionalBlank(image, page, first) {
     poseDiagnostics: { ...evidence, frame: 'provisional', discarded: { reason: 'frame-aspect', corners: first.corners } } } };
 }
 
-export function discoverBlankLayout(image, page, suppliedCorners) {
+export function discoverBlankLayout(image, page, suppliedCorners, options) {
   const provisional = suppliedCorners ?? proposePageCorners(image);
-  const first = inspectBlankLayout(image, page, provisional);
+  const first = inspectBlankWithRecovery(image, page, provisional, options);
   const fillsPhoto = provisional?.length === 4 && provisional[0].x === 0 && provisional[0].y === 0 &&
     provisional[2].x === image.width - 1 && provisional[2].y === image.height - 1;
   if (!suppliedCorners && fillsPhoto && Math.abs(image.width * page.height / (image.height * page.width) - 1) > .017) {
@@ -418,11 +449,11 @@ export function discoverBlankLayout(image, page, suppliedCorners) {
   if (suppliedCorners || first.status === 'proposed') return first;
   const faint = proposeWeakPageCorners(image);
   if (faint && !(first.corners.length === 4 && faint.every((corner, index) => distance(corner, first.corners[index]) < 3))) {
-    const recovered = inspectBlankLayout(image, page, faint);
+    const recovered = inspectBlankWithRecovery(image, page, faint, options);
     if (recovered.status === 'proposed') return { ...recovered, pagePose: 'faint-boundary' };
   }
   if (first.issues.includes('frame-aspect')) {
-    const recovery = first.issues.length === 1 ? provisionalBlank(image, page, first) :
+    const recovery = first.issues.length === 1 ? provisionalBlank(image, page, first, options) :
       { discarded: { reason: 'provisional-frame-has-incomplete-lattices', blocks: first.diagnostics ?? [] } };
     if (recovery.proposal) return recovery.proposal;
     return { ...first, components: [], diagnostics: [], pagePose: 'uncertain',
