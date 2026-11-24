@@ -548,6 +548,11 @@ try {
     const fixture = resolve(appPath, 'fixtures/m3/mixed-blank.png');
     await selectImage(page, fixture, 'region-practice.png', 'image/png', '#setup-profile');
     await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    const save = page.locator('#enroll-profile');
+    assert(await save.isDisabled());
+    assert.match(await page.locator('#template-save-status').textContent(), /template name/i);
+    await page.locator('#profile-name').fill('Region and corner recovery');
+    assert(await save.isEnabled());
     const canvas = page.locator('#profile-canvas');
     await canvas.scrollIntoViewIfNeeded();
     const bounds = await canvas.boundingBox();

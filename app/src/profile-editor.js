@@ -232,7 +232,8 @@ export function createProfileEditor({ onSave, onClose }) {
     byId('profile-grid-controls').hidden = !state.matrix;
     byId('apply-blank-corners').disabled = state.corners.length !== 4 || Boolean(state.matrix);
     byId('discover-layout').hidden = Boolean(placingCorners || state.prior || state.discoveryWorker || state.blocks.length);
-    byId('clear-discovery').hidden = placingCorners || Boolean(state.prior) || !state.blocks.length;
+    byId('clear-discovery').hidden = placingCorners || (!state.scope && Boolean(state.prior)) ||
+      !state.blocks.some(({ id }) => !state.kept.has(id));
     if (message) say(message);
     paint();
   }
@@ -350,6 +351,12 @@ export function createProfileEditor({ onSave, onClose }) {
       delete discoveryStatus.dataset.pose;
     }
     state.matrix = matrix;
+    const remaining = state.discoveryIssues.filter((issue) => !['page-corners', 'frame-aspect'].includes(issue));
+    if (remaining.length !== state.discoveryIssues.length) {
+      state.discoveryIssues = remaining;
+      discoveryMessage(remaining.length ? 'review' : 'manual-review', describeIssues(remaining));
+      recheckCoverage();
+    }
     rectifiedOnCanvas(background, state.image, matrix, page());
     show('Draw a box around one answer block.');
   }
@@ -933,6 +940,7 @@ export function createProfileEditor({ onSave, onClose }) {
           state.kept.delete(block.id);
           state.drafts.delete(block.id);
           state.blocks.splice(index, 1);
+          if (state.blocks.every(({ id }) => state.kept.has(id))) state.discoveryStale = false;
           if (state.editing === block.id) clearBlockEdit();
           recheckCoverage();
           closeMapping();
