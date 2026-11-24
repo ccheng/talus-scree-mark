@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="e282459df06b700395b2d354">
+  <meta name="scree-release" content="704fcf15e7b3195b83bbb0cd">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -194,7 +194,11 @@
               <label><input id="cell-omit" type="checkbox"> This position has no printed bubble</label>
               <button id="apply-cell" type="button">Apply bubble correction</button>
             </details>
-            <div class="controls"><button id="confirm-block" type="button">Confirm this block</button></div>
+            <div class="controls">
+              <button id="confirm-block" type="button" aria-describedby="block-confirm-status">Confirm this block</button>
+              <button id="cancel-block-edit" type="button" hidden>Cancel block edit</button>
+            </div>
+            <p id="block-confirm-status" role="status"></p>
           </fieldset>
           <h4>Response blocks</h4>
           <p id="numbering-conflicts" role="status" hidden></p>
@@ -217,7 +221,15 @@
               <button id="cancel-block-mapping" type="button">Cancel</button>
             </div>
           </section>
-          <div class="controls"><button id="enroll-profile" type="button" class="primary">Confirm and save template</button></div>
+          <div id="mc-completeness-panel" hidden>
+            <label>MC coverage <select id="mc-completeness">
+              <option value="">Choose after comparing the overlay with the sheet</option>
+              <option value="complete">All intended MC questions are mapped</option>
+              <option value="partial">Save only the mapped MC questions</option>
+            </select></label>
+          </div>
+          <p id="template-save-status" role="status"></p>
+          <div class="controls"><button id="enroll-profile" type="button" class="primary" aria-describedby="template-save-status">Confirm and save template</button></div>
         </div>
         <button id="cancel-profile-editor" type="button">Close setup</button>
       </section>

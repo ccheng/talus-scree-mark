@@ -73,7 +73,8 @@ export function createGradingView() {
     const { grade } = scan;
     const scope = byId('grading-scope');
     scope.hidden = scan.template.scope !== 'mc-only';
-    scope.textContent = scope.hidden ? '' : 'MC only · NR and WR excluded';
+    scope.textContent = scope.hidden ? '' : 'MC only · NR and WR excluded' +
+      (scan.template.mcCompleteness === 'partial' ? ' · Partial mapping' : '');
     const categories = grade.categories;
     byId('grading-subtotals-panel').hidden = !categories;
     const names = categories?.dimensions.map(({ name }) => name);
