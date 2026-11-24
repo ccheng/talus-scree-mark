@@ -42,14 +42,23 @@ export function manualGrid({ topLeft, topRight, bottomLeft, rows, columns, radiu
   return { rows, columns, rowSpacing, columnSpacing, cells };
 }
 
-function rasterizeRegion(gray, matrix, region, maxEdge = 840) {
+function rasterizeRegion(gray, matrix, region, maxEdge = 840, exclusions = []) {
   const scale = Math.min(3, maxEdge / Math.max(region.width, region.height));
   const width = Math.max(1, Math.floor(region.width * scale));
   const height = Math.max(1, Math.floor(region.height * scale));
   const values = new Uint8Array(width * height);
   const samples = [];
+  const masks = exclusions.map(({ x, y, width, height }) => ({
+    left: (x - region.x) * scale, right: (x + width - region.x) * scale,
+    top: (y - region.y) * scale, bottom: (y + height - region.y) * scale,
+  }));
   for (let y = 0; y < height; y++) {
+    const maskedRow = masks.filter(({ top, bottom }) => y >= top && y <= bottom);
     for (let x = 0; x < width; x++) {
+      if (maskedRow.some(({ left, right }) => x >= left && x <= right)) {
+        values[y * width + x] = 255;
+        continue;
+      }
       const source = project(matrix, region.x + x / scale, region.y + y / scale);
       const value = source ? grayAt(gray, source.x, source.y) : NaN;
       values[y * width + x] = Number.isFinite(value) ? value : 255;
@@ -178,13 +187,15 @@ export function proposeGrid(image, pageToSource, region, { rows, columns, printe
 export function pageRingCandidates(gray, pageToSource, page, {
   minRadius = 2.3, maxRadius = 7, margin = 13, limit = 1800, printedCenters = false,
   region = { x: margin, y: margin, width: page.width - 2 * margin, height: page.height - 2 * margin },
-  fineOutlines = false,
+  fineOutlines = false, exclusions = [],
 } = {}) {
-  const raster = rasterizeRegion(gray, pageToSource, region, fineOutlines ? 2200 : 1680);
+  const raster = rasterizeRegion(gray, pageToSource, region, fineOutlines ? 2200 : 1680, exclusions);
   const candidates = [];
   for (const threshold of [.64, .82]) {
     for (const candidate of ringCandidates(raster, region, raster.background * threshold, printedCenters, maxRadius)) {
-      if (candidate.radius < minRadius || candidate.radius > maxRadius) continue;
+      const { x, y, radius } = candidate;
+      if (radius < minRadius || radius > maxRadius || exclusions.some((zone) =>
+        intersects(zone, { x: x - radius, y: y - radius, width: radius * 2, height: radius * 2 }))) continue;
       const index = candidates.findIndex((entry) => Math.hypot(entry.x - candidate.x, entry.y - candidate.y) < 1.5);
       if (index >= 0) {
         // A stronger threshold can find the full outline where the first
@@ -201,7 +212,7 @@ function fail(condition, message) {
   if (!condition) throw new TypeError(message);
 }
 
-export function createMarkerlessProfile({ id, revision, name, page, components, features = [], allowManualIdentity = false }) {
+export function createMarkerlessProfile({ id, revision, name, page, components, features = [], allowManualIdentity = false, scope, exclusions = [] }) {
   fail(typeof id === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(id) && Number.isInteger(revision) && revision > 0,
     'The profile needs a valid ID and revision.');
   fail(typeof name === 'string' && name.trim() && name.trim().length <= 80, 'Enter a name of up to 80 characters.');
@@ -210,6 +221,11 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
   'Choose a supported page size and orientation.');
   fail(Array.isArray(components) && components.length > 0 && components.length <= 24, 'Confirm one or more answer blocks.');
   const frame = { x: 0, y: 0, width: page.width, height: page.height };
+  fail(scope === undefined || (scope === 'mc-only' && components.every(({ kind }) => kind === 'mc')),
+    'An MC-only profile can contain only multiple-choice blocks.');
+  fail(Array.isArray(exclusions) && exclusions.length <= 24 &&
+    exclusions.every((bounds) => validBounds(bounds) && contains(frame, bounds)),
+    'Discovery exclusions must be on-page rectangles (up to 24).');
   const seen = new Set();
   const allBubbles = [];
   function unique(value) {
@@ -298,6 +314,8 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
       width: page.width, height: page.height, units: 'pt', origin: 'top-left', orientation: page.orientation,
     },
     components: verified, features: sanitized, allowManualIdentity: Boolean(allowManualIdentity),
+    ...(scope ? { scope } : {}),
+    ...(exclusions.length ? { exclusions: exclusions.map(({ x, y, width, height }) => ({ x, y, width, height })) } : {}),
     provenance: { source: 'teacher-confirmed-blank' },
   };
 }

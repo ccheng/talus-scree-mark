@@ -174,6 +174,79 @@ try {
     });
   }
 
+  await group('MC-only mixed sheet keeps a mapped block and exports revisioned category scores', async (page) => {
+    const form = portfolio.find(({ variant }) => variant === 'document');
+    await chooseImage(page, '#setup-profile', portfolioFile(form.blank));
+    await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    await page.locator('#profile-name').fill('Mixed sheet · MC only');
+    const firstBlock = page.locator('#profile-blocks [data-block-kind="mc"]').first();
+    const kept = await firstBlock.getAttribute('data-profile-block');
+    await firstBlock.getByRole('button', { name: 'Keep block on rediscovery' }).click();
+    await page.locator('#profile-mc-only').check();
+    async function box(x, y, width, height) {
+      for (const [field, value] of Object.entries({ x, y, width, height })) {
+        await page.locator('#region-' + field).fill(String(value));
+      }
+      await page.locator('#add-exclusion').click();
+    }
+    await box(300, 90, 300, 205);
+    await box(35, 306, 550, 437);
+    await page.locator('#profile-exclusions li').first().getByRole('button', { name: 'Edit' }).click();
+    await page.locator('#region-y').fill('85');
+    await page.locator('#add-exclusion').click();
+    await page.locator('#rediscover-layout').click();
+    await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    assert.equal(await page.locator('#profile-exclusions li').count(), 2);
+    assert.equal(await page.locator('#profile-blocks li').count(), 2);
+    assert.equal(await page.locator('#profile-blocks li').first().getAttribute('data-profile-block'), kept);
+    assert.equal(await page.locator('#profile-blocks [data-block-kind="nr"]').count(), 0);
+    await page.locator('#enroll-profile').click();
+    await page.locator('#profile-editor').waitFor({ state: 'hidden' });
+    const [profile] = await page.evaluate(async (module) => (await import(module)).listProfiles(), source('profile-store.js'));
+    assert.equal(profile.scope, 'mc-only');
+    assert.equal(profile.exclusions[0].y, 85);
+    assert.deepEqual(profile.components.flatMap(({ items }) => items.map(({ id }) => id)),
+      Array.from({ length: 14 }, (_, i) => 'MC' + (i + 1)));
+    await page.reload();
+    await page.locator('#profile-selector').selectOption(`${profile.id}@${profile.revision}`);
+    await page.locator('#grading-edit-key').click();
+    await page.locator('#grading-key-inputs [name="MC1"]').selectOption('B');
+    await page.locator('#grading-key-inputs [name="MC10"]').selectOption('D');
+    await page.locator('#grading-categories summary').click();
+    await page.locator('#grading-category-name-1').fill('Level');
+    await page.locator('#grading-category-name-2').fill('Outcome');
+    await page.locator('#grading-category-values-1').fill('DV\nPR');
+    await page.locator('#grading-category-values-2').fill('Lab\nModel');
+    await page.locator('#grading-category-refresh').click();
+    await page.locator('#grading-category-through').selectOption('MC9');
+    await page.locator('#grading-category-value').selectOption('DV');
+    await page.locator('#grading-category-range').click();
+    await page.locator('[data-category-question="MC1"] [data-category-dimension="2"]').selectOption('Lab');
+    await page.locator('[data-category-question="MC10"] input').check();
+    await page.locator('#grading-category-value').selectOption('PR');
+    await page.locator('#grading-category-selected').click();
+    await page.locator('#grading-key-panel button[type="submit"]').click();
+    await appStatus(page).filter({ hasText: /new revision/i }).waitFor();
+    await page.locator('#scan-completed').click();
+    await recognize(page, portfolioFile(form.marked));
+    await waitGrade(page, '1/2 · 0 pending · final');
+    assert.match(await page.locator('#grading-scope').innerText(), /MC only.*NR and WR excluded/);
+    await page.locator('#grading-subtotals-panel summary').click();
+    assert.match(await page.locator('#grading-subtotals').innerText(), /Outcome — \(Unassigned\)/);
+    await page.locator('#grading-item').selectOption('MC10');
+    await page.locator('#grading-award').click();
+    await waitGrade(page, '2/2 · 0 pending · final');
+    await page.locator('#grading-save').click();
+    await appStatus(page).filter({ hasText: /result and source photograph saved locally/i }).waitFor();
+    await page.getByText('Result and batch actions', { exact: true }).click();
+    const csv = await download(page, '#grading-csv', 'scree-grades.csv');
+    assert.match(csv, /"intersection","Level","DV","Outcome","Lab","1","1","0"/);
+    const backup = JSON.parse(await download(page, '#grading-json', 'scree-backup.json'));
+    assert.deepEqual(backup.keys[0].categories.assignments.MC10, ['PR', null]);
+    assert.equal(backup.scans[0].template.scope, 'mc-only');
+    assert(backup.scans[0].photo.data.length > 1000);
+  });
+
   await group('M4 selected-box fallback preserves one Alberta grid without absorbing adjacent responses', async (page) => {
     const form = portfolio.find(({ variant }) => variant === 'document');
     await chooseImage(page, '#setup-profile', portfolioFile(form.blank));

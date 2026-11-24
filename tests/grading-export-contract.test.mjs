@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 import { exportBackup, exportCsv, parseBackup } from '../app/src/grading-export.js';
-import { gradeScan } from '../app/src/grading.js';
+import { addDecision, gradeScan } from '../app/src/grading.js';
 
 const timestamp = '2026-02-03T12:00:00.000Z';
 const digits = [...'0123456789'];
@@ -116,4 +116,39 @@ test('M4 backup parser rejects version, references, grade and photographic corru
     modify(invalid);
     await assert.rejects(parseBackup(JSON.stringify(invalid)));
   }
+});
+
+test('MC-only categories partition keyed points once and survive revisioned backup and CSV', async () => {
+  const mc = { ...template, scope: 'mc-only', items: template.items.slice(0, 2) };
+  const categories = {
+    dimensions: [{ name: 'Level', values: ['DV', 'PR'] }, { name: 'Outcome', values: ['Lab', 'Model'] }],
+    assignments: { MC1: ['DV', 'Lab'], MC2: ['PR', null] },
+  };
+  const firstKey = { ...key, template: mc, answers: { MC1: 'A', MC2: 'B' }, categories };
+  const secondKey = { ...firstKey, id: 'next-revision',
+    categories: { ...categories, assignments: { ...categories.assignments, MC1: ['PR', 'Model'] } } };
+  const raw = { ...scan, template: mc, history: [], photoStatus: 'deleted', photo: null,
+    observation: { ...scan.observation, items: [scan.observation.items[0],
+      { ...scan.observation.items[1], status: 'multiple', review: true }] } };
+  const provisional = gradeScan(raw, firstKey);
+  assert.equal(provisional.score, 1);
+  assert.equal(provisional.denominator, 2);
+  assert.equal(provisional.pending, 1);
+  const corrected = addDecision(raw, 'MC2', 'correct', 'B');
+  const saved = { ...corrected, grade: gradeScan(corrected, firstKey) };
+  for (const dimension of [1, 2, null]) {
+    const buckets = saved.grade.categories.subtotals.filter((subtotal) => subtotal.dimension === dimension);
+    assert.deepEqual(buckets.map(({ score, denominator, pending }) => [score, denominator, pending]), [[1, 1, 0], [1, 1, 0]]);
+  }
+  const csv = csvRows(exportCsv([saved]));
+  const [heading, ...rows] = csv;
+  const column = (key) => heading.indexOf(key);
+  assert(rows.every((row) => row.length === heading.length && row[column('grading_scope')].includes('NR and WR excluded')));
+  assert.equal(rows.filter((row) => row[column('row_type')] === 'intersection').length, 2);
+  assert(rows.some((row) => row[column('category_2')] === '(Unassigned)'));
+  const restored = await parseBackup(await exportBackup({ keys: [firstKey, secondKey], scans: [saved] }));
+  assert.deepEqual(restored.scans, [saved]);
+  assert.deepEqual(restored.keys, [firstKey, secondKey]);
+  assert.deepEqual(saved.grade.items[0].categories, ['DV', 'Lab']);
+  assert.deepEqual(gradeScan(saved, secondKey).items[0].categories, ['PR', 'Model']);
 });

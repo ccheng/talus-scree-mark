@@ -95,6 +95,8 @@ export function profileRecord(profile) {
   return {
     schemaVersion: profile.schemaVersion, id: profile.id, revision: profile.revision,
     name: profile.name, strategy: profile.strategy, page: { width, height, units, origin, orientation },
+    ...(profile.scope ? { scope: profile.scope } : {}),
+    ...(profile.exclusions?.length ? { exclusions: profile.exclusions.map(copyBounds) } : {}),
     components: profile.components.map(({ id, kind, bounds, items }) => ({
       id, kind, bounds: copyBounds(bounds),
       items: items.map(({ id, kind, bounds, choices, slots }) => ({

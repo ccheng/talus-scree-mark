@@ -86,6 +86,29 @@ test('discovers a whole-sheet MC grid and a boxed NR grid with lower decimal pos
   assert.deepEqual(result.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null, '7   ']);
 });
 
+test('discovery exclusions remove NR evidence and preserve original pixels and saved scope', () => {
+  const blank = syntheticBlank({ numeric: true, digitInk: true });
+  const baseline = discoverBlankLayout(blank, page);
+  assert.deepEqual(baseline.components.map(({ kind }) => kind), ['mc', 'nr']);
+  const exclusions = [{ x: 340, y: 400, width: 115, height: 174 }];
+  const before = blank.pixels.slice();
+  const proposal = discoverBlankLayout(blank, page, baseline.corners, { scope: 'mc-only', exclusions });
+  assert.equal(proposal.status, 'proposed');
+  assert.deepEqual(proposal.components, baseline.components.filter(({ kind }) => kind === 'mc'));
+  assert(proposal.diagnostics.every(({ kind }) => kind === 'mc'));
+  assert.deepEqual(blank.pixels, before);
+  const profile = { id: 'mc-qa', revision: 1, name: 'MC QA', page, scope: 'mc-only',
+    components: baseline.components, exclusions };
+  assert.throws(() => createMarkerlessProfile(profile), /MC-only/);
+  const saved = profileRecord(createMarkerlessProfile({ ...profile, components: proposal.components }));
+  assert.equal(saved.scope, 'mc-only');
+  assert.deepEqual(saved.exclusions, exclusions);
+  const marked = syntheticBlank({ numeric: true, marks: true, digitInk: true });
+  const read = readProfileSheet(marked, saved, { batch: { profileId: saved.id, revision: saved.revision } });
+  assert.equal(read.status, 'read');
+  assert.deepEqual(read.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null]);
+});
+
 test('wide upper-decimal NR requires all ten observed digit rows', () => {
   const options = { numeric: true, upperDecimal: true, numericPitch: 37.5, tallBoxes: true };
   const complete = discoverBlankLayout(syntheticBlank(options), page);

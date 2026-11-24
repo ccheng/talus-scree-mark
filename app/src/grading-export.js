@@ -1,4 +1,4 @@
-import { addDecision, gradeScan, sameTemplate, validateKey } from './grading.js';
+import { addDecision, gradeScan, sameTemplate, validateCategories, validateKey } from './grading.js';
 
 const version = 1;
 const format = 'talus-scree-mark-backup';
@@ -13,12 +13,27 @@ function csvCell(value) {
 
 export function exportCsv(scans) {
   const headings = ['scan', 'label', 'template', 'template_revision', 'key', 'score', 'denominator', 'pending',
-    'grade_status', 'question', 'raw', 'effective', 'item_status', 'item_pending', 'item_points', 'adjudication'];
-  const rows = scans.flatMap((scan) => scan.grade.items.map((item) => [
-    scan.id, scan.label, scan.template.id, scan.template.revision, scan.keyId, scan.grade.score,
-    scan.grade.denominator, scan.grade.pending, scan.grade.status, item.id, item.raw, item.effective,
-    item.status, item.pending, item.points, item.adjudication,
-  ]));
+    'grade_status', 'question', 'raw', 'effective', 'item_status', 'item_pending', 'item_points', 'adjudication',
+    'grading_scope', 'row_type', 'dimension_1', 'category_1', 'dimension_2', 'category_2',
+    'subtotal_score', 'subtotal_denominator', 'subtotal_pending'];
+  const rows = scans.flatMap((scan) => {
+    const { grade } = scan;
+    const prefix = [scan.id, scan.label, scan.template.id, scan.template.revision, scan.keyId,
+      grade.score, grade.denominator, grade.pending, grade.status];
+    const scope = scan.template.scope === 'mc-only' ? 'MC only (NR and WR excluded)' : '';
+    const dimensions = grade.categories?.dimensions;
+    const category = (i, value) => [dimensions?.[i].name, dimensions ? value ?? '(Unassigned)' : ''];
+    return [
+      ...grade.items.map((item) => [...prefix, item.id, item.raw, item.effective, item.status,
+        item.pending, item.points, item.adjudication, scope, 'item',
+        ...category(0, item.categories?.[0]), ...category(1, item.categories?.[1]), '', '', '']),
+      ...(grade.categories?.subtotals ?? []).map(({ dimension, values, score, denominator, pending }) => [
+        ...prefix, '', '', '', '', '', '', '', scope, dimension === null ? 'intersection' : 'dimension_' + dimension,
+        ...(dimension === 2 ? ['', ''] : category(0, values[0])),
+        ...(dimension === 1 ? ['', ''] : category(1, values[1])), score, denominator, pending,
+      ]),
+    ];
+  });
   return [headings, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }
 
@@ -76,6 +91,8 @@ function validateTemplate(template) {
   requireValid(text(template?.id) && text(template.name) && Number.isSafeInteger(template.revision) &&
     template.revision > 0, 'Invalid template reference.');
   unique(template.items, 'question');
+  requireValid(template.scope === undefined || (template.scope === 'mc-only' &&
+    template.items.every(({ kind }) => kind === 'mc')), 'Invalid grading scope.');
   requireValid(template.items.length > 0 && template.items.every((item) => {
     const valid = (symbols, pattern) => Array.isArray(symbols) && symbols.length &&
       new Set(symbols).size === symbols.length && symbols.every((symbol) => typeof symbol === 'string' && pattern.test(symbol));
@@ -115,6 +132,7 @@ export async function parseBackup(source) {
     validateTemplate(key.template);
     requireValid(text(key.createdAt), 'Invalid answer key date.');
     validateKey(key.template, key.answers);
+    validateCategories(key.template, key.categories);
     keys.set(key.id, key);
   }
   const scans = [];

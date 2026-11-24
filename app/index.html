@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="a0a2c348f945aee614bebea0">
+  <meta name="scree-release" content="3d5e4b3451d661e52d083810">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -109,6 +109,8 @@
             <select id="profile-orientation"><option value="portrait">Letter portrait</option><option value="landscape">Letter landscape</option></select>
           </label>
         </div>
+        <label><input id="profile-mc-only" type="checkbox"> MC-only grading (NR and WR excluded)</label>
+        <p id="profile-mc-review" hidden>On a mixed sheet, exclude the NR and written areas. Before saving, check every proposed question and remove any block that is not multiple choice.</p>
         <p id="editor-status" role="status"></p>
         <p id="discovery-status" role="status" class="capture-status" data-status="idle"></p>
         <div class="controls">
@@ -119,6 +121,7 @@
           <button id="apply-blank-corners" type="button" disabled>Use these corners</button>
           <button id="cancel-blank-corners" type="button" hidden>Cancel corner placement</button>
           <button id="discover-layout" type="button" hidden>Find all response blocks</button>
+          <button id="rediscover-layout" type="button" hidden>Find blocks outside exclusions</button>
           <button id="clear-discovery" type="button" hidden>Clear proposed blocks</button>
           <button id="review-discovery" type="button" hidden>Keep found blocks and check gaps</button>
         </div>
@@ -135,7 +138,11 @@
             </div>
             <div class="controls">
               <button id="preview-region" type="button">Preview box</button>
+              <button id="add-exclusion" type="button">Use box as exclusion</button>
+              <button id="cancel-exclusion-edit" type="button" hidden>Cancel exclusion edit</button>
             </div>
+            <p>Exclusions affect discovery only. Mark a response block as kept to retain it during another search.</p>
+            <ol id="profile-exclusions"></ol>
           </fieldset>
           <fieldset>
             <legend>Bubble grid</legend>
@@ -236,6 +243,32 @@
       <form id="grading-key-panel" hidden>
         <h3 id="grading-key-title"></h3>
         <div id="grading-key-inputs" class="grading-fields"></div>
+        <details id="grading-categories">
+          <summary>Question categories</summary>
+          <p>Enter one category value per line for each dimension.</p>
+          <div class="grading-fields">
+            <label>First dimension <input id="grading-category-name-1" maxlength="60"></label>
+            <label>First dimension values <textarea id="grading-category-values-1" rows="3"></textarea></label>
+            <label>Second dimension <input id="grading-category-name-2" maxlength="60"></label>
+            <label>Second dimension values <textarea id="grading-category-values-2" rows="3"></textarea></label>
+          </div>
+          <button id="grading-category-refresh" type="button">Update category choices</button>
+          <p id="grading-category-status" role="status"></p>
+          <div id="grading-category-controls" hidden>
+            <fieldset>
+              <legend>Bulk assignment</legend>
+              <div class="grading-fields">
+                <label>From question <select id="grading-category-from"></select></label>
+                <label>Through question <select id="grading-category-through"></select></label>
+                <label>Dimension <select id="grading-category-dimension"></select></label>
+                <label>Category <select id="grading-category-value"></select></label>
+              </div>
+              <button id="grading-category-range" type="button">Assign to range</button>
+              <button id="grading-category-selected" type="button">Assign to checked questions</button>
+            </fieldset>
+            <div id="grading-category-assignments" class="grading-fields"></div>
+          </div>
+        </details>
         <button type="submit">Save new key revision</button>
         <button id="grading-key-cancel" type="button">Cancel</button>
       </form>
@@ -245,7 +278,15 @@
       <label>Results <select id="grading-saved"><option value="">Choose a result</option></select></label>
       <div id="grading-result" hidden>
         <h3 id="grading-label"></h3>
+        <p id="grading-scope" hidden></p>
         <p>Score <output id="grading-score" aria-live="polite"></output></p>
+        <details id="grading-subtotals-panel" hidden>
+          <summary>Category subtotals</summary>
+          <div class="grading-table"><table>
+            <thead><tr><th>Category</th><th>Score</th><th>Pending</th></tr></thead>
+            <tbody id="grading-subtotals"></tbody>
+          </table></div>
+        </details>
         <button id="grading-save" type="button">Save result and photograph</button>
         <div class="grading-table">
           <table>

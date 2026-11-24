@@ -276,7 +276,7 @@ function excludePrintedLabels(rings) {
   });
 }
 
-function inspectBlankLayout(image, page, corners) {
+function inspectBlankLayout(image, page, corners, { exclusions = [], scope } = {}) {
   if (!Array.isArray(corners) || corners.length !== 4 || !corners.every((corner, index) =>
     cross(corner, corners[(index + 1) % 4], corners[(index + 2) % 4]) > 0)) {
     return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
@@ -284,7 +284,7 @@ function inspectBlankLayout(image, page, corners) {
   const matrix = pageTransform(page, corners);
   if (!matrix) return { status: 'needs-corners', corners: [], components: [], issues: ['page-corners'] };
   const gray = toGrayImage(image);
-  const options = { printedCenters: true, maxRadius: 8 };
+  const options = { printedCenters: true, maxRadius: 8, exclusions };
   const candidates = pageRingCandidates(gray, matrix, page, options);
   if (candidates.length >= 1800) return { status: 'review', corners, components: [], issues: ['too-many-candidates'] };
   const fine = pageRingCandidates(gray, matrix, page, { ...options, maxRadius: 8.6, fineOutlines: true });
@@ -319,9 +319,15 @@ function inspectBlankLayout(image, page, corners) {
     cells.filter(({ x, y }) => x >= bounds.x - 9 && x <= bounds.x + bounds.width + 9 &&
       y >= bounds.y && y <= bounds.y + bounds.height).length > cells.length * .5));
   const unassigned = rings.filter((ring) => !used.has(ring));
-  const { blocks: proposals, interrupted } = joinMcGroups(filtered, unassigned, page);
+  const { blocks, interrupted } = joinMcGroups(filtered, unassigned, page);
+  const outsideExclusions = blocks.filter(({ bounds }) => !exclusions.some((zone) => intersects(bounds, zone)));
+  const proposals = outsideExclusions.filter(({ kind, columns }) =>
+    scope !== 'mc-only' || (kind === 'mc' && (columns === 4 || columns === 5)));
   const issues = [];
   if (!proposals.length) issues.push('no-grid');
+  if (outsideExclusions.some(({ kind, columns }) => scope === 'mc-only' && kind === 'mc' && columns !== 4 && columns !== 5)) {
+    issues.push('check-mc-choice-counts');
+  }
   if (proposals.some((proposal) => proposal.issues.length)) issues.push('unusual-nr-grid');
   if (interrupted) issues.push('interrupted-grid');
   const typical = quantile(proposals.flatMap(({ cells }) => cells.map(({ radius }) => radius)), .50);
@@ -383,7 +389,7 @@ function inspectBlankLayout(image, page, corners) {
 }
 
 
-function provisionalBlank(image, page, first) {
+function provisionalBlank(image, page, first, options) {
   // With no physical edges the exact paper origin is unobservable. Use a
   // same-aspect local coordinate frame and verify the visible layout against it.
   const scale = Math.min((image.width - 1) / page.width, (image.height - 1) / page.height);
@@ -391,7 +397,7 @@ function provisionalBlank(image, page, first) {
   const top = (image.height - 1 - scale * page.height) / 2;
   const corners = [{ x: left, y: top }, { x: left + scale * page.width, y: top },
     { x: left + scale * page.width, y: top + scale * page.height }, { x: left, y: top + scale * page.height }];
-  const found = inspectBlankLayout(image, page, corners);
+  const found = inspectBlankLayout(image, page, corners, options);
   const signatures = ({ components }) => JSON.stringify(components.map(({ kind, items }) =>
     [kind, items.map((item) => item.kind === 'mc' ? item.choices.map(({ symbol }) => symbol) :
       item.slots.map(({ choices }) => choices.map(({ symbol }) => symbol)))]));
@@ -406,9 +412,9 @@ function provisionalBlank(image, page, first) {
     poseDiagnostics: { ...evidence, frame: 'provisional', discarded: { reason: 'frame-aspect', corners: first.corners } } } };
 }
 
-export function discoverBlankLayout(image, page, suppliedCorners) {
+export function discoverBlankLayout(image, page, suppliedCorners, options) {
   const provisional = suppliedCorners ?? proposePageCorners(image);
-  const first = inspectBlankLayout(image, page, provisional);
+  const first = inspectBlankLayout(image, page, provisional, options);
   const fillsPhoto = provisional?.length === 4 && provisional[0].x === 0 && provisional[0].y === 0 &&
     provisional[2].x === image.width - 1 && provisional[2].y === image.height - 1;
   if (!suppliedCorners && fillsPhoto && Math.abs(image.width * page.height / (image.height * page.width) - 1) > .017) {
@@ -418,11 +424,11 @@ export function discoverBlankLayout(image, page, suppliedCorners) {
   if (suppliedCorners || first.status === 'proposed') return first;
   const faint = proposeWeakPageCorners(image);
   if (faint && !(first.corners.length === 4 && faint.every((corner, index) => distance(corner, first.corners[index]) < 3))) {
-    const recovered = inspectBlankLayout(image, page, faint);
+    const recovered = inspectBlankLayout(image, page, faint, options);
     if (recovered.status === 'proposed') return { ...recovered, pagePose: 'faint-boundary' };
   }
   if (first.issues.includes('frame-aspect')) {
-    const recovery = first.issues.length === 1 ? provisionalBlank(image, page, first) :
+    const recovery = first.issues.length === 1 ? provisionalBlank(image, page, first, options) :
       { discarded: { reason: 'provisional-frame-has-incomplete-lattices', blocks: first.diagnostics ?? [] } };
     if (recovery.proposal) return recovery.proposal;
     return { ...first, components: [], diagnostics: [], pagePose: 'uncertain',

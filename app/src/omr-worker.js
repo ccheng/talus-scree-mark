@@ -6,7 +6,7 @@ self.addEventListener('message', ({ data }) => {
   if (!data || !['read-reference', 'read-profile', 'discover-layout'].includes(data.type)) return;
   const { jobId, image, profile, options } = data;
   try {
-    const result = data.type === 'discover-layout' ? discoverBlankLayout(image, data.page, data.corners) :
+    const result = data.type === 'discover-layout' ? discoverBlankLayout(image, data.page, data.corners, options) :
       data.type === 'read-reference' ? readReferenceSheet(image) : readProfileSheet(image, profile, options);
     self.postMessage({ jobId, result });
   } catch {
