@@ -1,5 +1,6 @@
 """Make synthetic response forms from geometry measured on two Letter layouts."""
 
+from math import pi, sin
 from importlib.util import module_from_spec, spec_from_file_location
 import json
 from pathlib import Path
@@ -185,6 +186,24 @@ def generate():
     print('Generated two synthetic top-loaded document and camera response layouts, with marked pairs and literal keys.')
 
 
+def curl_response_sheet(image):
+    """Vary the interior pose while keeping the physical corners fixed."""
+    width, height = image.size
+
+    def source(x, y):
+        u, v = x/width, y/height
+        return (x - SCALE*3.5*sin(pi*u)*sin(2*pi*v),
+                y - SCALE*4.5*sin(2*pi*u)*sin(pi*v))
+
+    mesh = []
+    for y in range(0, height, 48):
+        for x in range(0, width, 48):
+            right, bottom = min(x+48, width), min(y+48, height)
+            quad = [source(x,y), source(x,bottom), source(right,bottom), source(right,y)]
+            mesh.append(((x,y,right,bottom), tuple(value for point in quad for value in point)))
+    return image.transform(image.size, Image.Transform.MESH, mesh, Image.Resampling.BICUBIC)
+
+
 def generate_independent(blank, blocks, written, values):
     # A close enrollment photo on a light desk still has visible page edges.
     # Each completed capture uses an independently selected physical page quad.
@@ -207,7 +226,9 @@ def generate_independent(blank, blocks, written, values):
     _, projection, desk, shade = photos[0]
     (OUT / 'independent-oracle.json').write_text(json.dumps({
         'blank': save_photo('enrollment', blank, enrollment, (232, 233, 232), 0),
-        'scans': captures, 'wrong': save_photo('wrong', wrong, projection, desk, shade),
+        'scans': captures,
+        'curl': save_photo('curl', curl_response_sheet(filled), projection, desk, shade),
+        'wrong': save_photo('wrong', wrong, projection, desk, shade),
         'truth': truth,
     }, indent=2)+'\n')
 

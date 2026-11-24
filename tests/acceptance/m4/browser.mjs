@@ -216,15 +216,19 @@ try {
 
     const resultRows = page.locator('#recognition-results [data-item-id]');
     const pose = page.locator('[data-stage="page-pose"]');
-    async function assertRead() {
+    async function assertRead(allowReview = false) {
       const rows = await resultRows.evaluateAll((nodes) => nodes.map((row) => ({
         id: row.dataset.itemId, state: row.dataset.status, review: row.dataset.review === 'true',
         rawText: row.querySelector('[data-raw-text]')?.dataset.rawText ?? null,
       })));
-      assert.deepEqual(rows, photos.truth.filter(({ kind }) => kind === 'mc').map(({ kind, ...item }) => item));
+      const expected = photos.truth.filter(({ kind }) => kind === 'mc').map(({ kind, ...item }) => item);
+      assert.deepEqual(rows.map(({ id }) => id), expected.map(({ id }) => id));
+      assert.deepEqual(rows.filter((row) => !allowReview || !row.review),
+        expected.filter((_, index) => !allowReview || !rows[index].review));
+      if (allowReview) assert(rows.filter(({ review }) => !review).length >= 10);
       assert.equal(await page.locator('[data-stage="response-geometry"]').getAttribute('data-status'), 'verified');
     }
-    async function manual(photo, status) {
+    async function manual(photo, status, path = 'manual-corners') {
       await page.locator('#manual-corners').click();
       const canvas = page.locator('#scan-corner-canvas');
       await canvas.scrollIntoViewIfNeeded();
@@ -243,7 +247,7 @@ try {
       assert(entered.every(({ x, y }, index) => Math.hypot(x - photo.corners[index].x, y - photo.corners[index].y) < 6));
       await page.locator('#apply-scan-corners').click();
       await page.locator(`#recognition-status[data-status="${status}"]`).waitFor();
-      await page.locator('[data-stage="page-pose"][data-path="manual-corners"]').waitFor({ state: 'attached' });
+      await page.locator(`[data-stage="page-pose"][data-path="${path}"]`).waitFor({ state: 'attached' });
     }
 
     await page.locator('#scan-completed').click();
@@ -255,6 +259,12 @@ try {
       await manual(photo, 'read');
       await assertRead();
     }
+    await page.locator('#scan-next').click();
+    await recognize(page, portfolioFile(photos.curl.file));
+    assert.equal(await pose.getAttribute('data-path'), 'corner-block-refinement');
+    await assertRead(true);
+    await manual(photos.curl, 'read', 'manual-block-refinement');
+    await assertRead(true);
     await page.locator('#scan-next').click();
     await recognize(page, portfolioFile(photos.wrong.file), 'retake');
     assert.equal(await resultRows.count(), 0);
