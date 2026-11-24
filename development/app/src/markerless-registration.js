@@ -1,8 +1,9 @@
 import { cross, fitProjective, fitProjectiveSamples, invertProjective, project } from './projective.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
+import { refineMcBlock } from './block-refinement.js';
 import { observeOutlines, outlinePoseProposals } from './bubble-registration.js';
 
-export const markerlessThresholdVersion = 'batch-geometry-v4';
+export const markerlessThresholdVersion = 'batch-geometry-v5';
 const registrationStrategy = 'markerless';
 const outlineAdjustments = [[1, 0], [.86, 0], [1.16, 0], [1, -.14], [1, .14]];
 const minimumPageSideRatio = .22;
@@ -487,29 +488,45 @@ function blockGeometry(gray, profile, block, transform) {
   };
 }
 
-function containsComponents(gray, profile, transform) {
-  return profile.components.every(({ bounds }) => [
-    [bounds.x, bounds.y], [bounds.x + bounds.width, bounds.y], [bounds.x + bounds.width, bounds.y + bounds.height],
-    [bounds.x, bounds.y + bounds.height],
-  ].every(([x, y]) => {
-    const point = project(transform, x, y);
-    return point && Number.isFinite(grayAt(gray, point.x, point.y));
-  }));
+function containsBlock(gray, { bounds }, transform) {
+  const { x, y, width, height } = bounds;
+  return [[x, y], [x + width, y], [x + width, y + height], [x, y + height]].every(([u, v]) => {
+    const p = project(transform, u, v);
+    return p && Number.isFinite(grayAt(gray, p.x, p.y));
+  });
 }
 
-function inspectPose(gray, profile, pageToSource, mirrored, corners) {
+function inspectPose(gray, profile, pageToSource, mirrored, corners, refined) {
   const sourceToPage = pageToSource && invertProjective(pageToSource);
   if (!sourceToPage) return null;
-  const blocks = profile.components.map((block) => blockGeometry(gray, profile, block, pageToSource));
+  const matrices = profile.components.map((block) => refined?.find(({ id }) => id === block.id)?.matrix ?? pageToSource);
+  const blocks = profile.components.map((block, index) => blockGeometry(gray, profile, block, matrices[index]));
   const total = (key) => blocks.reduce((sum, block) => sum + block[key], 0);
   const checked = total('checked');
   const supported = total('supported');
-  const inFrame = containsComponents(gray, profile, pageToSource);
+  const inFrame = profile.components.every((block, index) => containsBlock(gray, block, matrices[index]));
   const geometry = { checked, supported, verified: inFrame && blocks.every(({ verified }) => verified), blocks };
   return {
-    pageToSource, sourceToPage, inFrame, geometry, mirrored, corners,
+    pageToSource, sourceToPage, inFrame, geometry, mirrored, corners, refined,
     score: supported / checked,
   };
+}
+
+function refineCornerPose(gray, profile, pose) {
+  if (!pose.inFrame) return null;
+  const allChoices = profile.components.flatMap(({ items }) => items.flatMap(choicesFor));
+  const refined = [];
+  for (const [index, block] of profile.components.entries()) {
+    if (pose.geometry.blocks[index].verified) continue;
+    const fit = refineMcBlock(gray, pose.pageToSource, profile.page, block, allChoices);
+    if (!fit) return null;
+    const matrix = pose.pageToSource.map((coefficient, index, base) =>
+      index % 3 === 2 ? coefficient + base[index - 2] * fit.dx + base[index - 1] * fit.dy : coefficient);
+    refined.push({ id: block.id, matrix, itemIds: block.items.map(({ id }) => id), ...fit });
+  }
+  // One displaced block on an otherwise aligned sheet can be a different
+  // printed layout. Require corrections corroborated in separate blocks.
+  return refined.length >= 2 ? inspectPose(gray, profile, pose.pageToSource, pose.mirrored, pose.corners, refined) : null;
 }
 
 function rotations(corners) {
@@ -681,6 +698,15 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
   }
   let candidates = measured ? measureHypotheses(gray, profile, measured, Boolean(corners), edgePose) : [];
   let eligible = candidates.filter(({ geometry }) => geometry.verified);
+  if (!eligible.length && profile.components.every(({ kind }) => kind === 'mc')) {
+    const refined = candidates.map((pose) => refineCornerPose(gray, profile, pose))
+      .filter((pose) => pose?.geometry.verified).sort((a, b) => b.score - a.score);
+    if (refined.length) {
+      path = corners ? 'manual-block-refinement' : 'corner-block-refinement';
+      candidates = refined;
+      eligible = refined;
+    }
+  }
   if (!eligible.length && !corners) {
     const faint = pageCorners(gray, true);
     const distinct = faint && (!measured || faint.some((point, index) => distance(point, measured[index]) > 3));
@@ -756,7 +782,7 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
   const competitor = eligible[1];
   const tied = competitor && best.score - competitor.score < .075;
   const evidence = { geometry: best.geometry, canSetCorners: true, orientationMargin: competitor ? best.score - competitor.score : null };
-  const poseStatus = path === 'bubble-fit' || path === 'virtual-corners' ? 'recovered' : 'verified';
+  const poseStatus = path === 'bubble-fit' || path === 'virtual-corners' || best.refined ? 'recovered' : 'verified';
   const fitDetail = best.fit ? { ...best.fit, discarded: discardedOutline } : undefined;
   if (additionalSheet(gray, profile, best, eligible)) return failure('multiple-sheets', {
     geometry: best.geometry, canSetCorners: false, diagnostics: stages(null, path, 'review', 'unchecked', 'verified', best.geometry),
@@ -773,6 +799,7 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
   return {
     status: 'registered', strategy: registrationStrategy, reasons: [],
     pageToSource: aligned.pageToSource, sourceToPage: aligned.sourceToPage,
+    ...(aligned.refined && { refinedBlocks: aligned.refined }),
     authorization: 'teacher-confirmed-batch', orientationMargin: evidence.orientationMargin,
     cornerPath: path, corners: aligned.corners, geometry: aligned.geometry,
     diagnostics: stages(aligned.corners, path, poseStatus, 'verified', 'verified', aligned.geometry, fitDetail),

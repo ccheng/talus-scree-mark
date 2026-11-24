@@ -28,7 +28,8 @@ function drawOverlay(canvas, image, registration, items) {
   canvas.height = image.height;
   const context = canvas.getContext('2d');
   const width = Math.max(2, Math.min(image.width, image.height) / 260);
-  const matrix = registration.pageToSource;
+  const refined = new Map((registration.refinedBlocks ?? [])
+    .flatMap(({ itemIds, matrix }) => itemIds.map((id) => [id, matrix])));
   context.lineWidth = width;
   const pose = registration.diagnostics?.pagePose;
   if (pose?.virtual && pose.corners.length === 4) {
@@ -42,7 +43,7 @@ function drawOverlay(canvas, image, registration, items) {
   for (const item of items) {
     const { x, y, width: regionWidth, height } = item.bounds;
     const corners = [[x, y], [x + regionWidth, y], [x + regionWidth, y + height], [x, y + height]]
-      .map(([u, v]) => project(matrix, u, v));
+      .map(([u, v]) => project(refined.get(item.id) ?? registration.pageToSource, u, v));
     if (corners.some((point) => !point)) continue;
     context.strokeStyle = item.review ? '#b43818' : '#225c8a';
     context.setLineDash(item.review ? [width * 2, width * 1.4] : []);
@@ -145,6 +146,7 @@ export function createRecognitionView({ button, status, results, table, overlay,
     const pose = stages.pagePose;
     const poseText = pose.status === 'recovered' ? (pose.virtual
       ? 'recovered from bubble outlines; estimated corners extend beyond the photo'
+      : pose.path?.endsWith('block-refinement') ? 'checked from page corners and verified bubble blocks'
       : 'recovered from fitted bubble centers')
       : pose.status === 'verified' ? (pose.path === 'manual-corners' ? 'checked using your corner positions' : 'located from the page edges')
       : pose.status === 'unchecked' ? 'not checked'

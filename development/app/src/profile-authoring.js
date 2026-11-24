@@ -68,7 +68,7 @@ function rasterizeRegion(gray, matrix, region, maxEdge = 840, exclusions = []) {
   return { width, height, values, scale, background: quantile(samples, .75) };
 }
 
-function ringCandidates(raster, region, threshold, printedCenters = false, maxRadius = 8) {
+function ringCandidates(raster, region, threshold, printedCenters = false, maxRadius = 8, markedCenters = false) {
   const { width, height, values, scale } = raster;
   const visited = new Uint8Array(values.length);
   const queue = new Int32Array(values.length);
@@ -103,10 +103,11 @@ function ringCandidates(raster, region, threshold, printedCenters = false, maxRa
     const fill = count / (w * h);
     const cx = (left + right) / 2;
     const cy = (top + bottom) / 2;
-    if (radius < 1.5 || radius > maxRadius || w / h < .70 || w / h > 1.43 || fill < .14 || fill > .78) continue;
+    if (radius < 1.5 || radius > maxRadius || w / h < .70 || w / h > 1.43 ||
+        fill < .14 || fill > (markedCenters ? .86 : .78)) continue;
     const lightAt = (x, y) => values[Math.round(y) * width + Math.round(x)] >= threshold;
     if (!lightAt(cx, cy)) {
-      if (!printedCenters) continue;
+      if (!printedCenters && !markedCenters) continue;
       // A printed numeral can pass through the center of a valid circle.
       // Keep a candidate only when its perimeter remains circular and some
       // paper is still visible around the glyph.
@@ -119,7 +120,7 @@ function ringCandidates(raster, region, threshold, printedCenters = false, maxRa
         if (lightAt(cx + .55 * dx, cy + .55 * dy)) visibleInterior++;
         if ([.76, .87, .98].some((step) => !lightAt(cx + step * dx, cy + step * dy))) circumference++;
       }
-      if (visibleInterior < 5 || circumference < 9) continue;
+      if (circumference < 9 || (visibleInterior < 5 && !(markedCenters && fill >= .52))) continue;
     }
     candidates.push({ x: region.x + cx / scale, y: region.y + cy / scale, radius });
   }
@@ -187,12 +188,12 @@ export function proposeGrid(image, pageToSource, region, { rows, columns, printe
 export function pageRingCandidates(gray, pageToSource, page, {
   minRadius = 2.3, maxRadius = 7, margin = 13, limit = 1800, printedCenters = false,
   region = { x: margin, y: margin, width: page.width - 2 * margin, height: page.height - 2 * margin },
-  fineOutlines = false, exclusions = [],
+  fineOutlines = false, exclusions = [], markedCenters = false,
 } = {}) {
   const raster = rasterizeRegion(gray, pageToSource, region, fineOutlines ? 2200 : 1680, exclusions);
   const candidates = [];
   for (const threshold of [.64, .82]) {
-    for (const candidate of ringCandidates(raster, region, raster.background * threshold, printedCenters, maxRadius)) {
+    for (const candidate of ringCandidates(raster, region, raster.background * threshold, printedCenters, maxRadius, markedCenters)) {
       const { x, y, radius } = candidate;
       if (radius < minRadius || radius > maxRadius || exclusions.some((zone) =>
         intersects(zone, { x: x - radius, y: y - radius, width: radius * 2, height: radius * 2 }))) continue;
