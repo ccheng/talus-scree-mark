@@ -265,13 +265,15 @@ try {
     await assertRead(true);
     await manual(photos.curl, 'read', 'manual-block-refinement');
     await assertRead(true);
-    await page.locator('#scan-next').click();
-    await recognize(page, portfolioFile(photos.wrong.file), 'retake');
-    assert.equal(await resultRows.count(), 0);
-    await manual(photos.wrong, 'retake');
-    assert.equal(await resultRows.count(), 0);
-    assert.equal(await page.locator('[data-stage="response-geometry"]').getAttribute('data-status'), 'failed');
-    console.log(`  56 saved centers, max error ${Math.max(...offsets).toFixed(3)}r; three independent captures passed both corner paths.`);
+    for (const wrong of [photos.wrong, photos.shiftedBlock]) {
+      await page.locator('#scan-next').click();
+      await recognize(page, portfolioFile(wrong.file), 'retake');
+      assert.equal(await resultRows.count(), 0);
+      await manual(wrong, 'retake');
+      assert.equal(await resultRows.count(), 0);
+      assert.equal(await page.locator('[data-stage="response-geometry"]').getAttribute('data-status'), 'failed');
+    }
+    console.log(`  56 saved centers, max error ${Math.max(...offsets).toFixed(3)}r; three flat captures and one curl passed both corner paths.`);
   });
 
   await group('MC-only mixed sheet keeps a mapped block and exports revisioned category scores', async (page) => {

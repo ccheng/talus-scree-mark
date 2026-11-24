@@ -524,7 +524,9 @@ function refineCornerPose(gray, profile, pose) {
       index % 3 === 2 ? coefficient + base[index - 2] * fit.dx + base[index - 1] * fit.dy : coefficient);
     refined.push({ id: block.id, matrix, itemIds: block.items.map(({ id }) => id), ...fit });
   }
-  return refined.length ? inspectPose(gray, profile, pose.pageToSource, pose.mirrored, pose.corners, refined) : null;
+  // One displaced block on an otherwise aligned sheet can be a different
+  // printed layout. Require corrections corroborated in separate blocks.
+  return refined.length >= 2 ? inspectPose(gray, profile, pose.pageToSource, pose.mirrored, pose.corners, refined) : null;
 }
 
 function rotations(corners) {

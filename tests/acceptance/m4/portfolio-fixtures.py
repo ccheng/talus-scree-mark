@@ -224,11 +224,19 @@ def generate_independent(blank, blocks, written, values):
     wrong_blocks = [mc_block('left', 78, [91.5,112.5,133.75,176,197.25,218.5,240,261,282.25], 1), *blocks[1:]]
     wrong, _ = marked(render(wrong_blocks, written, 'wrong layout'), wrong_blocks, written, values, pencil=True)
     _, projection, desk, shade = photos[0]
+    # Keep the first right group fixed and shift the entire second group.
+    # This looks like a plausible local correction on the wrong form.
+    moved_blocks = [
+        blocks[0], mc_block('right-top', 205, [91.5,112.5,133.75], 10),
+        mc_block('right-bottom', 211.4, [176,197.25], 13), *blocks[2:],
+    ]
+    moved, _ = marked(render(moved_blocks, written, 'shifted block'), moved_blocks, written, values, pencil=True)
     (OUT / 'independent-oracle.json').write_text(json.dumps({
         'blank': save_photo('enrollment', blank, enrollment, (232, 233, 232), 0),
         'scans': captures,
         'curl': save_photo('curl', curl_response_sheet(filled), projection, desk, shade),
         'wrong': save_photo('wrong', wrong, projection, desk, shade),
+        'shiftedBlock': save_photo('shifted-block', moved, projection, desk, shade),
         'truth': truth,
     }, indent=2)+'\n')
 
