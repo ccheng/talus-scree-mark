@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alberta NR authoring study</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Alberta NR authoring study</h1>
+    <p>Map one numerical-response question on a synthetic blank Letter sheet.</p>
+    <label>Blank JPEG or PNG <input type="file" id="blank" accept="image/jpeg,image/png"></label>
+    <div class="toolbar" id="page-controls" hidden>
+      <button type="button" id="corners">Set page corners</button>
+      <button type="button" id="redraw">Select a new region</button>
+    </div>
+    <p id="status" role="status" aria-live="polite">Import a blank sheet to begin.</p>
+    <canvas id="sheet" aria-label="Blank sheet and bubble overlay" hidden></canvas>
+    <div class="toolbar" id="grid-actions" hidden>
+      <button type="button" id="manual">Place grid with four taps</button>
+      <button type="button" id="discard" hidden>Start over in this region</button>
+    </div>
+    <section id="review" hidden>
+      <h2>Review the mapping</h2>
+      <p id="coverage"></p>
+      <div class="toolbar">
+        <label>Bubble <select id="bubble"></select></label>
+        <button type="button" id="correct">Move selected bubble</button>
+      </div>
+      <label class="verify"><input type="checkbox" id="verified"> I checked that every ring matches the printed bubble and its symbol.</label>
+      <button type="button" id="save" disabled>Save local draft</button>
+    </section>
+    <p id="saved" role="status"></p>
+    <button type="button" id="reopen" hidden>Open local draft</button>
+  </main>
+  <script type="module" src="authoring.mjs"></script>
+</body>
+</html>

@@ -70,3 +70,41 @@ separated-box form remained unresolved. This is research-only code. It does
 not replace the existing detector or change the M4 app.
 
 The same evaluation command prints `outlineRecovery` alongside the baseline.
+
+## Bounded-region authoring browser study
+
+Run `python3 -m http.server 8000` from the repository root and open
+`http://localhost:8000/research/alberta-nr/authoring/`. Import a synthetic
+blank Letter JPEG or PNG. Box one whole question including the writing boxes,
+the inner decimals and all digits. Review the overlay before saving. Solid
+rings show detected contours. Dashed rings show estimated or edited positions
+that need visual confirmation.
+
+If the app cannot complete a mapping, use the four printed anchors (left 0,
+right 0, left 9, left decimal). A re-fit preserves any compatible detected
+centers. If the fit contradicts them, retap or start over within the same
+region. Use the bubble picker for a single-center correction. Save requires
+a new review whenever the mapping changes. The local study stores a draft's
+geometry, page corners, and file digest. Reimport the same blank to reopen it.
+The image itself is not retained. There is no draft grading or M4 integration.
+
+On exact local commit `c18ef6a`, independent Chromium iPhone 13 emulation
+tested three fresh automatically detected cases and the previous faint miss.
+The three fresh cases took four actions each (import, box, review, save),
+mapping 126/126 expected centers. Worst error was 0.074 bubble radii. The
+faint case took nine actions (import, box, select manual, four anchor taps,
+review, save), mapping all 42 exact slots and symbols with maximum center error
+0.102 bubble radii. The saved faint draft re-opened with the identical blank;
+a different file could not reopen it. A corrected single center preserved the
+other 41 and required review again before save.
+
+The three incompatible controls produced no complete automatic mapping. They
+showed one absent digit estimate, a shifted row with four estimates, or no
+proposal for the wrong decimal pattern. Re-fitting the one-absent-digit case
+left all 41 detected rings unchanged. Save stayed disabled during these tests,
+with no edits written. The manual workflow still depends on a teacher
+confirming that every estimated ring corresponds to a printed bubble. The
+study does not certify individual manual positions automatically. Browser
+tests used emulation and did not measure physical touch accuracy or Safari
+performance. The research entry point is restricted to one question per
+region, one local draft, and portrait Letter blanks.
