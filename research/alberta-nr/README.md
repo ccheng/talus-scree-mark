@@ -39,3 +39,34 @@ zero-based `slot`, literal `symbol`, and page-space x, y, and radius.
 Use null for an invalid case. A complete grid passes only if every reported
 slot and symbol maps to the expected center within half the reference radius.
 Keep independent holdouts and school materials outside the repository.
+
+## Local outline recovery experiment
+
+The three shared misses began before lattice assembly. The shared component
+extractor missed 5 correctly sized centers in the dense form, 3 (all digit 9)
+in the serif photo and 13 in the faint form, including both decimal outlines.
+All 24 radial sectors on each of the five dense and three serif failures still
+had ink below the stronger global cutoff. A diagnostic using the existing
+dense-interior mode recovered the five dense outlines but none of the other
+missing ones. The faint outlines crossed the cutoff in only 17–23 of 24
+sampled sectors, consistent with thin fragmented rings. Accurate known page
+corners, region margins and measured center positions ruled out region
+clipping or a gross pose error in these diagnosis cases.
+
+The bounded experiment keeps the existing detector first. On an incomplete
+grid it uses visible writing boxes, recurring candidate columns and mostly
+observed rows to predict only where to look. It requires localized annular
+contrast around each missing center, verifies both inner decimal outlines, and
+checks for unexpected outer decimals and an extra digit row. No estimated center
+is returned as a verified result. The three diagnosed forms were recovered
+without accepting any of the eight original negatives.
+
+The Independent Tester evaluated frozen local commit `e430d41` on five fresh
+valid captures and five controls. Existing discovery mapped 2/5 exactly.
+Outline recovery mapped 4/5 exactly, all 168 expected centers within 0.149
+bubble radii. Both additional reads were independently transformed captures
+of one bold-print layout. Both methods denied all five controls. A faint
+separated-box form remained unresolved. This is research-only code. It does
+not replace the existing detector or change the M4 app.
+
+The same evaluation command prints `outlineRecovery` alongside the baseline.

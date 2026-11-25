@@ -17,7 +17,7 @@ function runs(values) {
   return output;
 }
 
-function writingStrips(gray, matrix, region) {
+export function writingStrips(gray, matrix, region) {
   const width = Math.floor(region.width * scale);
   const height = Math.floor(region.height * scale);
   const raster = Array.from({ length: height }, (_, y) =>
@@ -127,7 +127,7 @@ function separateBoxes(horizontalEdges, raster, region) {
   return strips;
 }
 
-function columnRows(rings, { xs, bottom, pitch }) {
+export function columnRows(rings, { xs, bottom, pitch }) {
   const rows = [];
   for (const ring of rings.filter(({ y }) => y > bottom + 1).sort((a, b) => a.y - b.y)) {
     const col = xs.findIndex((x) => Math.abs(ring.x - x) <= Math.min(3.2, .16 * pitch));

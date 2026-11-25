@@ -1,3 +1,4 @@
+import { discoverWithOutlineRecovery } from './outline-recovery.mjs';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -34,5 +35,6 @@ for (const item of cases) {
   const args = [input, pose, page, item.region];
   console.log(JSON.stringify({ name: item.name, valid: Boolean(item.expected),
     existing: score(discoverBoxedAlberta(...args), item.expected),
+    outlineRecovery: score(discoverWithOutlineRecovery(...args), item.expected),
     structureFirst: score(discoverStructureFirst(...args), item.expected) }));
 }
