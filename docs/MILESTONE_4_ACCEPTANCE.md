@@ -59,3 +59,34 @@ Review discovery's preserved, newly found, replaced and removed counts. Acknowle
 In MC-only setup, enter an optional expected question count to check coverage. For incomplete discovery, draw a tight rectangle around one group of bubbles. Enter its questions, choices, and first question number, then select **Fit MC block in box**. The fit follows observed row positions even when there are printed gaps between groups. Matching positions from released prior proposals are retained. Orange positions are estimates based on the observed row and column and require explicit review. Confirm the block to replace any proposals named in the fit summary. Kept blocks must first be released if they need replacement.
 
 If a whole row has insufficient outline evidence, fit a smaller region or use the advanced endpoint controls. The optional expected count is retained when revising the template. A count mismatch can be saved only with an explicit partial mapping. Compare the overlay with the sheet and check the printed question numbers before confirming complete coverage. When the count matches and every block is kept, confirming complete coverage also resolves the old search warnings. Page-corner and registration checks still apply.
+
+## Printed-landmark development candidate
+
+Build `eda8c3a2f9c800b471b13acb` enrolls compact, local grayscale descriptors of
+printed rule corners and junctions outside the MC response blocks. When a
+completed scan needs block translation, independent matches can corroborate
+the translation or veto a conflicting block before grading. Missing or
+ambiguous matches retain the existing guarded response-geometry path. The
+app does not identify form versions. Templates created before this build
+continue to work. Revising one with its original blank enrolls evidence for
+the new revision when there is usable print.
+
+The independent desktop Chromium run saved and reopened an offline template
+using the GUI, then read 128/128 expected MC observations across eight valid
+scan paths. Two wrong shifted-block captures were refused using both automatic
+and manual corners. A shifted row was refused by the existing geometry check.
+A separate faded-print capture still read exactly in both modes with limited
+landmark evidence. A legacy profile was preserved through a same-origin update,
+continued to read valid sheets, and remained susceptible to a paired shift.
+
+The direct scan benchmark retained 16/16 valid cases and accepted 4/20 wrong
+paths, compared with 12/20 for `99e32750`. The four remaining wrong paths had
+sparse print near the shifted blocks. Four other subtle wrong paths in the
+paired photographic suite also still read. One cluttered blank was difficult
+to author with the GUI on both builds. These are synthetic/browser results.
+Physical iPhone acceptance, timings on Safari, and diagnosis of the actual
+Physics capture remain open.
+
+The [development page](https://ccheng.github.io/talus-scree-mark/development/)
+links to the improved build and the unchanged comparison build. Preview
+publication does not constitute milestone acceptance.
