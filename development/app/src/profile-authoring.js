@@ -1,3 +1,4 @@
+import { copyPrintedLandmarks } from './printed-landmarks.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 import { project } from './projective.js';
 import { maximumPrintedBlankInk } from './marks.js';
@@ -214,7 +215,7 @@ function fail(condition, message) {
 }
 
 export function createMarkerlessProfile({ id, revision, name, page, components, features = [], allowManualIdentity = false,
-  scope, exclusions = [], mcCompleteness, mcExpectedCount }) {
+  scope, exclusions = [], mcCompleteness, mcExpectedCount, printedLandmarks }) {
   fail(typeof id === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(id) && Number.isInteger(revision) && revision > 0,
     'The profile needs a valid ID and revision.');
   fail(typeof name === 'string' && name.trim() && name.trim().length <= 80, 'Enter a name of up to 80 characters.');
@@ -315,11 +316,12 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
   for (const [index, feature] of sanitized.entries()) {
     fail(!sanitized.slice(0, index).some((other) => intersects(feature.bounds, other.bounds)), 'Printed feature regions may not overlap.');
   }
+  const landmarks = copyPrintedLandmarks(printedLandmarks, page, verified);
   return {
     schemaVersion: 1, id, revision, name: name.trim(), strategy: 'markerless', page: {
       width: page.width, height: page.height, units: 'pt', origin: 'top-left', orientation: page.orientation,
     },
-    components: verified, features: sanitized, allowManualIdentity: Boolean(allowManualIdentity),
+    components: verified, features: sanitized, ...(landmarks.length ? { printedLandmarks: landmarks } : {}), allowManualIdentity: Boolean(allowManualIdentity),
     ...(scope ? { scope } : {}),
     ...(mcCompleteness ? { mcCompleteness } : {}),
     ...(mcExpectedCount === undefined ? {} : { mcExpectedCount }),

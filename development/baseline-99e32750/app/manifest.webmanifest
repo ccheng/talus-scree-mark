@@ -1,0 +1,15 @@
+{
+  "id": "./",
+  "name": "Talus Scree Mark",
+  "short_name": "Scree Mark",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#eff3ec",
+  "background_color": "#eff3ec",
+  "icons": [
+    { "src": "./assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

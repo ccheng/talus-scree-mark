@@ -1,0 +1,1943 @@
+{
+  "id": "mixed",
+  "name": "Chemistry Practice",
+  "paper": {
+    "width": 612,
+    "height": 792,
+    "units": "pt"
+  },
+  "itemOrder": [
+    "MC1",
+    "MC2",
+    "MC3",
+    "MC4",
+    "MC5",
+    "MC6",
+    "MC7",
+    "MC8",
+    "MC9",
+    "MC10",
+    "MC11",
+    "MC12",
+    "MC13",
+    "MC14",
+    "MC15",
+    "MC16",
+    "NR1",
+    "NR2",
+    "NR3",
+    "NR4"
+  ],
+  "expected": {
+    "MC1": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "MC2": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "A"
+    },
+    "MC3": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    },
+    "MC4": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC5": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC6": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "MC7": {
+      "kind": "mc",
+      "state": "blank",
+      "rawText": null
+    },
+    "MC8": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    },
+    "MC9": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    },
+    "MC10": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC11": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "MC12": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "A"
+    },
+    "MC13": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "A"
+    },
+    "MC14": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "D"
+    },
+    "MC15": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "C"
+    },
+    "MC16": {
+      "kind": "mc",
+      "state": "single",
+      "rawText": "B"
+    },
+    "NR1": {
+      "kind": "nr",
+      "state": "single",
+      "rawText": "5.3 ",
+      "slots": [
+        "5",
+        ".",
+        "3",
+        null
+      ]
+    },
+    "NR2": {
+      "kind": "nr",
+      "state": "single",
+      "rawText": "12.3",
+      "slots": [
+        "1",
+        "2",
+        ".",
+        "3"
+      ]
+    },
+    "NR3": {
+      "kind": "nr",
+      "state": "single",
+      "rawText": "0.25",
+      "slots": [
+        "0",
+        ".",
+        "2",
+        "5"
+      ]
+    },
+    "NR4": {
+      "kind": "nr",
+      "state": "single",
+      "rawText": "3008",
+      "slots": [
+        "3",
+        "0",
+        "0",
+        "8"
+      ]
+    }
+  },
+  "blocks": [
+    {
+      "kind": "mc",
+      "label": "Questions 1–8",
+      "bounds": {
+        "x": 79.4,
+        "y": 183.4,
+        "width": 93.2,
+        "height": 161.2
+      },
+      "items": [
+        {
+          "id": "MC1",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 194,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 194,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 194,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 194,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 186.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC2",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 214,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 214,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 214,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 214,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 206.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC3",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 234,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 234,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 234,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 234,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 226.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC4",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 254,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 254,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 254,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 254,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 246.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC5",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 274,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 274,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 274,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 274,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 266.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC6",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 294,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 294,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 294,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 294,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 286.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC7",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 314,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 314,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 314,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 314,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 306.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC8",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 90,
+              "y": 334,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 114,
+              "y": 334,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 138,
+              "y": 334,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 162,
+              "y": 334,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 82.4,
+            "y": 326.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "mc",
+      "label": "Questions 9–16",
+      "bounds": {
+        "x": 340.4,
+        "y": 183.4,
+        "width": 93.2,
+        "height": 161.2
+      },
+      "items": [
+        {
+          "id": "MC9",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 351,
+              "y": 194,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 375,
+              "y": 194,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 399,
+              "y": 194,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 423,
+              "y": 194,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 343.4,
+            "y": 186.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC10",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 351,
+              "y": 214,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 375,
+              "y": 214,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 399,
+              "y": 214,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 423,
+              "y": 214,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 343.4,
+            "y": 206.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC11",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 351,
+              "y": 234,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 375,
+              "y": 234,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 399,
+              "y": 234,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 423,
+              "y": 234,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 343.4,
+            "y": 226.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC12",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 351,
+              "y": 254,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 375,
+              "y": 254,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 399,
+              "y": 254,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 423,
+              "y": 254,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 343.4,
+            "y": 246.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC13",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 351,
+              "y": 274,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 375,
+              "y": 274,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 399,
+              "y": 274,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 423,
+              "y": 274,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 343.4,
+            "y": 266.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC14",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 351,
+              "y": 294,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 375,
+              "y": 294,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 399,
+              "y": 294,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 423,
+              "y": 294,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 343.4,
+            "y": 286.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC15",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 351,
+              "y": 314,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 375,
+              "y": 314,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 399,
+              "y": 314,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 423,
+              "y": 314,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 343.4,
+            "y": 306.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        },
+        {
+          "id": "MC16",
+          "kind": "mc",
+          "choices": [
+            {
+              "symbol": "A",
+              "x": 351,
+              "y": 334,
+              "radius": 3.6
+            },
+            {
+              "symbol": "B",
+              "x": 375,
+              "y": 334,
+              "radius": 3.6
+            },
+            {
+              "symbol": "C",
+              "x": 399,
+              "y": 334,
+              "radius": 3.6
+            },
+            {
+              "symbol": "D",
+              "x": 423,
+              "y": 334,
+              "radius": 3.6
+            }
+          ],
+          "bounds": {
+            "x": 343.4,
+            "y": 326.4,
+            "width": 87.2,
+            "height": 15.2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "nr",
+      "label": "NR 1",
+      "bounds": {
+        "x": 71.5,
+        "y": 450.5,
+        "width": 93.0,
+        "height": 120.0
+      },
+      "items": [
+        {
+          "id": "NR1",
+          "kind": "nr",
+          "slots": [
+            {
+              "id": "NR1.1",
+              "choices": [
+                {
+                  "symbol": "0",
+                  "x": 82,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 82,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 82,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 82,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 82,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 82,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 82,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 82,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 82,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 82,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR1.2",
+              "choices": [
+                {
+                  "symbol": ".",
+                  "x": 106,
+                  "y": 461,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "0",
+                  "x": 106,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 106,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 106,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 106,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 106,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 106,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 106,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 106,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 106,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 106,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR1.3",
+              "choices": [
+                {
+                  "symbol": ".",
+                  "x": 130,
+                  "y": 461,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "0",
+                  "x": 130,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 130,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 130,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 130,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 130,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 130,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 130,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 130,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 130,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 130,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR1.4",
+              "choices": [
+                {
+                  "symbol": "0",
+                  "x": 154,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 154,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 154,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 154,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 154,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 154,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 154,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 154,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 154,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 154,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            }
+          ],
+          "bounds": {
+            "x": 74.5,
+            "y": 453.5,
+            "width": 87.0,
+            "height": 114.0
+          }
+        }
+      ]
+    },
+    {
+      "kind": "nr",
+      "label": "NR 2",
+      "bounds": {
+        "x": 207.5,
+        "y": 450.5,
+        "width": 93.0,
+        "height": 120.0
+      },
+      "items": [
+        {
+          "id": "NR2",
+          "kind": "nr",
+          "slots": [
+            {
+              "id": "NR2.1",
+              "choices": [
+                {
+                  "symbol": "0",
+                  "x": 218,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 218,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 218,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 218,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 218,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 218,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 218,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 218,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 218,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 218,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR2.2",
+              "choices": [
+                {
+                  "symbol": ".",
+                  "x": 242,
+                  "y": 461,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "0",
+                  "x": 242,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 242,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 242,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 242,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 242,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 242,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 242,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 242,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 242,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 242,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR2.3",
+              "choices": [
+                {
+                  "symbol": ".",
+                  "x": 266,
+                  "y": 461,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "0",
+                  "x": 266,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 266,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 266,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 266,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 266,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 266,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 266,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 266,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 266,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 266,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR2.4",
+              "choices": [
+                {
+                  "symbol": "0",
+                  "x": 290,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 290,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 290,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 290,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 290,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 290,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 290,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 290,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 290,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 290,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            }
+          ],
+          "bounds": {
+            "x": 210.5,
+            "y": 453.5,
+            "width": 87.0,
+            "height": 114.0
+          }
+        }
+      ]
+    },
+    {
+      "kind": "nr",
+      "label": "NR 3",
+      "bounds": {
+        "x": 343.5,
+        "y": 450.5,
+        "width": 93.0,
+        "height": 120.0
+      },
+      "items": [
+        {
+          "id": "NR3",
+          "kind": "nr",
+          "slots": [
+            {
+              "id": "NR3.1",
+              "choices": [
+                {
+                  "symbol": "0",
+                  "x": 354,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 354,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 354,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 354,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 354,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 354,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 354,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 354,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 354,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 354,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR3.2",
+              "choices": [
+                {
+                  "symbol": ".",
+                  "x": 378,
+                  "y": 461,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "0",
+                  "x": 378,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 378,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 378,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 378,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 378,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 378,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 378,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 378,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 378,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 378,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR3.3",
+              "choices": [
+                {
+                  "symbol": ".",
+                  "x": 402,
+                  "y": 461,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "0",
+                  "x": 402,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 402,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 402,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 402,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 402,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 402,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 402,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 402,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 402,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 402,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR3.4",
+              "choices": [
+                {
+                  "symbol": "0",
+                  "x": 426,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 426,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 426,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 426,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 426,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 426,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 426,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 426,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 426,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 426,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            }
+          ],
+          "bounds": {
+            "x": 346.5,
+            "y": 453.5,
+            "width": 87.0,
+            "height": 114.0
+          }
+        }
+      ]
+    },
+    {
+      "kind": "nr",
+      "label": "NR 4",
+      "bounds": {
+        "x": 479.5,
+        "y": 450.5,
+        "width": 93.0,
+        "height": 120.0
+      },
+      "items": [
+        {
+          "id": "NR4",
+          "kind": "nr",
+          "slots": [
+            {
+              "id": "NR4.1",
+              "choices": [
+                {
+                  "symbol": "0",
+                  "x": 490,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 490,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 490,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 490,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 490,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 490,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 490,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 490,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 490,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 490,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR4.2",
+              "choices": [
+                {
+                  "symbol": ".",
+                  "x": 514,
+                  "y": 461,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "0",
+                  "x": 514,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 514,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 514,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 514,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 514,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 514,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 514,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 514,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 514,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 514,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR4.3",
+              "choices": [
+                {
+                  "symbol": ".",
+                  "x": 538,
+                  "y": 461,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "0",
+                  "x": 538,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 538,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 538,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 538,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 538,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 538,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 538,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 538,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 538,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 538,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            },
+            {
+              "id": "NR4.4",
+              "choices": [
+                {
+                  "symbol": "0",
+                  "x": 562,
+                  "y": 470.9,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "1",
+                  "x": 562,
+                  "y": 480.8,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "2",
+                  "x": 562,
+                  "y": 490.7,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "3",
+                  "x": 562,
+                  "y": 500.6,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "4",
+                  "x": 562,
+                  "y": 510.5,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "5",
+                  "x": 562,
+                  "y": 520.4,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "6",
+                  "x": 562,
+                  "y": 530.3,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "7",
+                  "x": 562,
+                  "y": 540.2,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "8",
+                  "x": 562,
+                  "y": 550.1,
+                  "radius": 3.5
+                },
+                {
+                  "symbol": "9",
+                  "x": 562,
+                  "y": 560.0,
+                  "radius": 3.5
+                }
+              ]
+            }
+          ],
+          "bounds": {
+            "x": 482.5,
+            "y": 453.5,
+            "width": 87.0,
+            "height": 114.0
+          }
+        }
+      ]
+    }
+  ]
+}

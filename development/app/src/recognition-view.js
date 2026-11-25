@@ -5,6 +5,7 @@ const messages = {
   'multiple-sheets': 'More than one complete sheet fits the selected template. Retake with one sheet in the photo.',
   'ambiguous-orientation': 'More than one page orientation fits. Set scan corners to identify the correct orientation.',
   'batch-not-confirmed': 'Confirm a batch with the selected profile revision.',
+  'printed-landmark-conflict': 'The answer blocks do not align with the nearby printed layout. Check the selected template or retake the photo.',
   'response-geometry': 'The bubble blocks or rows do not match the selected layout, or part of a block is obscured.',
   'missing-anchor': 'Could not find all four corner markers.',
   'ambiguous-anchor': 'Found conflicting corner markers.',
@@ -185,6 +186,16 @@ export function createRecognitionView({ button, status, results, table, overlay,
       }
       row.append(list);
     }
+    const landmarks = stages.printedLandmarks;
+    const landmarkRow = diagnostics.querySelector('[data-stage="printed-landmarks"]');
+    landmarkRow.hidden = !landmarks;
+    if (landmarks) stage('printed-landmarks', landmarks.status, 'Printed layout — ' + ({
+      unavailable: 'no landmarks saved for this template',
+      'not-needed': 'the expected blocks aligned without local corrections',
+      insufficient: 'limited landmark evidence; the response geometry checks passed',
+      corroborated: 'printed landmarks support the local alignment',
+      incompatible: 'nearby printed landmarks disagree with the answer block positions',
+    }[landmarks.status] ?? landmarks.status));
     diagnostics.hidden = false;
   }
 

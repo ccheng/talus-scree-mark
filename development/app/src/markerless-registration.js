@@ -1,9 +1,10 @@
+import { checkPrintedLandmarks } from './printed-landmarks.js';
 import { cross, fitProjective, fitProjectiveSamples, invertProjective, project } from './projective.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 import { refineMcBlock } from './block-refinement.js';
 import { observeOutlines, outlinePoseProposals } from './bubble-registration.js';
 
-export const markerlessThresholdVersion = 'batch-geometry-v5';
+export const markerlessThresholdVersion = 'batch-geometry-v6';
 const registrationStrategy = 'markerless';
 const outlineAdjustments = [[1, 0], [.86, 0], [1.16, 0], [1, -.14], [1, .14]];
 const minimumPageSideRatio = .22;
@@ -796,12 +797,20 @@ export function registerMarkerless(image, profile, { corners, batch } = {}) {
   // Manually ordered corners resolve orientation only. The direct hypothesis
   // must have passed exactly the same complete response-geometry checks.
   const aligned = best.mirrored ? competitor : best;
+  const printedLandmarks = checkPrintedLandmarks(gray, profile, aligned);
+  const diagnostics = {
+    ...stages(aligned.corners, path, poseStatus, 'verified', 'verified', aligned.geometry, fitDetail),
+    printedLandmarks,
+  };
+  if (printedLandmarks.status === 'incompatible') {
+    return failure('printed-landmark-conflict', { ...evidence, diagnostics });
+  }
   return {
     status: 'registered', strategy: registrationStrategy, reasons: [],
     pageToSource: aligned.pageToSource, sourceToPage: aligned.sourceToPage,
     ...(aligned.refined && { refinedBlocks: aligned.refined }),
     authorization: 'teacher-confirmed-batch', orientationMargin: evidence.orientationMargin,
     cornerPath: path, corners: aligned.corners, geometry: aligned.geometry,
-    diagnostics: stages(aligned.corners, path, poseStatus, 'verified', 'verified', aligned.geometry, fitDetail),
+    diagnostics,
   };
 }
