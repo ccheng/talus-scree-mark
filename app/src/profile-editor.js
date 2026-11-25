@@ -628,6 +628,8 @@ export function createProfileEditor({ onSave, onClose }) {
   }
 
   function fitAlberta(region, { required = true } = {}) {
+    if (region.width > 205 || region.height > 310) throw new Error('Narrow the box to one Alberta NR question.');
+
     const args = [state.image, state.matrix, page(), region];
     const existing = discoverBoxedAlberta(...args);
     if (existing.count > 1) throw new Error('Found multiple NR questions. Box one at a time.');
@@ -1273,8 +1275,8 @@ export function createProfileEditor({ onSave, onClose }) {
     const blocked = saveBlocker();
     if (blocked) return say(blocked);
     try {
-      const components = state.prior || !state.blocks.some(({ kind }) => kind === 'nr') ? state.blocks :
-        measureNumericalBlankInk(toGrayImage(state.image), state.matrix, state.blocks);
+      const components = state.blocks.some(({ kind }) => kind === 'nr')
+        ? measureNumericalBlankInk(toGrayImage(state.image), state.matrix, state.blocks) : state.blocks;
       const printedLandmarks = enrollPrintedLandmarks(toGrayImage(state.image), state.matrix, page(), components);
       const profile = createMarkerlessProfile({
         printedLandmarks, id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,

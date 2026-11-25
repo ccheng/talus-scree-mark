@@ -651,6 +651,20 @@ try {
     await keyField('NR1').fill('4');
     await keyField('NR2').fill('7');
     await keyField('NR3').fill('0');
+    await openOptions(page, '#grading-categories');
+    await page.locator('#grading-category-name-1').fill('Proficiency');
+    await page.locator('#grading-category-name-2').fill('Outcome');
+    await page.locator('#grading-category-values-1').fill('Developing\nProficient');
+    await page.locator('#grading-category-values-2').fill('Model\nPractice');
+    await page.locator('#grading-category-refresh').click();
+    for (const [id, level, outcome] of [
+      ['MC1', 'Proficient', 'Model'], ['NR1', 'Proficient', 'Model'],
+      ['MC7', 'Developing', 'Practice'], ['NR2', 'Developing', 'Practice'], ['NR3', 'Developing', 'Practice'],
+    ]) {
+      const row = page.locator(`[data-category-question="${id}"]`);
+      await row.locator('[data-category-dimension="1"]').selectOption(level);
+      await row.locator('[data-category-dimension="2"]').selectOption(outcome);
+    }
     await keySubmit.click();
     await appStatus(page).filter({ hasText: /new revision/i }).waitFor();
 
@@ -661,6 +675,13 @@ try {
     await recognize(page, fixture('filled'));
     await waitGrade(page, '1/5 · 1 pending · provisional');
     assert.equal((await snapshot(page)).scans.length, 0, 'A scan persisted before explicit save');
+
+    await openOptions(page, '#grading-subtotals-panel');
+    const intersection = (level, outcome) => page.locator('#grading-subtotals tr').filter({
+      hasText: `Proficiency — ${level} × Outcome — ${outcome}`,
+    }).locator('td').allTextContents();
+    assert.deepEqual((await intersection('Proficient', 'Model')).slice(1), ['0/2', '1']);
+    assert.deepEqual((await intersection('Developing', 'Practice')).slice(1), ['1/3', '0']);
 
     const item = page.locator('#grading-item');
     async function decision(id, kind, value, grade) {
@@ -674,6 +695,8 @@ try {
     await decision('MC1', 'undo', undefined, '1/5 · 1 pending · provisional');
     await decision('MC1', 'correct', 'A', '2/5 · 1 pending · provisional');
     await decision('NR1', 'award', undefined, '3/5 · 0 pending · final');
+    assert.deepEqual((await intersection('Proficient', 'Model')).slice(1), ['2/2', '0']);
+    assert.deepEqual((await intersection('Developing', 'Practice')).slice(1), ['1/3', '0']);
 
     await page.evaluate(() => {
       const add = IDBObjectStore.prototype.add;
@@ -762,6 +785,7 @@ try {
     const csv = await download(page, '#grading-csv', 'scree-grades.csv');
     assert(csv.includes('"NR1","004 ","004 ","correct","false","1","award"'));
     assert(csv.includes('"NR3","    ","    ","incorrect","false","0",""'));
+    assert(csv.includes('"intersection","Proficiency","Proficient","Outcome","Model","1","2","0"'));
     const withPhotos = JSON.parse(await download(page, '#grading-json', 'scree-backup.json'));
     assert.equal(withPhotos.scans.length, 3);
     assert(withPhotos.scans.every(({ photo }) => photo?.type === 'image/png' && photo.sha256.length === 64));
@@ -818,6 +842,7 @@ try {
     const restored = await snapshot(page);
     assert.equal(restored.scans.length, 3);
     assert.equal(restored.keys.length, 2);
+    for (const key of original.keys) assert.deepEqual(restored.keys.find(({ id }) => id === key.id).categories, key.categories);
     for (const record of original.scans) {
       const found = restored.scans.find(({ id }) => id === record.id);
       assert.deepEqual(found.observation, record.observation);

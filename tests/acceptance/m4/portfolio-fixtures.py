@@ -120,7 +120,7 @@ def marked(blank, components, written, tokens, pencil=False):
                 draw.line(scaled((x - .47*radius, y + .26*radius, x + .48*radius, y - .30*radius)),
                           fill=(shade+35, shade+35, shade+35), width=1)
             facts.append({'id': item['id'], 'kind': item['kind'], 'state': 'single' if (value or '').strip() else 'blank',
-                          'rawText': value, 'review': False})
+                          'rawText': value, 'review': item['kind'] == 'nr' and value == '004 '})
     for number, area in enumerate(written):
         y = area['y'] + 32
         points = [(54, y+12), (68, y), (82, y+7), (96,y+4), (115,y+11), (141,y+6), (150,y+10)]
