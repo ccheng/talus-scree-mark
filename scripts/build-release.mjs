@@ -28,6 +28,7 @@ const staticFiles = [
   'src/layout-discovery.js',
   'src/bubble-registration.js',
   'src/block-refinement.js',
+  'src/printed-landmarks.js',
   'src/main.js',
   'src/markerless-registration.js',
   'src/offline.js',

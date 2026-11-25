@@ -1,3 +1,4 @@
+import { enrollPrintedLandmarks } from './printed-landmarks.js';
 import { pageTransform, proposePageCorners } from './markerless-registration.js';
 import { conflictingResponseIds, createMarkerlessProfile, intersects, manualGrid, proposeGrid, renumberProfileBlock, validBounds } from './profile-authoring.js';
 import { cross, project } from './projective.js';
@@ -1207,8 +1208,9 @@ export function createProfileEditor({ onSave, onClose }) {
     try {
       const components = state.prior || !state.blocks.some(({ kind }) => kind === 'nr') ? state.blocks :
         measureNumericalBlankInk(toGrayImage(state.image), state.matrix, state.blocks);
+      const printedLandmarks = enrollPrintedLandmarks(toGrayImage(state.image), state.matrix, page(), components);
       const profile = createMarkerlessProfile({
-        id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,
+        printedLandmarks, id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,
         name: value('profile-name'), page: page(), components, scope: state.scope, exclusions: state.exclusions,
         mcCompleteness: state.scope ? value('mc-completeness') || undefined : undefined,
         mcExpectedCount: state.scope ? mcCoverage().expected ?? undefined : undefined,
