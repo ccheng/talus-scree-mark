@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scree Mark Classroom development preview</title>
+<style>body{margin:0;background:#f4f7f1;color:#192e24;font:1.06rem/1.55 system-ui,sans-serif}main{max-width:42rem;margin:auto;padding:2rem 1.25rem}h1{line-height:1.15}a{color:#155a43}code{overflow-wrap:anywhere}</style></head>
+<body><main>
+<h1>Scree Mark Classroom development preview</h1>
+<p>Build <code>fc07ccae54ea5a85fde1c2ba</code></p>
+<p><strong><a href="./app/">Open the Classroom app</a></strong></p>
+<p><a href="../">MC-only acceptance candidate</a> · <a href="../mixed/">Mixed-format development candidate</a></p>
+<h2>Try automatic saving and recovery</h2>
+<p>Use the <a href="./app/fixtures/m3/interleaved-blank.png">synthetic blank</a> and <a href="./app/fixtures/m3/interleaved-filled.png">synthetic completed sheet</a>. Enroll the blank, start a batch and scan the completed sheet. Wait for Saved locally, then reload to resume the batch. The pending-capture panel can reopen a locally saved photo whose grade did not finish.</p>
+<p>Classroom grading records are separate from earlier builds. To bring in saved results, export a version 1 JSON backup from the earlier build and import it in Classroom. CSV follows the selected result’s batch. JSON includes all saved Classroom grades, photos and keys. Keep pending captures on the original device until they are graded or deliberately discarded.</p>
+<h2>Verification and limits</h2>
+<p>Independent offline Chromium testing covered a 34-sheet mixed class and a four-sheet second class, interruption recovery, corrections, separate CSV exports and photo-inclusive restore. A separate 143 MiB backup also restored in Chromium. Large backups still need local space, and mobile Safari timing, memory and forced-termination recovery await physical testing.</p>
+<p><a href="https://github.com/ccheng/talus-scree-mark/blob/a5ff1545ff9b0328c7059d03333b3c11a4335bb6/docs/CLASSROOM_RECOVERY_DEVELOPMENT.md">Source and verification notes</a></p>
+</main></body></html>
