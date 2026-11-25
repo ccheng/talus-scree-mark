@@ -1,6 +1,6 @@
 import { addDecision, gradeScan, sameTemplate, templateSnapshot, validateCategories, validateKey } from './grading.js';
 import { completeCapture, deletePendingCapture, deleteScans, loadGrading, loadPendingCaptures, restoreGrading, saveKey, savePendingCapture, saveScan } from './grading-store.js';
-import { exportBackup, exportCsv, parseBackup } from './grading-export.js';
+import { createBackup, exportCsv, parseBackupFile } from './grading-export.js';
 
 const byId = (id) => document.getElementById(id);
 const now = () => new Date().toISOString();
@@ -62,7 +62,7 @@ export function createGradingView({ scope, recover }) {
 
   function showPending() {
     const selected = pendingPicker.value;
-    const captures = [...pending.values()].filter((entry) => !inSession.has(entry.id) && !stored.scans.some(({ id }) => id === entry.id));
+    const captures = [...pending.values()].filter(({ id }) => !inSession.has(id));
     byId('grading-pending-panel').hidden = captures.length === 0;
     pendingPicker.replaceChildren(...captures.map((entry) =>
       new Option(`${entry.templateName}, revision ${entry.revision} · ${entry.label}`, entry.id)));
@@ -78,17 +78,19 @@ export function createGradingView({ scope, recover }) {
     if (context) ready.then(() => {
       if (batchContext?.id !== context.id) return;
       const completed = stored.scans.filter((scan) => scan.batchId === batchId);
-      sequence = Math.max(sequence, 0, ...completed.map((scan) => Number(/^Sheet (\d+)/.exec(scan.label)?.[1] ?? 0)));
+      const unfinished = [...pending.values()].filter((capture) => capture.sessionId === batchId);
+      sequence = Math.max(sequence, 0, ...[...completed, ...unfinished].map((scan) => Number(/^Sheet (\d+)/.exec(scan.label)?.[1] ?? 0)));
       active ??= completed.sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]?.id;
       render();
     }).catch(() => {});
     showPending();
   }
 
-  async function stageCapture(profile, image, { manual = false } = {}) {
+  async function stageCapture(profile, image, { corners } = {}) {
     const prior = stored.scans.find((scan) => scan.id === image.id);
-    if (prior && !manual) throw new Error('This sheet is already saved. Use Scan next sheet or Rescan this sheet.');
-    if (pending.has(image.id) && !prior) return image;
+    if (prior && !corners) throw new Error('This sheet is already saved. Use Scan next sheet or Rescan this sheet.');
+    if (pending.has(image.id) && !prior) { say('Reading recovered capture…'); return image; }
+    say('Saving the captured sheet locally…');
     const stagedImage = prior ? { ...image, id: uuid() } : image;
     const template = templateSnapshot(profile);
     const context = batchContext;
@@ -101,7 +103,7 @@ export function createGradingView({ scope, recover }) {
     showRescan();
     const key = source ? keyOf(source.scan.keyId) : latest(template);
     const entry = {
-      id: stagedImage.id, scope, sessionId: context.id, batchId: source?.scan.batchId ?? context.id,
+      id: stagedImage.id, corners, scope, sessionId: context.id, batchId: source?.scan.batchId ?? context.id,
       profileId: profile.id, revision: profile.revision, templateName: template.name, capturedAt: now(), keyId: key?.id ?? null,
       rescanOf: source?.scan.id ?? null, label: source ? `Rescan of ${source.scan.label}` : `Sheet ${++sequence} · ${stagedImage.id.slice(0, 6)}`,
       history: source?.reuse ? structuredClone(source.scan.history) : [], reusedCorrections: Boolean(source?.reuse), photo: await photoOf(image),
@@ -119,11 +121,10 @@ export function createGradingView({ scope, recover }) {
     saving.add(scan.id);
     render();
     try {
-      const record = await completeCapture(scan, capture);
+      const record = await completeCapture(scan, scope);
       stored.scans.push(record);
       inSession.delete(scan.id);
-      try { await deletePendingCapture(scan.id); pending.delete(scan.id); }
-      catch { /* Keep the journal entry hidden behind the committed scan ID. */ }
+      pending.delete(scan.id);
       say('Result and source photograph saved locally.');
     } finally {
       saving.delete(scan.id);
@@ -201,6 +202,10 @@ export function createGradingView({ scope, recover }) {
     try {
       await operation();
     } catch (error) {
+      if (error?.name === 'QuotaExceededError') {
+        say('Local storage is full. The write did not complete. Export saved results before freeing space and retrying.');
+        return;
+      }
       say(`Local operation failed. ${error?.name === 'ConstraintError'
         ? 'A saved result already has that ID. Remove the duplicate before restoring.' : error.message}`);
     } finally {
@@ -243,7 +248,20 @@ export function createGradingView({ scope, recover }) {
     inSession.set(scan.id, scan);
     active = scan.id;
     try { await persist(scan); }
-    catch (error) { say(`Could not save the grade. The capture remains available to retry. ${error.message}`); render(); }
+    catch (error) {
+      try {
+        const live = await loadPendingCaptures(scope);
+        if (!live.some(({ id }) => id === scan.id)) {
+          pending.delete(scan.id);
+          inSession.delete(scan.id);
+          await refresh();
+          say('This capture was completed or discarded in another view.');
+          return;
+        }
+      } catch { /* The visible checkpoint remains available to retry. */ }
+      say(`Could not save the grade. The capture remains available to retry. ${error.message}`);
+      render();
+    }
   }
 
   const categoryRows = byId('grading-category-assignments');
@@ -461,14 +479,8 @@ export function createGradingView({ scope, recover }) {
       const scan = current();
       if (!scan || saving.size || !confirm(wholeBatch ? 'Delete all results and photographs in this batch?' : 'Delete this result and photograph?')) return;
       const ids = (wholeBatch ? batch(scan) : [scan]).map((record) => record.id);
-      for (const id of ids) {
-        inSession.delete(id);
-        if (pending.has(id)) {
-          await deletePendingCapture(id);
-          pending.delete(id);
-        }
-      }
       await deleteScans(ids);
+      for (const id of ids) { inSession.delete(id); pending.delete(id); }
       stored.scans = stored.scans.filter((record) => !ids.includes(record.id));
       if (rescan && ids.includes(rescan.scan.id)) { rescan = undefined; showRescan(); }
       active = undefined;
@@ -477,7 +489,7 @@ export function createGradingView({ scope, recover }) {
   }
 
   async function download(content, type, filename) {
-    const blob = new Blob([content], { type });
+    const blob = content instanceof Blob ? content : new Blob([content], { type });
     const url = URL.createObjectURL(blob);
     const link = node('a', 'Download ' + filename);
     link.href = url;
@@ -498,7 +510,9 @@ export function createGradingView({ scope, recover }) {
   });
   byId('grading-json').onclick = () => act(async () => {
     const scans = stored.scans;
-    await download(await exportBackup({ keys: stored.keys, scans }), 'application/json', 'scree-backup.json');
+    const backup = await createBackup({ keys: stored.keys, scans },
+      (done, total) => say(`Preparing backup · ${done} of ${total} results`));
+    await download(backup, 'application/json', 'scree-backup.json');
   });
   const importInput = byId('grading-import');
   importInput.onchange = () => {
@@ -506,8 +520,10 @@ export function createGradingView({ scope, recover }) {
     importInput.value = '';
     if (!file) return;
     act(async () => {
-      const backup = await parseBackup(await file.text());
+      say('Checking backup…');
+      const backup = await parseBackupFile(file, (done) => say(`Checking backup · ${done} results verified`));
       if (backup.scans.some(({ id }) => inSession.has(id))) throw new Error('An in-session result already has that ID.');
+      say('Saving verified backup locally…');
       await restoreGrading(backup);
       await refresh();
       say('Backup restored locally.');
@@ -515,13 +531,7 @@ export function createGradingView({ scope, recover }) {
   };
 
   const ready = refresh().then(async () => {
-    for (const entry of await loadPendingCaptures(scope)) {
-      pending.set(entry.id, entry);
-      if (stored.scans.some(({ id }) => id === entry.id)) {
-        try { await deletePendingCapture(entry.id); pending.delete(entry.id); }
-        catch { /* Safe to retry next launch. */ }
-      }
-    }
+    for (const entry of await loadPendingCaptures(scope)) pending.set(entry.id, entry);
     render();
   });
   ready.catch((error) => say(`Saved results unavailable. ${error.message}`));

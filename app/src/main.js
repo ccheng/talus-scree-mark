@@ -1,6 +1,6 @@
 import { createGradingView } from './grading-view.js';
 import { createCamera } from './camera.js';
-import { importWorkingImage, ImageInputError } from './image.js';
+import { importWorkingImage, readWorkingImage, ImageInputError } from './image.js';
 import { prepareOffline } from './offline.js';
 import { createRecognitionView } from './recognition-view.js';
 import { createProfileWorkspace } from './profile-workspace.js';
@@ -34,10 +34,14 @@ const grading = createGradingView({ scope, async recover(entry) {
   importOperation = operation;
   const batch = workspace.activeBatch;
   try {
-    const file = new File([entry.photo], 'recovered-sheet.png', { type: 'image/png' });
-    const copy = await importWorkingImage(file, operation.signal);
+    const bitmap = await createImageBitmap(entry.photo);
+    let copy;
+    try { copy = readWorkingImage(bitmap, bitmap.width, bitmap.height, 'import'); }
+    finally { bitmap.close(); }
+    operation.signal.throwIfAborted();
     if (importOperation !== operation || workspace.activeBatch !== batch) return;
     showWorkingImage({ ...copy, id: entry.id });
+    workspace.restoreCorners(entry.corners);
     showStatus('Recovered the captured sheet.');
   } finally {
     if (importOperation === operation) importOperation = undefined;
@@ -226,7 +230,7 @@ async function runRecognition() {
     await grading.ready;
     if (workingImage !== image || workspace.activeBatch !== batch) return;
     showStatus('Saving the captured sheet locally…');
-    const staged = await grading.stageCapture(request.profile, image, { manual: Boolean(request.options.corners) });
+    const staged = await grading.stageCapture(request.profile, image, { corners: request.options.corners });
     if (workingImage === image && workspace.activeBatch === batch) {
       workingImage = staged;
       retryCheckpoint.hidden = true;

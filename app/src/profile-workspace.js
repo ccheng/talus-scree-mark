@@ -313,6 +313,7 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   refresh();
   return {
     acceptImage, scanOptions, resetCapture, reset,
+    restoreCorners(corners) { activeCorners = corners; },
     get activeBatch() { return activeBatch; },
     get selectedProfile() { return selected(); },
     observeRegistration(registration) {

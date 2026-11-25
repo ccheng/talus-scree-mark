@@ -1,3 +1,4 @@
+import { readBackupStream } from './backup-stream.js';
 import { addDecision, gradeScan, sameTemplate, validateCategories, validateKey } from './grading.js';
 
 const version = 1;
@@ -68,15 +69,24 @@ async function decodePhoto(photo) {
   return blob;
 }
 
-export async function exportBackup({ keys, scans }) {
-  const used = new Set(scans.map(({ keyId }) => keyId));
-  const records = await Promise.all(scans.map(async (scan) => ({
-    ...scan, photo: await encodePhoto(scan.photo),
-  })));
-  // Keep unused answer keys, including keys saved before the first scan.
-  const missing = [...used].some((id) => id !== null && !keys.some((key) => key.id === id));
-  requireValid(!missing, 'A scan references an unavailable key.');
-  return JSON.stringify({ format, version, keys, scans: records });
+export async function createBackup({ keys, scans }, onProgress = () => {}) {
+  const available = new Set(keys.map(({ id }) => id));
+  requireValid(scans.every(({ keyId }) => keyId === null || available.has(keyId)),
+    'A scan references an unavailable key.');
+  const prefix = JSON.stringify({ format, version, keys });
+  const parts = [prefix.slice(0, -1), ',"scans":['];
+  onProgress(0, scans.length);
+  for (const [index, scan] of scans.entries()) {
+    const photo = await encodePhoto(scan.photo);
+    // A Blob component retains the finished record without a second aggregate string.
+    parts.push(new Blob([index ? ',' : '', JSON.stringify({ ...scan, photo })]));
+    onProgress(index + 1, scans.length);
+  }
+  return new Blob([...parts, ']}'], { type: 'application/json' });
+}
+
+export async function exportBackup(records) {
+  return (await createBackup(records)).text();
 }
 
 function unique(records, label) {
@@ -125,47 +135,95 @@ function consistentObservation(item, raw) {
   return !hasUnresolved && raw.rawText === literal && raw.status === (literal === '    ' ? 'blank' : 'single');
 }
 
+function checkKey(key, keys) {
+  requireValid(text(key?.id) && !keys.has(key.id), 'Duplicate or invalid answer key ID.');
+  validateTemplate(key.template);
+  requireValid(text(key.createdAt), 'Invalid answer key date.');
+  validateKey(key.template, key.answers);
+  validateCategories(key.template, key.categories);
+  keys.set(key.id, key);
+}
+
+async function checkScan(scan, keys) {
+  validateTemplate(scan.template);
+  requireValid(text(scan.label) && text(scan.batchId) && text(scan.createdAt) && text(scan.updatedAt) &&
+    scan.observation?.status === 'read' && text(scan.observation.captureId) && Array.isArray(scan.history),
+  'Invalid saved scan.');
+  unique(scan.observation.items, 'observation');
+  requireValid(scan.observation.items.length === scan.template.items.length &&
+    scan.template.items.every((item) => consistentObservation(item,
+      scan.observation.items.find(({ id }) => id === item.id))), 'Invalid or inconsistent recognition evidence.');
+  const key = scan.keyId === null ? null : keys.get(scan.keyId);
+  requireValid(scan.keyId === null || key && sameTemplate(scan.template, key.template), 'Incompatible or missing answer key.');
+  if (scan.regrades !== undefined) {
+    requireValid(Array.isArray(scan.regrades) && scan.regrades.every((event) => text(event?.at) &&
+      sameTemplate(keys.get(event.keyId)?.template, scan.template) &&
+      (event.previousKeyId === null || sameTemplate(keys.get(event.previousKeyId)?.template, scan.template))) &&
+      scan.regrades.at(-1)?.keyId === scan.keyId, 'Invalid regrade provenance.');
+  }
+  for (const event of scan.history) {
+    requireValid(text(event?.at), 'Invalid review history.');
+    addDecision(scan, event.itemId, event.kind, event.value);
+  }
+  requireValid(scan.rescanOf === null || typeof scan.rescanOf === 'string', 'Invalid rescan provenance.');
+  const grade = gradeScan(scan, key);
+  requireValid(JSON.stringify(scan.grade) === JSON.stringify(grade), 'Inconsistent saved grade.');
+  const photo = await decodePhoto(scan.photo);
+  requireValid(scan.photoStatus === (photo ? 'retained' : 'deleted'), 'Invalid photograph association.');
+  return { ...scan, grade, photo };
+}
+
 export async function parseBackup(source) {
   const backup = JSON.parse(source);
   requireValid(backup?.format === format && backup.version === version, 'Unsupported Scree Mark backup format or version.');
   unique(backup.keys, 'answer key');
   unique(backup.scans, 'scan');
   const keys = new Map();
-  for (const key of backup.keys) {
-    validateTemplate(key.template);
-    requireValid(text(key.createdAt), 'Invalid answer key date.');
-    validateKey(key.template, key.answers);
-    validateCategories(key.template, key.categories);
-    keys.set(key.id, key);
-  }
+  for (const key of backup.keys) checkKey(key, keys);
   const scans = [];
-  for (const scan of backup.scans) {
-    validateTemplate(scan.template);
-    requireValid(text(scan.label) && text(scan.batchId) && text(scan.createdAt) && text(scan.updatedAt) &&
-      scan.observation?.status === 'read' && text(scan.observation.captureId) && Array.isArray(scan.history),
-    'Invalid saved scan.');
-    unique(scan.observation.items, 'observation');
-    requireValid(scan.observation.items.length === scan.template.items.length &&
-      scan.template.items.every((item) => consistentObservation(item,
-        scan.observation.items.find(({ id }) => id === item.id))), 'Invalid or inconsistent recognition evidence.');
-    const key = scan.keyId === null ? null : keys.get(scan.keyId);
-    requireValid(scan.keyId === null || key && sameTemplate(scan.template, key.template), 'Incompatible or missing answer key.');
-    if (scan.regrades !== undefined) {
-      requireValid(Array.isArray(scan.regrades) && scan.regrades.every((event) => text(event?.at) &&
-        sameTemplate(keys.get(event.keyId)?.template, scan.template) &&
-        (event.previousKeyId === null || sameTemplate(keys.get(event.previousKeyId)?.template, scan.template))) &&
-        scan.regrades.at(-1)?.keyId === scan.keyId, 'Invalid regrade provenance.');
-    }
-    for (const event of scan.history) {
-      requireValid(text(event?.at), 'Invalid review history.');
-      addDecision(scan, event.itemId, event.kind, event.value);
-    }
-    requireValid(scan.rescanOf === null || typeof scan.rescanOf === 'string', 'Invalid rescan provenance.');
-    const grade = gradeScan(scan, key);
-    requireValid(JSON.stringify(scan.grade) === JSON.stringify(grade), 'Inconsistent saved grade.');
-    const photo = await decodePhoto(scan.photo);
-    requireValid(scan.photoStatus === (photo ? 'retained' : 'deleted'), 'Invalid photograph association.');
-    scans.push({ ...scan, grade, photo });
-  }
+  for (const scan of backup.scans) scans.push(await checkScan(scan, keys));
   return { keys: backup.keys, scans };
+}
+
+export async function parseBackupFile(file, onProgress = () => {}) {
+  const input = readBackupStream(file.stream());
+  const fields = new Map();
+  const keys = new Map();
+  const scans = [];
+  const ids = new Set();
+  try {
+    await input.expect('{');
+    while (await input.peek() !== '}') {
+      const field = await input.value();
+      requireValid(typeof field === 'string' && !fields.has(field), 'Invalid or duplicate backup property.');
+      await input.expect(':');
+      if (field === 'keys') {
+        for await (const key of input.list()) checkKey(key, keys);
+        fields.set(field, true);
+      } else if (field === 'scans') {
+        if (!fields.has('keys')) {
+          requireValid(file.size <= 8 * 1024 * 1024,
+            'For a large backup, use an original Scree Mark export with answer keys before scans.');
+          return await parseBackup(await file.text());
+        }
+        for await (const scan of input.list()) {
+          requireValid(text(scan?.id) && !ids.has(scan.id), 'Duplicate or invalid scan ID.');
+          ids.add(scan.id);
+          scans.push(await checkScan(scan, keys));
+          onProgress(scans.length);
+        }
+        fields.set(field, true);
+      } else fields.set(field, await input.value());
+      if (await input.peek() === '}') break;
+      await input.expect(',');
+      requireValid(await input.peek() !== '}', 'Invalid trailing comma in backup JSON.');
+    }
+    await input.expect('}');
+    requireValid(await input.peek() === undefined, 'Unexpected data after backup JSON.');
+    requireValid(fields.get('format') === format && fields.get('version') === version &&
+      fields.has('keys') && fields.has('scans'), 'Unsupported Scree Mark backup format or version.');
+    return { keys: [...keys.values()], scans };
+  } finally {
+    await input.close();
+  }
 }

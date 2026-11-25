@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { exportBackup, exportCsv, parseBackup } from '../app/src/grading-export.js';
+import { createBackup, exportBackup, exportCsv, parseBackup, parseBackupFile } from '../app/src/grading-export.js';
 import { addDecision, gradeScan } from '../app/src/grading.js';
 
 const timestamp = '2026-02-03T12:00:00.000Z';
@@ -151,4 +151,47 @@ test('MC-only categories partition keyed points once and survive revisioned back
   assert.deepEqual(restored.keys, [firstKey, secondKey]);
   assert.deepEqual(saved.grade.items[0].categories, ['DV', 'Lab']);
   assert.deepEqual(gradeScan(saved, secondKey).items[0].categories, ['PR', 'Model']);
+});
+
+test('photo backup encodes one record at a time and restores across UTF-8 chunk boundaries', async () => {
+  const bytes = await readFile(new URL('../app/reference/reference-filled.png', import.meta.url));
+  let active = 0;
+  let maxActive = 0;
+  const photo = {
+    type: 'image/png',
+    async arrayBuffer() {
+      maxActive = Math.max(maxActive, ++active);
+      await Promise.resolve();
+      active--;
+      return bytes;
+    },
+  };
+  const inputs = Array.from({ length: 3 }, (_, i) => ({
+    ...record, id: String(i), label: 'Lab ✓ \"' + i, photo, photoStatus: 'retained',
+  }));
+  const counts = [];
+  const blob = await createBackup({ keys: [key], scans: inputs }, (done, total) => counts.push([done, total]));
+  assert.equal(maxActive, 1);
+  assert.deepEqual(counts, [[0, 3], [1, 3], [2, 3], [3, 3]]);
+  const encoded = new Uint8Array(await blob.arrayBuffer());
+  const relayed = {
+    size: blob.size,
+    text() { throw new Error('Canonical backups should be streamed'); },
+    stream() {
+      let offset = 0;
+      return new ReadableStream({
+        pull(controller) {
+          if (offset >= encoded.length) return controller.close();
+          controller.enqueue(encoded.subarray(offset, offset + 37));
+          offset += 37;
+        },
+      });
+    },
+  };
+  const result = await parseBackupFile(relayed);
+  assert.deepEqual(result.scans.map(({ label }) => label), inputs.map(({ label }) => label));
+  assert.deepEqual(new Uint8Array(await result.scans[0].photo.arrayBuffer()), new Uint8Array(bytes));
+  await assert.rejects(parseBackupFile(blob.slice(0, blob.size - 1)));
+  const reordered = JSON.parse(await blob.text());
+  await parseBackupFile(new Blob([JSON.stringify({ scans: reordered.scans, ...reordered })]));
 });

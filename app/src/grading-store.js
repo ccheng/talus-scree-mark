@@ -1,10 +1,9 @@
-const name = 'talus-scree-mark-grading';
-const journalName = 'talus-scree-mark-capture-journal';
+const name = 'talus-scree-mark-classroom';
+const tables = ['keys', 'scans', 'captures'];
 
-async function transaction(mode, action, database = name) {
-  const tables = database === journalName ? ['captures'] : ['keys', 'scans'];
+async function transaction(mode, action) {
   const db = await new Promise((resolve, reject) => {
-    const request = indexedDB.open(database, 1);
+    const request = indexedDB.open(name, 1);
     let missing = false;
     let abandoned = false;
     request.onupgradeneeded = () => {
@@ -79,15 +78,15 @@ export function saveScan(scan, { create = false } = {}) {
 }
 
 export function deleteScans(ids) {
-  return transaction('readwrite', ({ scans }) => {
-    for (const id of ids) scans.delete(id);
+  return transaction('readwrite', ({ scans, captures }) => {
+    for (const id of ids) { scans.delete(id); captures.delete(id); }
   });
 }
 
 export function restoreGrading(backup) {
   // add() aborts the whole transaction on an existing scan ID. Existing
   // byte-equivalent key records may be shared by older and restored batches.
-  return transaction('readwrite', ({ keys, scans }, _complete, abort) => {
+  return transaction('readwrite', ({ keys, scans, captures }, _complete, abort) => {
     for (const key of backup.keys) {
       const request = keys.get(key.id);
       request.onsuccess = () => {
@@ -95,7 +94,14 @@ export function restoreGrading(backup) {
         else if (JSON.stringify(request.result) !== JSON.stringify(key)) abort(new Error('An existing answer key has a conflicting ID.'));
       };
     }
-    for (const scan of backup.scans) scans.add(scan);
+    let index = 0;
+    function writeNext() {
+      const scan = backup.scans[index++];
+      if (!scan) return;
+      captures.delete(scan.id);
+      scans.add(scan).onsuccess = writeNext;
+    }
+    writeNext();
   });
 }
 
@@ -103,30 +109,37 @@ export async function loadPendingCaptures(scope) {
   const result = await transaction('readonly', ({ captures }, complete) => {
     const request = captures.getAll();
     request.onsuccess = () => complete(request.result.filter((capture) => capture.scope === scope));
-  }, journalName);
+  });
   return Array.isArray(result) ? result : [];
 }
 
 export function savePendingCapture(capture) {
-  return transaction('readwrite', ({ captures }) => captures.add(capture), journalName);
+  return transaction('readwrite', ({ captures }) => captures.add(capture));
 }
 
 export function deletePendingCapture(id) {
-  return transaction('readwrite', ({ captures }) => captures.delete(id), journalName);
+  return transaction('readwrite', ({ captures }) => captures.delete(id));
 }
 
-export async function completeCapture(scan, capture) {
-  if (capture.id !== scan.id || capture.profileId !== scan.template.id || capture.revision !== scan.template.revision) {
-    throw new Error('The captured sheet does not match this result.');
-  }
-  // The unique scan ID is the commit marker. The new journal uses a separate
-  // database so pinned builds can still open their original database version.
-  const record = { ...scan, photo: capture.photo };
-  await saveScan(record, { create: true });
-  return record;
+export function completeCapture(scan, scope) {
+  return transaction('readwrite', ({ scans, captures }, complete, abort) => {
+    const request = captures.get(scan.id);
+    request.onsuccess = () => {
+      const capture = request.result;
+      if (!capture || capture.scope !== scope || capture.batchId !== scan.batchId ||
+          capture.profileId !== scan.template.id || capture.revision !== scan.template.revision) {
+        abort(new Error('The captured sheet changed, was discarded, or was already graded.'));
+        return;
+      }
+      const record = { ...scan, photo: capture.photo };
+      scans.add(record);
+      captures.delete(scan.id);
+      complete(record);
+    };
+  });
 }
 
-// Recovery metadata belongs to the app path. Saved grades remain shared.
+// Recovery metadata is scoped to the app path.
 export function readActiveBatch(storage, scope) {
   try {
     const value = JSON.parse(storage.getItem('scree-active-batch:' + scope) ?? 'null');

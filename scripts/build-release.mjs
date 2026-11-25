@@ -23,6 +23,7 @@ const staticFiles = [
   'src/grading.js',
   'src/grading-store.js',
   'src/grading-export.js',
+  'src/backup-stream.js',
   'src/grading-view.js',
   'src/image.js',
   'src/layout-discovery.js',

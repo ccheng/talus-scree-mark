@@ -171,9 +171,8 @@ try {
       assert.equal(rows.length, 18);
       for (const { kind, ...literal } of form.truth) assert.deepEqual(rows.find(({ id }) => id === literal.id), literal);
       await waitGrade(page, '3/6 · 1 pending · provisional');
-      await page.locator('#grading-save').click();
       await appStatus(page).filter({ hasText: /result and source photograph saved locally/i }).waitFor();
-      const [saved] = (await snapshot(page)).scans;
+      const saved = (await snapshot(page)).scans.find(({ grade }) => grade.pending === 1);
       assert.deepEqual(saved.template.items.map(({ id }) => id), all.map(({ id }) => id));
       assert.equal(saved.grade.items.find(({ id }) => id === 'NR3').status, 'pending');
     });
@@ -339,8 +338,7 @@ try {
     await page.locator('#grading-item').selectOption('MC10');
     await page.locator('#grading-award').click();
     await waitGrade(page, '2/2 · 0 pending · final');
-    await page.locator('#grading-save').click();
-    await appStatus(page).filter({ hasText: /result and source photograph saved locally/i }).waitFor();
+    await appStatus(page).filter({ hasText: /review updated locally/i }).waitFor();
     await page.getByText('Local export and restore', { exact: true }).click();
     const csv = await download(page, '#grading-csv', 'scree-grades.csv');
     assert.match(csv, /"intersection","Level","DV","Outcome","Lab","1","1","0"/);
@@ -624,6 +622,28 @@ try {
     assert.equal(await result.locator('[data-raw-text]').getAttribute('data-raw-text'), '23.7');
   });
 
+  await group('Classroom journal atomically discards or commits each captured sheet', async (page) => {
+    const evidence = await page.evaluate(async (path) => {
+      const store = await import(path);
+      const scope = '/classroom/';
+      const pending = { id: 'capture', scope, profileId: 'mixed', revision: 1, batchId: 'class',
+        photo: new Blob(['image'], { type: 'image/png' }) };
+      const scan = { id: pending.id, template: { id: 'mixed', revision: 1 }, batchId: 'class' };
+      await store.savePendingCapture(pending);
+      const isolated = (await store.loadPendingCaptures('/other/')).length;
+      const writes = await Promise.allSettled([store.completeCapture(scan, scope), store.completeCapture(scan, scope)]);
+      const committed = (await store.loadGrading()).scans.length;
+      const remaining = (await store.loadPendingCaptures(scope)).length;
+      await store.savePendingCapture({ ...pending, id: 'discard' });
+      await store.deletePendingCapture('discard');
+      let rejected = false;
+      try { await store.completeCapture({ ...scan, id: 'discard' }, scope); }
+      catch { rejected = true; }
+      return { isolated, writes: writes.map(({ status }) => status).sort(), committed, remaining, rejected };
+    }, source('grading-store.js'));
+    assert.deepEqual(evidence, { isolated: 0, writes: ['fulfilled', 'rejected'], committed: 1, remaining: 0, rejected: true });
+  });
+
   await group('M4 offline setup, key revisions, review, rescan, photo retention and export through the app', async (page, context) => {
     const requests = [];
     context.on('request', (request) => requests.push({ method: request.method(), url: request.url(), body: request.postData() }));
@@ -672,9 +692,28 @@ try {
     await recognize(page, resolve(appPath, 'assets/icon-192.png'), 'retake');
     assert.equal(await page.locator('#grading-saved option').count(), 1, 'A retake was listed as a gradeable record');
     await page.locator('#scan-next').click();
+    await page.evaluate(() => {
+      const add = IDBObjectStore.prototype.add;
+      IDBObjectStore.prototype.add = function (value) {
+        const request = add.call(this, value);
+        if (this.name === 'scans') {
+          IDBObjectStore.prototype.add = add;
+          request.addEventListener('success', () => this.transaction.abort(), { once: true });
+        }
+        return request;
+      };
+    });
     await recognize(page, fixture('filled'));
     await waitGrade(page, '1/5 · 1 pending · provisional');
-    assert.equal((await snapshot(page)).scans.length, 0, 'A scan persisted before explicit save');
+    await appStatus(page).filter({ hasText: /could not save the grade/i }).waitFor();
+    assert.equal((await snapshot(page)).scans.length, 0, 'An aborted automatic save created a result');
+    await page.reload();
+    await page.locator('#profile-pin').filter({ hasText: /batch active/i }).waitFor();
+    const pending = page.locator('#grading-pending-picker option').filter({ hasText: /Sheet 2/ });
+    await page.locator('#grading-pending-picker').selectOption(await pending.getAttribute('value'));
+    await page.locator('#grading-pending-open').click();
+    await appStatus(page).filter({ hasText: /result and source photograph saved locally/i }).waitFor();
+    await waitGrade(page, '1/5 · 1 pending · provisional');
 
     await openOptions(page, '#grading-subtotals-panel');
     const intersection = (level, outcome) => page.locator('#grading-subtotals tr').filter({
@@ -698,23 +737,6 @@ try {
     assert.deepEqual((await intersection('Proficient', 'Model')).slice(1), ['2/2', '0']);
     assert.deepEqual((await intersection('Developing', 'Practice')).slice(1), ['1/3', '0']);
 
-    await page.evaluate(() => {
-      const add = IDBObjectStore.prototype.add;
-      IDBObjectStore.prototype.add = function (value) {
-        const request = add.call(this, value);
-        if (this.name === 'scans') {
-          IDBObjectStore.prototype.add = add;
-          request.addEventListener('success', () => this.transaction.abort(), { once: true });
-        }
-        return request;
-      };
-    });
-    await page.locator('#grading-save').click();
-    await appStatus(page).filter({ hasText: /local operation failed/i }).waitFor();
-    assert.equal((await snapshot(page)).scans.length, 0);
-    await waitGrade(page, '3/5 · 0 pending · final');
-    await page.locator('#grading-save').click();
-    await appStatus(page).filter({ hasText: /result and source photograph saved locally/i }).waitFor();
     const { keys: initialKeys, scans: [original] } = await snapshot(page);
     assert(original.bytes > 1000);
     const samePixels = await page.evaluate(async ({ path, id }) => {
@@ -767,7 +789,6 @@ try {
       await page.locator('#scan-next').click();
       await recognize(page, fixture('filled'));
       await waitGrade(page, reuse ? '2/5 · 0 pending · final' : '2/5 · 1 pending · provisional');
-      await page.locator('#grading-save').click();
       await appStatus(page).filter({ hasText: /result and source photograph saved locally/i }).waitFor();
     }
     await explicitRescan(false);
