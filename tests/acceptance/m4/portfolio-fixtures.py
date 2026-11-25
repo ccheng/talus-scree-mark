@@ -186,14 +186,14 @@ def generate():
     print('Generated two synthetic top-loaded document and camera response layouts, with marked pairs and literal keys.')
 
 
-def curl_response_sheet(image):
+def curl_response_sheet(image, across=3.5, down=4.5):
     """Vary the interior pose while keeping the physical corners fixed."""
     width, height = image.size
 
     def source(x, y):
         u, v = x/width, y/height
-        return (x - SCALE*3.5*sin(pi*u)*sin(2*pi*v),
-                y - SCALE*4.5*sin(2*pi*u)*sin(pi*v))
+        return (x - SCALE*across*sin(pi*u)*sin(2*pi*v),
+                y - SCALE*down*sin(2*pi*u)*sin(pi*v))
 
     mesh = []
     for y in range(0, height, 48):
@@ -231,12 +231,44 @@ def generate_independent(blank, blocks, written, values):
         mc_block('right-bottom', 211.4, [176,197.25], 13), *blocks[2:],
     ]
     moved, _ = marked(render(moved_blocks, written, 'shifted block'), moved_blocks, written, values, pencil=True)
+    # Preserve fixed print near each grid when moving the two grid blocks.
+    # Individual questions and the broader printed layout remain unchanged.
+    def displaced(left, right):
+        altered = [
+            mc_block('left-start', 78 + left, [91.5,112.5], 1),
+            mc_block('left-rest', 78, [154.75,176,197.25,218.5,240,261,282.25], 3),
+            mc_block('right-start', 205 + right, [91.5,112.5,133.75], 10),
+            mc_block('right-rest', 205, [176,197.25], 13), *blocks[2:],
+        ]
+        return marked(render(altered, written, 'camera'), altered, written, values, pencil=True)[0]
+
+    # Dark graphite, lighter pressure, an erasure, and penned work in a
+    # non-graded area. The grading oracle retains the intended MC answers.
+    marked_copy = filled.copy()
+    draw = ImageDraw.Draw(marked_copy)
+    draw.line([scaled((52,401)), scaled((72,391)), scaled((74,406)),
+               scaled((94,397)), scaled((103,401))], fill=(39,50,93), width=4)
+    erased = blocks[0]['items'][4]['choices'][2]
+    for shift in [-.8, -.3, .2, .6]:
+        x,y = erased['x'],erased['y']
+        draw.line([scaled((x-1.4,y+shift)), scaled((x+1.1,y+shift-.5))], fill=(222,221,218), width=1)
+    marks = marked_copy.filter(ImageFilter.GaussianBlur(.65))
+    regression = [
+        {'name': 'written-and-erased', 'valid': True, **save_photo('written-erased', marks, *photos[1][1:])},
+        {'name': 'opposing-curl', 'valid': True,
+         **save_photo('opposing-curl', curl_response_sheet(marked_copy, -4, 5), *photos[2][1:])},
+        {'name': 'opposed-shifted-blocks', 'valid': False,
+         **save_photo('opposed-shifts', displaced(-6, 6.2), projection, desk, shade)},
+        {'name': 'same-direction-shifted-blocks', 'valid': False,
+         **save_photo('same-shifts', displaced(6, 6.2), projection, desk, shade)},
+    ]
     (OUT / 'independent-oracle.json').write_text(json.dumps({
         'blank': save_photo('enrollment', blank, enrollment, (232, 233, 232), 0),
         'scans': captures,
         'curl': save_photo('curl', curl_response_sheet(filled), projection, desk, shade),
         'wrong': save_photo('wrong', wrong, projection, desk, shade),
         'shiftedBlock': save_photo('shifted-block', moved, projection, desk, shade),
+        'photographicRegression': regression,
         'truth': truth,
     }, indent=2)+'\n')
 
