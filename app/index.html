@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="f0ecaee1737929c4275ec27e">
+  <meta name="scree-release" content="5519952dedd933a5f0f197f2">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -37,6 +37,7 @@
         <button id="clear-image" type="button" hidden>Clear preview</button>
       </div>
       <p id="capture-status" class="capture-status" role="status"></p>
+      <button id="retry-checkpoint" type="button" hidden>Retry saving captured sheet</button>
       <div id="camera-preview" class="preview" hidden>
         <video id="camera-video" aria-label="Live camera preview" autoplay playsinline muted></video>
       </div>
@@ -313,6 +314,12 @@
         <button id="grading-key-cancel" type="button">Cancel</button>
       </form>
       <p id="grading-status" role="status"></p>
+      <section id="grading-pending-panel" hidden aria-label="Pending captures">
+        <p>These photos are saved locally and still need recognition. Use the original template revision to reopen one.</p>
+        <label>Pending capture <select id="grading-pending-picker"></select></label>
+        <button id="grading-pending-open" type="button">Resume captured sheet</button>
+        <button id="grading-pending-delete" type="button">Discard captured sheet</button>
+      </section>
       <p id="grading-rescan-note"></p>
       <button id="grading-cancel-rescan" type="button" hidden>Cancel rescan</button>
       <label>Results <select id="grading-saved"><option value="">Choose a result</option></select></label>
@@ -327,7 +334,7 @@
             <tbody id="grading-subtotals"></tbody>
           </table></div>
         </details>
-        <button id="grading-save" type="button">Save result and photograph</button>
+        <button id="grading-save" type="button">Retry saving result</button>
         <div class="grading-table">
           <table>
             <thead><tr><th>Question</th><th>Observed</th><th>Effective</th><th>Status</th><th>Points</th><th>Review detail</th></tr></thead>

@@ -1,12 +1,13 @@
 import { createProfileEditor, insetCorners, nearestCorner, paintCornerMarkers, sourceOnCanvas } from './profile-editor.js';
 import { proposePageCorners } from './markerless-registration.js';
+import { readActiveBatch, writeActiveBatch } from './grading-store.js';
 import { deleteProfile, listProfiles, saveProfile } from './profile-store.js';
 
 const byId = (id) => document.getElementById(id);
 const referenceKey = 'reference';
 const key = ({ id, revision }) => `${id}@${revision}`;
 
-export function createProfileWorkspace({ image, onChanged, requestBlank, read, onEditorClosed, onCaptureRequested }) {
+export function createProfileWorkspace({ image, onChanged, requestBlank, read, onEditorClosed, onCaptureRequested, onBatchChanged, scope }) {
   const selector = byId('profile-selector');
   const profileStatus = byId('profile-status');
   const management = byId('profile-management');
@@ -28,6 +29,7 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   let dragCorner = -1;
   let activeBatch;
   let refreshSequence = 0;
+  let resumeInitial = true;
 
   function selected() {
     return profiles.find((profile) => key(profile) === selectedKey);
@@ -60,8 +62,12 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   }
 
   function clearBatch() {
+    const previous = activeBatch;
     activeBatch = undefined;
+    try { writeActiveBatch(localStorage, scope, undefined, previous); }
+    catch (error) { profileStatus.textContent = `Could not clear the saved batch checkpoint. ${error.message}`; }
     label();
+    onBatchChanged(undefined);
   }
 
   function closeManual() {
@@ -96,11 +102,20 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
       const previous = selectedKey;
       selector.replaceChildren(new Option('Coded reference sheet (M2)', referenceKey), ...profiles.map((profile) =>
         new Option(`${profile.name} (revision ${profile.revision})`, key(profile))));
-      const target = want ?? selectedKey;
+      const resume = resumeInitial ? readActiveBatch(localStorage, scope) : undefined;
+      resumeInitial = false;
+      const target = want ?? (resume ? key({ id: resume.profileId, revision: resume.revision }) : selectedKey);
       selectedKey = profiles.some((profile) => key(profile) === target) ? target : referenceKey;
       selector.value = selectedKey;
       label();
-      if (previous !== selectedKey) {
+      if (resume && selectedKey !== referenceKey && want === undefined) {
+        activeBatch = Object.freeze(resume);
+        label();
+        resetCapture();
+        onBatchChanged(activeBatch);
+        onChanged();
+        profileStatus.textContent = 'Resumed the saved grading batch.';
+      } else if (previous !== selectedKey) {
         const wasActive = Boolean(activeBatch);
         clearBatch();
         resetCapture();
@@ -177,7 +192,11 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
     const profile = selected();
     if (!profile || activeBatch || editor.active) return;
     closeManagement();
-    activeBatch = Object.freeze({ profileId: profile.id, revision: profile.revision });
+    const next = Object.freeze({ id: crypto.randomUUID(), profileId: profile.id, revision: profile.revision });
+    try { writeActiveBatch(localStorage, scope, next); }
+    catch (error) { profileStatus.textContent = `Could not save the batch checkpoint. ${error.message}`; return; }
+    activeBatch = next;
+    onBatchChanged(activeBatch);
     label();
     resetCapture();
     onCaptureRequested();
@@ -294,6 +313,7 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   refresh();
   return {
     acceptImage, scanOptions, resetCapture, reset,
+    get activeBatch() { return activeBatch; },
     get selectedProfile() { return selected(); },
     observeRegistration(registration) {
       const points = registration?.diagnostics?.pagePose?.corners;

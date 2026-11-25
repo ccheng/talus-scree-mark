@@ -13,6 +13,7 @@ const choose = byId('choose-image');
 const picker = byId('image-picker');
 const clear = byId('clear-image');
 const status = byId('capture-status');
+const retryCheckpoint = byId('retry-checkpoint');
 const cameraPreview = byId('camera-preview');
 const sheet = byId('image-preview');
 const canvas = byId('sheet-canvas');
@@ -21,7 +22,29 @@ let workingImage;
 let importOperation;
 let pickerPending = false;
 const read = byId('read-bubbles');
-const grading = createGradingView();
+const scope = new URL('.', location.href).pathname;
+let captureOperation;
+const grading = createGradingView({ scope, async recover(entry) {
+  if (workspace.activeBatch?.profileId !== entry.profileId || workspace.activeBatch?.revision !== entry.revision) {
+    throw new Error('Start a batch with the original template revision before reopening this capture.');
+  }
+  cancelImport();
+  camera.close();
+  const operation = new AbortController();
+  importOperation = operation;
+  const batch = workspace.activeBatch;
+  try {
+    const file = new File([entry.photo], 'recovered-sheet.png', { type: 'image/png' });
+    const copy = await importWorkingImage(file, operation.signal);
+    if (importOperation !== operation || workspace.activeBatch !== batch) return;
+    showWorkingImage({ ...copy, id: entry.id });
+    showStatus('Recovered the captured sheet.');
+  } finally {
+    if (importOperation === operation) importOperation = undefined;
+    updatePreview();
+  }
+  if (workspace.activeBatch === batch) runRecognition();
+} });
 const recognition = createRecognitionView({
   button: read, status: byId('recognition-status'), results: byId('recognition-results'),
   table: byId('recognition-items'), overlay: byId('recognition-overlay'),
@@ -31,6 +54,8 @@ const recognition = createRecognitionView({
 });
 const workspace = createProfileWorkspace({
   image: () => workingImage,
+  scope,
+  onBatchChanged: grading.setBatch,
   onChanged({ clearImage = false } = {}) {
     grading.select(workspace.selectedProfile, clearImage);
     if (clearImage) {
@@ -77,6 +102,7 @@ function updatePreview() {
   byId('marked-capture-controls').hidden = !workspace.captureVisible || workspace.editing;
   recognition.setAvailable(!sheet.hidden && !pickerPending && !importOperation && !workspace.editing && workspace.canRead, !workspace.autoRead);
   if (!workingImage) {
+    retryCheckpoint.hidden = true;
     canvas.width = 1;
     canvas.height = 1;
     caption.textContent = '';
@@ -85,6 +111,7 @@ function updatePreview() {
 }
 
 function showWorkingImage(image) {
+  retryCheckpoint.hidden = true;
   recognition.reset();
   workingImage = image;
   canvas.width = image.width;
@@ -183,11 +210,42 @@ picker.addEventListener('change', async () => {
   }
 });
 
-function runRecognition() {
-  if (workspace.editing || !workspace.canRead) return;
-  recognition.read(workingImage, workspace.scanOptions());
+async function runRecognition() {
+  if (workspace.editing || !workspace.canRead || !workingImage) return;
+  const image = workingImage;
+  const request = workspace.scanOptions();
+  if (!request) {
+    recognition.read(image);
+    return;
+  }
+  const batch = workspace.activeBatch;
+  if (captureOperation?.image === image) return;
+  const operation = { image };
+  captureOperation = operation;
+  try {
+    await grading.ready;
+    if (workingImage !== image || workspace.activeBatch !== batch) return;
+    showStatus('Saving the captured sheet locally…');
+    const staged = await grading.stageCapture(request.profile, image, { manual: Boolean(request.options.corners) });
+    if (workingImage === image && workspace.activeBatch === batch) {
+      workingImage = staged;
+      retryCheckpoint.hidden = true;
+      showStatus('Capture saved. Reading the sheet…');
+      recognition.read(staged, request);
+    }
+  } catch (error) {
+    if (workingImage === image) {
+      retryCheckpoint.hidden = false;
+      showStatus(error?.name === 'QuotaExceededError'
+        ? 'Local storage is full. The capture was not saved. Export your results and free storage before retrying.'
+        : `The capture was not processed. ${error.message}`);
+    }
+  } finally {
+    if (captureOperation === operation) captureOperation = undefined;
+  }
 }
 read.addEventListener('click', () => runRecognition());
+retryCheckpoint.addEventListener('click', runRecognition);
 
 clear.addEventListener('click', () => {
   recognition.reset();
@@ -204,8 +262,7 @@ function resetPage() {
   cancelImport();
   camera.close();
   workingImage = undefined;
-  workspace.reset({ end: true });
-  grading.select(workspace.selectedProfile, true);
+  workspace.reset();
   updatePreview();
   showStatus('');
 }

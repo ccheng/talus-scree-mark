@@ -1,5 +1,5 @@
 import { addDecision, gradeScan, sameTemplate, templateSnapshot, validateCategories, validateKey } from './grading.js';
-import { deleteScans, loadGrading, restoreGrading, saveKey, saveScan } from './grading-store.js';
+import { completeCapture, deletePendingCapture, deleteScans, loadGrading, loadPendingCaptures, restoreGrading, saveKey, savePendingCapture, saveScan } from './grading-store.js';
 import { exportBackup, exportCsv, parseBackup } from './grading-export.js';
 
 const byId = (id) => document.getElementById(id);
@@ -21,7 +21,7 @@ function photoOf(image) {
     canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Could not retain this scan photograph.')), 'image/png'));
 }
 
-export function createGradingView() {
+export function createGradingView({ scope, recover }) {
   const status = byId('grading-status');
   const say = (message) => { status.textContent = message; };
   const keyPanel = byId('grading-key-panel');
@@ -29,6 +29,11 @@ export function createGradingView() {
   const picker = byId('grading-saved');
   const photo = byId('grading-photo');
   const inSession = new Map();
+  const pending = new Map();
+  const saving = new Set();
+  let batchContext;
+  let photoJournalBusy = false;
+  const pendingPicker = byId('grading-pending-picker');
   let stored = { keys: [], scans: [] };
   let selected;
   let active;
@@ -52,6 +57,78 @@ export function createGradingView() {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .map((scan) => new Option(`${scan.label} · ${scan.template.name} · ${isDraft(scan) ? 'in session' : 'saved'}`, scan.id)));
     picker.value = active ?? '';
+    showPending();
+  }
+
+  function showPending() {
+    const selected = pendingPicker.value;
+    const captures = [...pending.values()].filter((entry) => !inSession.has(entry.id) && !stored.scans.some(({ id }) => id === entry.id));
+    byId('grading-pending-panel').hidden = captures.length === 0;
+    pendingPicker.replaceChildren(...captures.map((entry) =>
+      new Option(`${entry.templateName}, revision ${entry.revision} · ${entry.label}`, entry.id)));
+    if (captures.some(({ id }) => id === selected)) pendingPicker.value = selected;
+    byId('grading-pending-open').disabled = photoJournalBusy;
+    byId('grading-pending-delete').disabled = photoJournalBusy;
+  }
+
+  function setBatch(context) {
+    batchContext = context;
+    if (context) batchId = context.id;
+    sequence = 0;
+    if (context) ready.then(() => {
+      if (batchContext?.id !== context.id) return;
+      const completed = stored.scans.filter((scan) => scan.batchId === batchId);
+      sequence = Math.max(sequence, 0, ...completed.map((scan) => Number(/^Sheet (\d+)/.exec(scan.label)?.[1] ?? 0)));
+      active ??= completed.sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]?.id;
+      render();
+    }).catch(() => {});
+    showPending();
+  }
+
+  async function stageCapture(profile, image, { manual = false } = {}) {
+    const prior = stored.scans.find((scan) => scan.id === image.id);
+    if (prior && !manual) throw new Error('This sheet is already saved. Use Scan next sheet or Rescan this sheet.');
+    if (pending.has(image.id) && !prior) return image;
+    const stagedImage = prior ? { ...image, id: uuid() } : image;
+    const template = templateSnapshot(profile);
+    const context = batchContext;
+    if (!context || context.profileId !== profile.id || context.revision !== profile.revision) {
+      throw new Error('Start a grading batch first.');
+    }
+    const queued = rescan && sameTemplate(rescan.scan.template, template) ? rescan : undefined;
+    const source = prior ? { scan: prior, reuse: false } : queued;
+    if (queued && !prior) rescan = undefined;
+    showRescan();
+    const key = source ? keyOf(source.scan.keyId) : latest(template);
+    const entry = {
+      id: stagedImage.id, scope, sessionId: context.id, batchId: source?.scan.batchId ?? context.id,
+      profileId: profile.id, revision: profile.revision, templateName: template.name, capturedAt: now(), keyId: key?.id ?? null,
+      rescanOf: source?.scan.id ?? null, label: source ? `Rescan of ${source.scan.label}` : `Sheet ${++sequence} · ${stagedImage.id.slice(0, 6)}`,
+      history: source?.reuse ? structuredClone(source.scan.history) : [], reusedCorrections: Boolean(source?.reuse), photo: await photoOf(image),
+    };
+    await savePendingCapture(entry);
+    pending.set(entry.id, entry);
+    showPending();
+    return stagedImage;
+  }
+
+  async function persist(scan) {
+    if (saving.has(scan.id)) return;
+    const capture = pending.get(scan.id);
+    if (!capture) throw new Error('The capture journal is unavailable.');
+    saving.add(scan.id);
+    render();
+    try {
+      const record = await completeCapture(scan, capture);
+      stored.scans.push(record);
+      inSession.delete(scan.id);
+      try { await deletePendingCapture(scan.id); pending.delete(scan.id); }
+      catch { /* Keep the journal entry hidden behind the committed scan ID. */ }
+      say('Result and source photograph saved locally.');
+    } finally {
+      saving.delete(scan.id);
+      render();
+    }
   }
 
   function setPhoto(scan) {
@@ -87,14 +164,17 @@ export function createGradingView() {
       return row;
     }));
     byId('grading-score').textContent = `${grade.score}/${grade.denominator} · ${grade.pending} pending · ${grade.status}`;
-    byId('grading-label').textContent = scan.label + (isDraft(scan) ? ' · In session' : ' · Saved locally');
+    const writing = saving.has(scan.id);
+    byId('grading-label').textContent = scan.label + (writing ? ' · Saving locally…' :
+      isDraft(scan) ? ' · Capture saved, grade not yet saved' : ' · Saved locally');
+    for (const kind of ['correct', 'award', 'deny', 'undo']) byId('grading-' + kind).disabled = isDraft(scan) || busy;
     byId('grading-photo-status').textContent = scan.photoStatus === 'deleted' ? 'Photograph deleted.'
       : scan.photo ? 'Source image used for recognition.' : 'Preparing source image…';
     byId('grading-save').hidden = !isDraft(scan);
-    byId('grading-save').disabled = !scan.photo || busy;
+    byId('grading-save').disabled = !scan.photo || busy || writing;
     byId('grading-delete-photo').disabled = isDraft(scan) || !scan.photo || busy;
     byId('grading-repeat').disabled = isDraft(scan) || !sameTemplate(scan.template, selected);
-    byId('grading-regrade').disabled = !latest(scan.template) || latest(scan.template).id === scan.keyId;
+    byId('grading-regrade').disabled = isDraft(scan) || !latest(scan.template) || latest(scan.template).id === scan.keyId;
     const itemPicker = byId('grading-item');
     const itemId = itemPicker.value;
     itemPicker.replaceChildren(...grade.items.map(({ id, pending }) => new Option(id + (pending ? ' · review' : ''), id)));
@@ -132,8 +212,8 @@ export function createGradingView() {
   function select(profile, newBatch = false) {
     const next = profile ? templateSnapshot(profile) : undefined;
     if (newBatch || (!sameTemplate(next, selected) && (next || selected))) {
-      batchId = uuid();
-      sequence = 0;
+      batchId = batchContext?.id ?? uuid();
+      if (!batchContext) sequence = 0;
     }
     selected = next;
     byId('grading-edit-key').disabled = !selected;
@@ -150,46 +230,20 @@ export function createGradingView() {
 
   async function observe(observation, profile, image) {
     if (!profile || observation.status !== 'read') return;
+    const entry = pending.get(image.id);
+    if (!entry || saving.has(image.id) || stored.scans.some((scan) => scan.id === image.id)) return;
     const template = templateSnapshot(profile);
-    const id = image.id;
-    const existing = records().find((scan) => scan.id === id);
-    if (existing) {
-      if (!isDraft(existing) || existing.history.length) {
-        say('This capture already has a grading record. Use Scan next sheet or Rescan this sheet to grade a fresh capture.');
-      } else {
-        const updated = { ...existing, observation };
-        updated.grade = gradeScan(updated, keyOf(updated.keyId));
-        inSession.set(id, updated);
-        active = id;
-        render();
-      }
-      return;
-    }
-    const source = rescan && sameTemplate(rescan.scan.template, template) ? rescan : undefined;
-    rescan = undefined;
-    showRescan();
-    const started = now();
+    if (entry.profileId !== template.id || entry.revision !== template.revision) return;
     const scan = {
-      id, label: source ? `Rescan of ${source.scan.label}` : `Sheet ${++sequence} · ${id.slice(0, 6)}`,
-      batchId: source?.scan.batchId ?? batchId, template, observation,
-      history: source?.reuse ? structuredClone(source.scan.history) : [],
-      rescanOf: source?.scan.id ?? null, reusedCorrections: Boolean(source?.reuse),
-      createdAt: started, updatedAt: started, keyId: null, photo: null, photoStatus: 'retained',
+      id: entry.id, label: entry.label, batchId: entry.batchId, template, observation,
+      history: entry.history, rescanOf: entry.rescanOf, reusedCorrections: entry.reusedCorrections,
+      createdAt: entry.capturedAt, updatedAt: uuid(), keyId: entry.keyId, photo: entry.photo, photoStatus: 'retained',
     };
-    const key = source ? keyOf(source.scan.keyId) : latest(template);
-    scan.keyId = key?.id ?? null;
-    scan.grade = gradeScan(scan, key);
-    inSession.set(id, scan);
-    active = id;
-    render();
-    try {
-      const blob = await photoOf(image);
-      const record = inSession.get(id);
-      if (record) inSession.set(id, { ...record, photo: blob });
-      render();
-    } catch (error) {
-      say(error.message);
-    }
+    scan.grade = gradeScan(scan, keyOf(scan.keyId));
+    inSession.set(scan.id, scan);
+    active = scan.id;
+    try { await persist(scan); }
+    catch (error) { say(`Could not save the grade. The capture remains available to retry. ${error.message}`); render(); }
   }
 
   const categoryRows = byId('grading-category-assignments');
@@ -329,12 +383,28 @@ export function createGradingView() {
   picker.onchange = () => { active = picker.value || undefined; render(); };
   byId('grading-save').onclick = () => act(async () => {
     const scan = current();
-    if (!scan?.photo || !isDraft(scan)) return;
-    await saveScan(scan, { create: true });
-    stored.scans.push(scan);
-    inSession.delete(scan.id);
-    say('Result and source photograph saved locally.');
+    if (scan && isDraft(scan)) await persist(scan);
   });
+
+  byId('grading-pending-open').onclick = async () => {
+    const entry = pending.get(pendingPicker.value);
+    if (!entry || photoJournalBusy) return;
+    photoJournalBusy = true;
+    showPending();
+    try { await recover(entry); }
+    catch (error) { say(`Could not reopen the pending capture. ${error.message}`); }
+    finally { photoJournalBusy = false; showPending(); }
+  };
+
+  byId('grading-pending-delete').onclick = async () => {
+    const entry = pending.get(pendingPicker.value);
+    if (!entry || photoJournalBusy || !confirm('Discard this captured sheet?')) return;
+    photoJournalBusy = true;
+    showPending();
+    try { await deletePendingCapture(entry.id); pending.delete(entry.id); say('Pending capture discarded.'); }
+    catch (error) { say(`Could not discard the pending capture. ${error.message}`); }
+    finally { photoJournalBusy = false; showPending(); }
+  };
 
   async function update(scan, updated, key) {
     const version = uuid();
@@ -349,7 +419,7 @@ export function createGradingView() {
   for (const kind of ['correct', 'award', 'deny', 'undo']) {
     byId('grading-' + kind).onclick = () => act(async () => {
       const scan = current();
-      if (!scan) return;
+      if (!scan || isDraft(scan)) return;
       const itemId = byId('grading-item').value;
       await update(scan, addDecision(scan, itemId, kind, byId('grading-answer').value), keyOf(scan.keyId));
       byId('grading-answer').value = '';
@@ -360,7 +430,7 @@ export function createGradingView() {
   byId('grading-regrade').onclick = () => act(async () => {
     const scan = current();
     const key = latest(scan?.template);
-    if (!scan || !key || !confirm('Regrade this result using the newest compatible key?')) return;
+    if (!scan || isDraft(scan) || !key || !confirm('Regrade this result using the newest compatible key?')) return;
     await update(scan, { ...scan, keyId: key.id, regrades: [...(scan.regrades ?? []),
       { previousKeyId: scan.keyId, keyId: key.id, at: now() }] }, key);
     say('Regraded against the latest key.');
@@ -389,10 +459,16 @@ export function createGradingView() {
   for (const [id, wholeBatch] of [['grading-delete-result', false], ['grading-delete-batch', true]]) {
     byId(id).onclick = () => act(async () => {
       const scan = current();
-      if (!scan || !confirm(wholeBatch ? 'Delete all results and photographs in this batch?' : 'Delete this result and photograph?')) return;
+      if (!scan || saving.size || !confirm(wholeBatch ? 'Delete all results and photographs in this batch?' : 'Delete this result and photograph?')) return;
       const ids = (wholeBatch ? batch(scan) : [scan]).map((record) => record.id);
+      for (const id of ids) {
+        inSession.delete(id);
+        if (pending.has(id)) {
+          await deletePendingCapture(id);
+          pending.delete(id);
+        }
+      }
       await deleteScans(ids);
-      for (const id of ids) inSession.delete(id);
       stored.scans = stored.scans.filter((record) => !ids.includes(record.id));
       if (rescan && ids.includes(rescan.scan.id)) { rescan = undefined; showRescan(); }
       active = undefined;
@@ -416,13 +492,12 @@ export function createGradingView() {
   }
 
   byId('grading-csv').onclick = () => act(async () => {
-    const scans = batch(current());
+    const scans = batch(current()).filter((scan) => !isDraft(scan));
     if (!scans.length) throw new Error('Choose a result to export its batch.');
     await download(exportCsv(scans), 'text/csv', 'scree-grades.csv');
   });
   byId('grading-json').onclick = () => act(async () => {
-    const scans = records();
-    if (scans.some((scan) => !scan.photo && scan.photoStatus !== 'deleted')) throw new Error('A source photograph is not ready.');
+    const scans = stored.scans;
     await download(await exportBackup({ keys: stored.keys, scans }), 'application/json', 'scree-backup.json');
   });
   const importInput = byId('grading-import');
@@ -439,6 +514,16 @@ export function createGradingView() {
     });
   };
 
-  refresh().catch((error) => say(`Saved results unavailable. ${error.message}`));
-  return { select, observe };
+  const ready = refresh().then(async () => {
+    for (const entry of await loadPendingCaptures(scope)) {
+      pending.set(entry.id, entry);
+      if (stored.scans.some(({ id }) => id === entry.id)) {
+        try { await deletePendingCapture(entry.id); pending.delete(entry.id); }
+        catch { /* Safe to retry next launch. */ }
+      }
+    }
+    render();
+  });
+  ready.catch((error) => say(`Saved results unavailable. ${error.message}`));
+  return { select, observe, ready, stageCapture, setBatch };
 }

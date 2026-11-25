@@ -1,8 +1,10 @@
 const name = 'talus-scree-mark-grading';
+const journalName = 'talus-scree-mark-capture-journal';
 
-async function transaction(mode, action) {
+async function transaction(mode, action, database = name) {
+  const tables = database === journalName ? ['captures'] : ['keys', 'scans'];
   const db = await new Promise((resolve, reject) => {
-    const request = indexedDB.open(name, 1);
+    const request = indexedDB.open(database, 1);
     let missing = false;
     let abandoned = false;
     request.onupgradeneeded = () => {
@@ -11,7 +13,7 @@ async function transaction(mode, action) {
         request.transaction.abort();
         return;
       }
-      for (const store of ['keys', 'scans']) request.result.createObjectStore(store, { keyPath: 'id' });
+      for (const table of tables) request.result.createObjectStore(table, { keyPath: 'id' });
     };
     request.onerror = () => missing ? resolve(null) : reject(request.error);
     request.onblocked = () => {
@@ -27,8 +29,8 @@ async function transaction(mode, action) {
   if (!db) return { keys: [], scans: [] };
   try {
     return await new Promise((resolve, reject) => {
-      const tx = db.transaction(['keys', 'scans'], mode);
-      const stores = { keys: tx.objectStore('keys'), scans: tx.objectStore('scans') };
+      const tx = db.transaction(tables, mode);
+      const stores = Object.fromEntries(tables.map((table) => [table, tx.objectStore(table)]));
       let result;
       let error;
       const abort = (reason) => { error = reason; tx.abort(); };
@@ -95,4 +97,46 @@ export function restoreGrading(backup) {
     }
     for (const scan of backup.scans) scans.add(scan);
   });
+}
+
+export async function loadPendingCaptures(scope) {
+  const result = await transaction('readonly', ({ captures }, complete) => {
+    const request = captures.getAll();
+    request.onsuccess = () => complete(request.result.filter((capture) => capture.scope === scope));
+  }, journalName);
+  return Array.isArray(result) ? result : [];
+}
+
+export function savePendingCapture(capture) {
+  return transaction('readwrite', ({ captures }) => captures.add(capture), journalName);
+}
+
+export function deletePendingCapture(id) {
+  return transaction('readwrite', ({ captures }) => captures.delete(id), journalName);
+}
+
+export async function completeCapture(scan, capture) {
+  if (capture.id !== scan.id || capture.profileId !== scan.template.id || capture.revision !== scan.template.revision) {
+    throw new Error('The captured sheet does not match this result.');
+  }
+  // The unique scan ID is the commit marker. The new journal uses a separate
+  // database so pinned builds can still open their original database version.
+  const record = { ...scan, photo: capture.photo };
+  await saveScan(record, { create: true });
+  return record;
+}
+
+// Recovery metadata belongs to the app path. Saved grades remain shared.
+export function readActiveBatch(storage, scope) {
+  try {
+    const value = JSON.parse(storage.getItem('scree-active-batch:' + scope) ?? 'null');
+    if (typeof value?.id === 'string' && value.id && typeof value.profileId === 'string' && value.profileId &&
+        Number.isSafeInteger(value.revision) && value.revision > 0) return value;
+  } catch { /* An unreadable checkpoint cannot authorize a sheet. */ }
+}
+
+export function writeActiveBatch(storage, scope, next, previous) {
+  const field = 'scree-active-batch:' + scope;
+  if (next) storage.setItem(field, JSON.stringify(next));
+  else if (previous && readActiveBatch(storage, scope)?.id === previous.id) storage.removeItem(field);
 }
