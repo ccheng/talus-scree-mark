@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="eda8c3a2f9c800b471b13acb">
+  <meta name="scree-release" content="ae2acd25dab37453faeb6b5c">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -157,6 +157,7 @@
             <div class="editor-fields">
               <label>Questions / rows <input id="grid-rows" type="number" value="8" min="1" max="64"></label>
               <label>Choices / columns <input id="grid-columns" type="number" value="4" min="1" max="64"></label>
+              <label>Block type <select id="block-kind"><option value="mc">Multiple choice</option><option value="nr">Numerical response</option></select></label>
               <label>First item number <input id="item-start" type="number" min="1" value="1"></label>
             </div>
             <div id="mc-fit-controls" class="controls" hidden>
@@ -164,6 +165,15 @@
               <button id="accept-mc-fit" type="button" hidden>Use estimated positions</button>
             </div>
             <p id="mc-fit-status" role="status"></p>
+            <div id="nr-fit-controls" hidden>
+              <p>Box one Alberta NR question, including its writing boxes, decimal bubbles and ten digit rows.</p>
+              <div class="controls">
+                <button id="fit-nr-grid" type="button">Find Alberta NR bubbles</button>
+                <button id="anchor-nr-grid" type="button">Place NR grid with four taps</button>
+                <button id="accept-nr-fit" type="button" hidden>Confirm estimated NR positions</button>
+              </div>
+              <p id="nr-fit-status" role="status"></p>
+            </div>
             <div class="controls">
               <button id="confirm-block" type="button" aria-describedby="block-confirm-status">Confirm this block</button>
               <button id="cancel-block-edit" type="button" hidden>Cancel block edit</button>
@@ -172,7 +182,6 @@
             <details id="legacy-grid-details" open>
               <summary>More grid options</summary>
               <div class="editor-fields">
-              <label>Block type <select id="block-kind"><option value="mc">Multiple choice</option><option value="nr">Numerical response</option></select></label>
               <label>Item prefix <input id="item-prefix" value="MC" maxlength="30"></label>
               <label>Direction <select id="grid-axis"><option value="rows">MC items down; NR slots across</option><option value="columns">MC items across; NR slots down</option></select></label>
               <label>Symbols in order <input id="grid-symbols" value="A,B,C,D"></label>

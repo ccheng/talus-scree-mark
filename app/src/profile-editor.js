@@ -2,6 +2,8 @@ import { enrollPrintedLandmarks } from './printed-landmarks.js';
 import { pageTransform, proposePageCorners } from './markerless-registration.js';
 import { conflictingResponseIds, createMarkerlessProfile, intersects, manualGrid, proposeGrid, renumberProfileBlock, validBounds } from './profile-authoring.js';
 import { cross, project } from './projective.js';
+import { inspectBoundedAlberta } from './alberta-nr-detection.js';
+import { fitAlbertaAnchors, validateAlbertaMapping } from './alberta-nr-grid.js';
 import { discoverBoxedAlberta } from './layout-discovery.js';
 import { measureNumericalBlankInk } from './marks.js';
 import { toGrayImage } from './omr-image.js';
@@ -206,8 +208,22 @@ export function createProfileEditor({ onSave, onClose }) {
     return '';
   }
 
+  const nrAnchors = ['left 0', 'right 0', 'left 9', 'left decimal bubble'];
+
+  function updateNumericalControls() {
+    const visible = Boolean(state.matrix && !state.scope && value('block-kind') === 'nr');
+    byId('nr-fit-controls').hidden = !visible;
+    const cells = state.grid?.alberta ? state.grid.cells : null;
+    const missing = cells?.filter((cell) => cell.missing && !cell.omit).length ?? 0;
+    byId('accept-nr-fit').hidden = !cells || !missing || Boolean(state.endpoints);
+    byId('nr-fit-status').textContent = !visible ? '' : state.endpoints?.alberta
+      ? `Tap the ${nrAnchors[state.endpoints.length]}.`
+      : cells ? `${cells.length - missing} placed · ${missing} estimates. Compare all 42 overlay rings with the print.` : '';
+  }
+
   function renderSaveStatus() {
     if (!state) return;
+    updateNumericalControls();
     const blocked = saveBlocker();
     saveTemplate.disabled = Boolean(blocked);
     const coverage = mcCoverage();
@@ -269,6 +285,7 @@ export function createProfileEditor({ onSave, onClose }) {
 
   function paint() {
     if (!state) return;
+    renderSaveStatus();
     canvas.width = background.width;
     canvas.height = background.height;
     canvas.dataset.zoom = String(state.zoom);
@@ -582,29 +599,60 @@ export function createProfileEditor({ onSave, onClose }) {
     else say('Check the grid overlay and correct any exceptions before confirming.');
   }
 
+  function numericalSlots(grid) {
+    return Array.from({ length: 4 }, (_, column) => ({
+      choices: grid.cells.filter((cell) => cell.column === column && !cell.omit)
+        .sort((a, b) => a.row - b.row)
+        .map((cell) => ({ ...cell, observed: !cell.missing })),
+    }));
+  }
+
+  function showAlberta(slots, region) {
+    validateAlbertaMapping(slots, region);
+    const existingIds = state.editing ? state.grid?.existingIds : undefined;
+    const cells = slots.flatMap(({ choices }, column) => choices.map(({ x, y, radius, symbol, observed }) => ({
+      row: symbol === '.' ? 0 : Number(symbol) + 1, column, order: column, x, y, radius, symbol, missing: observed === false,
+    })));
+    state.grid = { cells, rows: 11, columns: 4, alberta: true, existingIds };
+    byId('grid-axis').value = 'rows';
+    byId('grid-symbols').value = '.,0,1,2,3,4,5,6,7,8,9';
+    byId('decimal-slots').value = '2,3';
+    byId('reverse-grid-order').checked = false;
+    write('grid-rows', 11);
+    write('grid-columns', 4);
+    setRegion(region);
+    updateCellSelector();
+    say(cells.some(({ missing }) => missing)
+      ? 'Check the orange estimates. Refit with four taps or correct an individual bubble before confirming.'
+      : 'Found 42 printed NR bubbles, including decimals in slots 2 and 3. Review the mapping and confirm this block.');
+  }
+
+  function fitAlberta(region, { required = true } = {}) {
+    const args = [state.image, state.matrix, page(), region];
+    const existing = discoverBoxedAlberta(...args);
+    if (existing.count > 1) throw new Error('Found multiple NR questions. Box one at a time.');
+    const complete = existing.block?.items[0].slots;
+    if (complete) {
+      showAlberta(complete, region);
+      return true;
+    }
+    const { models } = inspectBoundedAlberta(...args, { allowMissing: true });
+    const verified = models.filter(({ missing }) => !missing);
+    const proposal = verified.length === 1 ? verified[0] : models.length === 1 ? models[0] : null;
+    if (proposal) {
+      showAlberta(proposal.slots, region);
+      return true;
+    }
+    if (required || existing.incomplete) {
+      say('No single reliable NR grid was found. Adjust the box or place the grid with four taps.');
+      return true;
+    }
+    return false;
+  }
+
   function detect() {
     const region = inputRegion();
-    if (value('block-kind') === 'nr' && !state.editing) {
-      const { block, count, incomplete } = discoverBoxedAlberta(state.image, state.matrix, page(), region);
-      if (count > 1 || incomplete) {
-        state.grid = null;
-        byId('cell-selector').replaceChildren();
-        paint();
-        return say(count > 1
-          ? 'Found multiple NR questions. Draw around one question at a time, including its decimal bubbles.'
-          : 'The NR grid is incomplete. Include all ten digit rows and both decimal bubbles, or use the grid controls to correct it.');
-      }
-      if (block) {
-        const prefix = value('item-prefix');
-        const start = number('item-start');
-        restoreExisting(block);
-        byId('item-prefix').value = prefix;
-        write('item-start', start);
-        setRegion(block.bounds);
-        updateCellSelector();
-        return say('Found 42 printed NR bubbles, including decimals in slots 2 and 3. Review the mapping and confirm this block.');
-      }
-    }
+    if (value('block-kind') === 'nr' && !state.editing && fitAlberta(region, { required: false })) return;
     const { rows, columns } = counts();
     const proposal = proposeGrid(state.image, state.matrix, region, { rows, columns, printedCenters: value('block-kind') === 'nr' });
     if (!proposal.cells.length) throw new TypeError('No reliable bubble lattice was found. Adjust the box or place the grid manually.');
@@ -752,6 +800,7 @@ export function createProfileEditor({ onSave, onClose }) {
     if (!/^[A-Za-z0-9_.-]{0,30}$/.test(prefix) || !Number.isInteger(start) || start < 1) {
       throw new TypeError('Use a valid item prefix and positive starting number.');
     }
+    if (state.grid.alberta && kind !== 'nr') throw new Error('Select Numerical response to confirm this Alberta NR mapping.');
     const available = state.grid.cells.filter((cell) => !cell.omit);
     const missing = available.filter((cell) => cell.missing);
     if (available.some(({ x, y, radius }) => x - radius < bounds.x || y - radius < bounds.y ||
@@ -762,6 +811,7 @@ export function createProfileEditor({ onSave, onClose }) {
       const positions = missing.slice(0, 4).map(({ row, column }) => `row ${row + 1}, choice ${column + 1}`);
       throw new TypeError(`${missing.length} bubble positions are unresolved (${positions.join('; ')}). Adjust the grid or correct the missing positions before confirming.`);
     }
+    if (state.grid.alberta) validateAlbertaMapping(numericalSlots(state.grid), bounds);
     const orders = [...new Set(state.grid.cells.map((cell) => cell.order))].sort((a, b) => a - b);
     const groups = orders.map((order) => available.filter((cell) => cell.order === order));
     const choices = (cells) => cells.map(({ symbol, x, y, radius }) => ({ symbol, x, y, radius }));
@@ -817,8 +867,10 @@ export function createProfileEditor({ onSave, onClose }) {
   function restoreExisting(block) {
     const mc = block.kind === 'mc';
     const grouped = mc ? block.items.map(({ choices }) => choices) : block.items[0].slots.map(({ choices }) => choices);
-    const symbols = mc ? grouped.reduce((longest, choices) => choices.length > longest.length ? choices : longest, []).map(({ symbol }) => symbol) :
-      [...new Set(grouped.flatMap((choices) => choices.map(({ symbol }) => symbol)))];
+    const alberta = !mc && grouped.every((choices, column) =>
+      choices.map(({ symbol }) => symbol).join('') === (column === 1 || column === 2 ? '.0123456789' : '0123456789'));
+    const symbols = mc ? grouped.reduce((longest, choices) => choices.length > longest.length ? choices : longest, []).map(({ symbol }) => symbol)
+      : alberta ? [...'.0123456789'] : [...new Set(grouped.flatMap((choices) => choices.map(({ symbol }) => symbol)))];
     const rows = mc ? grouped.length : symbols.length;
     const columns = mc ? symbols.length : 4;
     const items = block.items.map(({ id }) => id);
@@ -835,6 +887,7 @@ export function createProfileEditor({ onSave, onClose }) {
       return { ...cell, ...choice, symbol: choice?.symbol ?? symbols[symbolIndex], order, omit: !choice };
     });
     fallback.existingIds = { ids: items, prefix, first };
+    if (alberta) fallback.alberta = true;
     byId('block-kind').value = block.kind;
     byId('grid-axis').value = 'rows';
     byId('grid-symbols').value = symbols.join(',');
@@ -1147,6 +1200,20 @@ export function createProfileEditor({ onSave, onClose }) {
   handle('cancel-block-renumber', closeMapping);
   handle('preview-region', () => { inputRegion(); say('Box previewed.'); });
   handle('detect-grid', detect);
+  handle('fit-nr-grid', () => fitAlberta(inputRegion()));
+  handle('anchor-nr-grid', () => {
+    inputRegion();
+    state.endpoints = Object.assign([], { alberta: true });
+    say('Tap the left 0, right 0, left 9 and left decimal bubble on the sheet. Zoom in if needed.');
+    paint();
+  });
+  handle('accept-nr-fit', () => {
+    if (!state.grid?.alberta) return;
+    validateAlbertaMapping(numericalSlots(state.grid), inputRegion());
+    for (const cell of state.grid.cells) cell.missing = false;
+    paint();
+    say('Estimated positions reviewed. Confirm this block to use the mapping.');
+  });
   handle('fit-mc-grid', () => {
     try { fitMcBlock(); } catch (error) {
       byId('mc-fit-status').textContent = error.message;
@@ -1249,6 +1316,7 @@ export function createProfileEditor({ onSave, onClose }) {
     write('grid-columns', 4);
     write('item-start', 1 + (state?.blocks.filter(({ kind }) => kind === (mc ? 'mc' : 'nr'))
       .reduce((count, block) => count + block.items.length, 0) ?? 0));
+    if (state) paint();
   });
 
   canvas.addEventListener('pointerdown', (event) => {
@@ -1282,7 +1350,15 @@ export function createProfileEditor({ onSave, onClose }) {
     }
     if (state.endpoints) {
       state.endpoints.push(end);
-      if (state.endpoints.length === 3) {
+      if (state.endpoints.alberta && state.endpoints.length === 4) {
+        const anchors = state.endpoints;
+        state.endpoints = null;
+        try {
+          const region = inputRegion();
+          const retained = state.grid?.alberta ? numericalSlots(state.grid) : undefined;
+          showAlberta(fitAlbertaAnchors(anchors, region, retained), region);
+        } catch (error) { say(error.message); }
+      } else if (!state.endpoints.alberta && state.endpoints.length === 3) {
         try {
           setEndpoints(...state.endpoints, number('grid-radius'));
           assignGrid(manualGrid(axes()));

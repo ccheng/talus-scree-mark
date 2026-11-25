@@ -26,6 +26,8 @@ const staticFiles = [
   'src/grading-view.js',
   'src/image.js',
   'src/layout-discovery.js',
+  'src/alberta-nr-detection.js',
+  'src/alberta-nr-grid.js',
   'src/bubble-registration.js',
   'src/block-refinement.js',
   'src/printed-landmarks.js',
