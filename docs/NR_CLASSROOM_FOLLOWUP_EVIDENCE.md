@@ -56,6 +56,12 @@ Proficiency, outcome and intersection subtotal partitions independently
 reconciled with the grade for each scan. Duplicate scan IDs and a modified
 grade were rejected.
 
+A second tester checked 36 mixed records across two batches on the same
+source. The selected 32-record batch produced 576 CSV rows and excluded all
+four other-batch records. The JSON round-trip preserved all 36 records and
+both batch IDs. Formula-like labels were escaped, and duplicate IDs and a
+changed grade were rejected. The second test also used photo-deleted records.
+
 Independent source audit found that unsaved scans and their corrections live
 in memory until explicitly saved. Reload does not resume the active batch.
 CSV follows the selected batch, whereas JSON backs up all visible results and
