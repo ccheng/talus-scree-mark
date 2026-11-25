@@ -1,0 +1,7 @@
+# Final diagnostic addendum
+
+After recording the initial report, the small CNN grid model was tested locally on the four approximate manually cropped NR regions of the private real blank photograph. It accepted all four. Visual inspection of the overlay showed plausible lattice placement, with residual positional offsets; no independently annotated localization error was measured. The ring-only model already accepted all four. Thus this is not evidence of improved real-world detection. The logistic semantic model declined all four; the CNN relaxed semantic discrimination but accepted 15/60 incompatible reserve grids, including 12/12 wrong-digit grids. No model is suitable for integration on this evidence.
+
+The larger single-command CNN reserve run timed out; 3,000-patch/four-epoch training, response evaluation, and six grid-batch runs subsequently completed. The archive retained for the Product Owner contains runnable scripts, instructions and recorded results. Synthetic holdout seeds, fixture images, and the actual assessment photograph and overlay are not published in this repository. The original report's statement that the CNN photo diagnostic was not completed is superseded by this addendum.
+
+Stop after the bounded correction cycle. Obtain independently prepared representative mock forms and evaluation, compare to the existing application detector, and investigate relative evidence for ordered digits versus alternatives and additional box/decimal evidence. No preview or production changes.
