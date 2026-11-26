@@ -215,7 +215,7 @@ function joinMcGroups(proposals, unassigned, page) {
   return { blocks, interrupted };
 }
 
-function orderBlocks(blocks) {
+export function orderBlocks(blocks) {
   const remaining = [...blocks].sort((a, b) => a.bounds.y - b.bounds.y);
   const sorted = [];
   while (remaining.length) {

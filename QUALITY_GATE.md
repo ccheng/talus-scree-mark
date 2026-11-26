@@ -35,3 +35,6 @@ Preserve the M1 and M2 Node and Chromium checks on application changes. Keep at 
 See the [PSA NR integration report](docs/PSA_NR_INTEGRATION.md) for the app
 release, independently verified browser workflow, negative controls and
 remaining physical-device coverage.
+
+The [whole-page extension report](docs/PSA_NR_WHOLE_PAGE.md) records the
+independent discovery comparison, conflict handling and fallback behavior.

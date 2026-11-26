@@ -6,7 +6,7 @@ import { inspectBoundedAlberta } from './alberta-nr-detection.js';
 import { fitAlbertaAnchors, validateAlbertaMapping } from './alberta-nr-grid.js';
 import { discoverBoxedAlberta } from './layout-discovery.js';
 import { measureNumericalBlankInk } from './marks.js';
-import { startPsaDiscovery } from './psa-nr-discovery.js';
+import { reconcilePsaPage, startPsaDiscovery, startPsaPageDiscovery } from './psa-nr-discovery.js';
 import { toGrayImage } from './omr-image.js';
 
 const byId = (id) => document.getElementById(id);
@@ -126,6 +126,7 @@ export function createProfileEditor({ onSave, onClose }) {
     if (state) {
       state.discoveryWorker = null;
       state.psaJob = null;
+      state.pagePsaJob = null;
     }
   }
 
@@ -153,6 +154,8 @@ export function createProfileEditor({ onSave, onClose }) {
     'unassigned-print': 'Some repeated printed outlines were not mapped.',
     'unassigned-near-grid': 'There are unmapped outlines next to a response grid.',
     'unusual-nr-grid': 'A numerical grid does not have the expected digit rows.',
+    'psa-conflicting-grids': 'Some PSA NR candidates conflicted with another block or its printed symbols. Check those regions and use a bounded fit if needed.',
+    'psa-provisional-grids': 'Check the orange PSA NR grids against the print before keeping them.',
     'too-many-candidates': 'There are too many printed outlines to separate reliably.',
   };
   const describeIssues = (issues) => issues.map((issue) => issueText[issue] ?? issue).join(' ');
@@ -265,13 +268,16 @@ export function createProfileEditor({ onSave, onClose }) {
   function show(message) {
     const placingCorners = Boolean(state.cornerEdit);
     byId('cancel-blank-corners').hidden = !placingCorners;
-    byId('profile-orientation').disabled = placingCorners;
+    byId('profile-orientation').disabled = placingCorners || Boolean(state.pagePsaJob);
     byId('reset-blank-corners').disabled = state.saving || Boolean(state.discoveryWorker);
     byId('review-discovery').hidden = placingCorners || state.discoveryStale || discoveryStatus.dataset.status !== 'review' ||
       !state.discoveryIssues.length || state.discoveryIssues.includes('frame-aspect');
     renderSaveStatus();
     const finding = Boolean(state.discoveryWorker);
     byId('profile-mc-only').disabled = placingCorners || finding;
+    byId('discover-psa-page').hidden = !state.matrix || placingCorners || finding || Boolean(state.scope);
+    byId('cancel-psa-page').hidden = !state.pagePsaJob;
+    blocksList.inert = Boolean(state.pagePsaJob);
     byId('profile-mc-review').hidden = !state.scope;
     byId('mc-fit-controls').hidden = !state.scope;
     byId('review-discovery').textContent = state.scope
@@ -322,17 +328,19 @@ export function createProfileEditor({ onSave, onClose }) {
     state.exclusions.forEach((bounds, index) => box(bounds, '#8c4519', `Excluded ${index + 1}`));
     ctx.setLineDash([]);
     for (const block of state.blocks) {
-      box(block.bounds, '#287651', itemLabel(block));
+      const diagnostic = state.discoveryDiagnostics.find(({ id }) => id === block.id);
+      const color = diagnostic?.psaReview ? '#a94e17' : '#287651';
+      box(block.bounds, color, itemLabel(block));
       for (const item of block.items) {
         if (item.kind === 'mc') {
-          for (const choice of item.choices) dot(choice, choice.radius + .75, '#287651', `${item.id} ${choice.symbol}`);
+          for (const choice of item.choices) dot(choice, choice.radius + .75, color, `${item.id} ${choice.symbol}`);
         } else {
           for (const [slot, entry] of item.slots.entries()) {
-            for (const choice of entry.choices) dot(choice, choice.radius + .75, '#287651', `${slot + 1}:${choice.symbol}`);
+            for (const choice of entry.choices) dot(choice, choice.radius + .75, color, `${slot + 1}:${choice.symbol}`);
           }
         }
       }
-      for (const writing of state.discoveryDiagnostics?.find(({ id }) => id === block.id)?.writingBoxes ?? []) {
+      for (const writing of diagnostic?.writingBoxes ?? []) {
         box(writing, '#74528d', String(writing.slot));
       }
     }
@@ -414,7 +422,7 @@ export function createProfileEditor({ onSave, onClose }) {
     show('Draw a box around one answer block.');
   }
 
-  function findLayout(useExistingCorners = false) {
+  function findLayout(useExistingCorners = false, usePsa = false) {
     if (state.discoveryWorker || state.cornerEdit) return;
     if (state.grid || state.editing || state.mappingBlock || state.renumberBlock || state.exclusionEdit !== undefined) {
       return say('Finish the current edit before finding more blocks.');
@@ -425,12 +433,37 @@ export function createProfileEditor({ onSave, onClose }) {
     const original = state;
     const jobId = ++nextJob;
     const worker = new Worker(new URL('./omr-worker.js', import.meta.url), { type: 'module' });
-    state.discoveryWorker = worker;
+    let psaSearch;
+    let layoutSettled = false;
+    const job = { terminate() { worker.terminate(); psaSearch?.terminate(); } };
+    state.discoveryWorker = job;
+    if (usePsa) state.pagePsaJob = { progress: discoveryStatus.dataset.status, message: discoveryStatus.textContent };
     discoveryMessage('processing', 'Finding page corners and bubble blocks…');
     say('');
     show();
-    function finish(result) {
-      if (state !== original || state.discoveryWorker !== worker) return;
+    async function finish(result) {
+      if (state !== original || state.discoveryWorker !== job || layoutSettled) return;
+      layoutSettled = true;
+      worker.terminate();
+      let psaSummary = '';
+      if (usePsa && result?.status !== 'needs-corners' && result?.pagePose !== 'uncertain' && result?.corners?.length === 4) {
+        const frame = page();
+        const pose = result.poseDiagnostics?.transform ?? pageTransform(frame, result.corners);
+        if (pose) {
+          discoveryMessage('processing', 'Searching the whole page for Alberta NR grids…');
+          try {
+            psaSearch = startPsaPageDiscovery(state.image, pose, frame);
+            const proposals = await psaSearch.result;
+            if (state !== original || state.discoveryWorker !== job) return;
+            result = reconcilePsaPage(result, proposals, exclusions);
+            const { added, reviewCount } = result.psa;
+            psaSummary = ` PSA proposed ${added} NR grid${added === 1 ? '' : 's'}${reviewCount ? ` (${reviewCount} to review)` : ''}.`;
+          } catch {
+            if (state !== original || state.discoveryWorker !== job) return;
+            psaSummary = ' PSA could not finish. Showing Established results. Try a bounded PSA search for individual NR blocks.';
+          }
+        }
+      }
       stopDiscovery();
       if (!result || result.status === 'needs-corners') {
         if (!state.matrix) state.corners = result?.corners ?? [];
@@ -502,7 +535,7 @@ export function createProfileEditor({ onSave, onClose }) {
       const removed = replaceable.filter((block) => !replaced.includes(block));
       const mcSummary = state.scope ? ` MC mapping (${mcCount(state.blocks)} questions): preserved ${describe(kept)}; ` +
         `discovered ${describe(added)}; prior proposals replaced ${describe(replaced)}, removed ${describe(removed)}.` : '';
-      discoveryMessage(progress, instructions + mcSummary +
+      discoveryMessage(progress, instructions + mcSummary + psaSummary +
         (state.discoveryIssues.length ? ' ' + describeIssues(state.discoveryIssues) : ''));
       show();
     }
@@ -1145,7 +1178,7 @@ export function createProfileEditor({ onSave, onClose }) {
   function handle(id, action) {
     byId(id).addEventListener('click', () => {
       if (!state) return;
-      if (state.psaJob && !['cancel-nr-discovery', 'cancel-profile-editor', 'editor-zoom-in', 'editor-zoom-out', 'editor-pan'].includes(id)) {
+      if ((state.psaJob || state.pagePsaJob) && !['cancel-psa-page', 'cancel-nr-discovery', 'cancel-profile-editor', 'editor-zoom-in', 'editor-zoom-out', 'editor-pan'].includes(id)) {
         return say('Wait for the PSA search or cancel it to continue editing.');
       }
       try { action(); }
@@ -1170,6 +1203,13 @@ export function createProfileEditor({ onSave, onClose }) {
   handle('apply-blank-corners', confirmCorners);
   handle('discover-layout', () => findLayout(state.corners.length === 4));
   handle('rediscover-layout', () => findLayout(state.corners.length === 4));
+  handle('discover-psa-page', () => findLayout(state.corners.length === 4, true));
+  handle('cancel-psa-page', () => {
+    const { progress, message } = state.pagePsaJob;
+    stopDiscovery();
+    discoveryMessage(progress, message);
+    show('PSA page search canceled. The current mapping is unchanged.');
+  });
   handle('add-exclusion', () => {
     if (state.discoveryWorker || state.grid || state.editing) throw new Error('Finish the current block edit first.');
     const bounds = inputRegion();
@@ -1229,6 +1269,7 @@ export function createProfileEditor({ onSave, onClose }) {
     state.discoveryIssues = [];
     if (state.scope) recheckCoverage();
     else state.blocks.forEach(({ id }) => state.kept.add(id));
+    state.discoveryDiagnostics.forEach((entry) => { entry.psaReview = false; });
     state.discoveryStale = false;
     lists();
     discoveryMessage('manual-review', 'Discovery warning acknowledged. Compare the overlay with the sheet. Draw missing questions or correct a block, then review MC coverage before saving.');
@@ -1371,7 +1412,7 @@ export function createProfileEditor({ onSave, onClose }) {
   });
 
   canvas.addEventListener('pointerdown', (event) => {
-    if (!state || state.psaJob || state.pan || state.drag || (event.pointerType !== 'touch' && event.button !== 0)) return;
+    if (!state || state.psaJob || state.pagePsaJob || state.pan || state.drag || (event.pointerType !== 'touch' && event.button !== 0)) return;
     const start = pointAt(event);
     state.drag = { start, current: start, pointerId: event.pointerId };
     if (!state.matrix) {
