@@ -1,0 +1,11 @@
+import {loadBank,discoverNative} from './raster.js';
+let bank=null;
+const MODEL_SHA='7d41987761e78fd7f5ac597d2b80537630b4afe7ff9d3ed8dcc02ba82c83cf8b';
+const LABEL_SHA='59e8beda9dba535847a043cc1b5dde2e03ce2389511b05b4b827d139a0576905';
+const hex=bytes=>Array.from(new Uint8Array(bytes),v=>v.toString(16).padStart(2,'0')).join('');
+self.onmessage=async({data:m})=>{const id=m?.id;try{if(m.type==='init'){bank=null;
+const assets=new URL('../../assets/psa-mc/',import.meta.url);
+const [weights,metadata]=await Promise.all([fetch(new URL('glyph-bank.f32',assets)),fetch(new URL('glyph-bank.json',assets))]);
+if(!weights.ok||!metadata.ok)throw Error('Bundled MC bank unavailable');
+const [bytes,meta]=await Promise.all([weights.arrayBuffer(),metadata.json()]);
+if(!(bytes instanceof ArrayBuffer))throw Error('Expected template bank bytes');if(hex(await crypto.subtle.digest('SHA-256',bytes))!==MODEL_SHA)throw Error('Template bank integrity failure');if(meta?.dimension!==324||!Array.isArray(meta.labels)||hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(meta.labels.join(''))))!==LABEL_SHA)throw Error('Template label integrity failure');bank=loadBank(meta,new Uint8Array(bytes));self.postMessage({id,type:'ready'});}else if(m.type==='discover'){if(!bank)throw Error('Not initialized');if(!(m.pixels instanceof ArrayBuffer))throw Error('Expected grayscale bytes');const result=discoverNative(new Uint8Array(m.pixels),m.width,m.height,bank,m.nr??[]);self.postMessage({id,type:'result',result});}else throw Error('Unknown message');}catch(e){self.postMessage({id,type:'error',message:String(e.message??e)});}};
