@@ -1,0 +1,1004 @@
+{
+  "enrolled": [
+    {
+      "x": 203,
+      "y": 314,
+      "b": 0,
+      "k": 0
+    },
+    {
+      "x": 203,
+      "y": 116,
+      "b": 0,
+      "k": 1
+    },
+    {
+      "x": 71,
+      "y": 314,
+      "b": 0,
+      "k": 2
+    },
+    {
+      "x": 65,
+      "y": 116,
+      "b": 0,
+      "k": 3
+    },
+    {
+      "x": 323,
+      "y": 116,
+      "b": 1,
+      "k": 0
+    },
+    {
+      "x": 323,
+      "y": 314,
+      "b": 1,
+      "k": 1
+    },
+    {
+      "x": 461,
+      "y": 314,
+      "b": 1,
+      "k": 2
+    },
+    {
+      "x": 455,
+      "y": 116,
+      "b": 1,
+      "k": 3
+    },
+    {
+      "x": 71,
+      "y": 413,
+      "b": 2,
+      "k": 0
+    },
+    {
+      "x": 203,
+      "y": 413,
+      "b": 2,
+      "k": 1
+    },
+    {
+      "x": 65,
+      "y": 611,
+      "b": 2,
+      "k": 2
+    },
+    {
+      "x": 203,
+      "y": 611,
+      "b": 2,
+      "k": 3
+    },
+    {
+      "x": 323,
+      "y": 611,
+      "b": 3,
+      "k": 0
+    },
+    {
+      "x": 461,
+      "y": 611,
+      "b": 3,
+      "k": 1
+    },
+    {
+      "x": 326,
+      "y": 413,
+      "b": 3,
+      "k": 2
+    },
+    {
+      "x": 455,
+      "y": 413,
+      "b": 3,
+      "k": 3
+    }
+  ],
+  "nrCalibrated": 84,
+  "results": [
+    {
+      "case": "ordinary-print-auto",
+      "valid": true,
+      "baseline": "registered",
+      "baselineReasons": [],
+      "baseMs": 3334,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 1,
+      "heldout": 0.39139356833423894,
+      "rawP95": 0.39793414020213697,
+      "refinedP95": 0.2682313462079744,
+      "candidate": "registered",
+      "reason": "verified",
+      "details": [
+        {
+          "order": 1,
+          "rms": 0.39139356833423894,
+          "max": 0.46142227000016034
+        },
+        {
+          "order": 3,
+          "rms": 0.30225478064820616,
+          "max": 0.4157930892590811
+        },
+        {
+          "order": 2,
+          "rms": 0.4332379834450522,
+          "max": 0.5531129055480445
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 193.46187130341428,
+          "origin": 193.46187130341428
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 191.36980740222745,
+          "origin": 191.36980740222745
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 192.25988591172757,
+          "origin": 192.25988591172757
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 188.7594644976425,
+          "origin": 188.7594644976425
+        }
+      ],
+      "extras": [],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 0.3452678375333974,
+        "minDet": 0.9987423611536262,
+        "maxStrain": 0.0009560874187085867
+      },
+      "marks": {
+        "matched": 16,
+        "total": 16,
+        "wrong": []
+      }
+    },
+    {
+      "case": "weak-boundary",
+      "valid": true,
+      "baseline": "registered",
+      "baselineReasons": [],
+      "baseMs": 3088,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 1,
+      "heldout": 0.39139356833423894,
+      "rawP95": 0.39793414020213697,
+      "refinedP95": 0.2682313462079744,
+      "candidate": "registered",
+      "reason": "verified",
+      "details": [
+        {
+          "order": 1,
+          "rms": 0.39139356833423894,
+          "max": 0.46142227000016034
+        },
+        {
+          "order": 3,
+          "rms": 0.30225478064820616,
+          "max": 0.4157930892590811
+        },
+        {
+          "order": 2,
+          "rms": 0.4332379834450522,
+          "max": 0.5531129055480445
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 185.71203403913526,
+          "origin": 185.71203403913526
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 183.71821321331603,
+          "origin": 183.71821321331603
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 184.5596518283372,
+          "origin": 184.5596518283372
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 181.21334581575096,
+          "origin": 181.21334581575096
+        }
+      ],
+      "extras": [],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 0.3452678375333974,
+        "minDet": 0.9987423611536262,
+        "maxStrain": 0.0009560874187085867
+      },
+      "marks": {
+        "matched": 16,
+        "total": 16,
+        "wrong": []
+      }
+    },
+    {
+      "case": "weak-boundary-bend",
+      "valid": true,
+      "baseline": "retake",
+      "baselineReasons": [
+        "response-geometry"
+      ],
+      "baseMs": 4441,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 2,
+      "heldout": 0.4749364084740471,
+      "rawP95": 6.196119722395238,
+      "refinedP95": 0.6157568619513515,
+      "candidate": "registered",
+      "reason": "verified",
+      "details": [
+        {
+          "order": 1,
+          "rms": 2.3685740591616384,
+          "max": 2.668874110483822
+        },
+        {
+          "order": 3,
+          "rms": 2.0253380667764045,
+          "max": 3.350269960710458
+        },
+        {
+          "order": 2,
+          "rms": 0.4749364084740471,
+          "max": 0.6686024275218359
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 166.25283319913834,
+          "origin": 166.25283319913834
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 180.95443674285298,
+          "origin": 180.95443674285298
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 181.4651373636339,
+          "origin": 181.4651373636339
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 180.89772897425257,
+          "origin": 180.89772897425257
+        }
+      ],
+      "extras": [],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 5.230461426856442,
+        "minDet": 0.9315298865132651,
+        "maxStrain": 0.051311583519193064
+      },
+      "marks": {
+        "matched": 16,
+        "total": 16,
+        "wrong": []
+      }
+    },
+    {
+      "case": "ordinary-bias",
+      "valid": true,
+      "baseline": "retake",
+      "baselineReasons": [
+        "response-geometry"
+      ],
+      "baseMs": 127,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 3,
+      "heldout": 0.3023005759364048,
+      "rawP95": 6.293902053825115,
+      "refinedP95": 0.33255797648390756,
+      "candidate": "registered",
+      "reason": "verified",
+      "details": [
+        {
+          "order": 1,
+          "rms": 1.453974618102335,
+          "max": 2.1765571743936136
+        },
+        {
+          "order": 3,
+          "rms": 0.3023005759364048,
+          "max": 0.4838115983963872
+        },
+        {
+          "order": 2,
+          "rms": 0.4035262940429372,
+          "max": 0.6322813784627531
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 193.00536189739552,
+          "origin": 193.00536189739552
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 187.21968544636542,
+          "origin": 187.21968544636542
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 190.0364699645442,
+          "origin": 190.0364699645442
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 187.49621304527483,
+          "origin": 187.49621304527483
+        }
+      ],
+      "extras": [],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 4.767453371882486,
+        "minDet": 0.9799240353479665,
+        "maxStrain": 0.030450846864792065
+      },
+      "marks": {
+        "matched": 16,
+        "total": 16,
+        "wrong": []
+      }
+    },
+    {
+      "case": "ordinary-bend-4",
+      "valid": true,
+      "baseline": "retake",
+      "baselineReasons": [
+        "response-geometry"
+      ],
+      "baseMs": 138,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 2,
+      "heldout": 0.42036867473077577,
+      "rawP95": 2.990302092430452,
+      "refinedP95": 0.37532419607467216,
+      "candidate": "registered",
+      "reason": "verified",
+      "details": [
+        {
+          "order": 1,
+          "rms": 1.1987851539828172,
+          "max": 1.417770973453679
+        },
+        {
+          "order": 3,
+          "rms": 1.1096094885374654,
+          "max": 1.556466306643263
+        },
+        {
+          "order": 2,
+          "rms": 0.42036867473077577,
+          "max": 0.6615543626216291
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 185.91632980100925,
+          "origin": 185.91632980100925
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 190.1936541295895,
+          "origin": 190.1936541295895
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 188.13684799050273,
+          "origin": 188.13684799050273
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 192.37199120786997,
+          "origin": 192.37199120786997
+        }
+      ],
+      "extras": [],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 2.933825747213265,
+        "minDet": 0.9632032846091981,
+        "maxStrain": 0.028160213518366263
+      },
+      "marks": {
+        "matched": 16,
+        "total": 16,
+        "wrong": []
+      }
+    },
+    {
+      "case": "ordinary-bend-8",
+      "valid": true,
+      "baseline": "retake",
+      "baselineReasons": [
+        "response-geometry"
+      ],
+      "baseMs": 133,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 2,
+      "heldout": 0.5511428781125586,
+      "rawP95": 5.981106628580286,
+      "refinedP95": 0.4753989739425867,
+      "candidate": "registered",
+      "reason": "verified",
+      "details": [
+        {
+          "order": 1,
+          "rms": 2.3190822447488517,
+          "max": 2.692979741342471
+        },
+        {
+          "order": 3,
+          "rms": 1.968048984053742,
+          "max": 3.3255046319874046
+        },
+        {
+          "order": 2,
+          "rms": 0.5511428781125586,
+          "max": 0.7195182760233091
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 129.4970553664698,
+          "origin": 129.4970553664698
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 159.21099301465816,
+          "origin": 159.21099301465816
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 132.90403525918333,
+          "origin": 132.90403525918333
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 162.7643655816404,
+          "origin": 162.7643655816404
+        }
+      ],
+      "extras": [],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 5.866563254177842,
+        "minDet": 0.9353637049224137,
+        "maxStrain": 0.05176408976990692
+      },
+      "marks": {
+        "matched": 16,
+        "total": 16,
+        "wrong": []
+      }
+    },
+    {
+      "case": "ordinary-occlusion",
+      "valid": true,
+      "baseline": "registered",
+      "baselineReasons": [],
+      "baseMs": 3264,
+      "matched": 14,
+      "perBlock": [
+        2,
+        4,
+        4,
+        4
+      ],
+      "model": 1,
+      "heldout": 0,
+      "rawP95": 0,
+      "refinedP95": 0,
+      "candidate": "review",
+      "reason": "insufficient-per-block-landmarks",
+      "details": [
+        {
+          "order": 1,
+          "rms": 0,
+          "max": 0
+        },
+        {
+          "order": 3,
+          "rms": 5.684341886080802e-14,
+          "max": 8.038873388460929e-14
+        },
+        {
+          "order": 2,
+          "rms": 0,
+          "max": 0
+        }
+      ],
+      "shifts": null,
+      "extras": null,
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 0,
+        "minDet": 1,
+        "maxStrain": 0
+      },
+      "marks": null
+    },
+    {
+      "case": "ordinary-incidental-label-change",
+      "valid": true,
+      "baseline": "registered",
+      "baselineReasons": [],
+      "baseMs": 3230,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 1,
+      "heldout": 0,
+      "rawP95": 0,
+      "refinedP95": 0,
+      "candidate": "registered",
+      "reason": "verified",
+      "details": [
+        {
+          "order": 1,
+          "rms": 0,
+          "max": 0
+        },
+        {
+          "order": 3,
+          "rms": 6.550880341146756e-14,
+          "max": 1.1368683772161603e-13
+        },
+        {
+          "order": 2,
+          "rms": 0,
+          "max": 0
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 194.36023708963003,
+          "origin": 194.36023708963003
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 193.55388761568298,
+          "origin": 193.55388761568298
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 192.96265370959267,
+          "origin": 192.96265370959267
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 192.07057613980635,
+          "origin": 192.07057613980635
+        }
+      ],
+      "extras": [],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 0,
+        "minDet": 1,
+        "maxStrain": 0
+      },
+      "marks": {
+        "matched": 16,
+        "total": 16,
+        "wrong": []
+      }
+    },
+    {
+      "case": "relocated-mc",
+      "valid": false,
+      "baseline": "retake",
+      "baselineReasons": [
+        "response-geometry"
+      ],
+      "baseMs": 142,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 1,
+      "heldout": 0,
+      "rawP95": 13.122776524744037,
+      "refinedP95": 13.122776524744037,
+      "candidate": "review",
+      "reason": "response-geometry",
+      "details": [
+        {
+          "order": 1,
+          "rms": 0,
+          "max": 0
+        },
+        {
+          "order": 3,
+          "rms": 6.550880341146756e-14,
+          "max": 1.1368683772161603e-13
+        },
+        {
+          "order": 2,
+          "rms": 0,
+          "max": 0
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 9,
+          "dy": 0,
+          "score": 193.1813144159205,
+          "origin": 0.536257147903764
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 193.55388761568298,
+          "origin": 193.55388761568298
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 192.96265370959267,
+          "origin": 192.96265370959267
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 192.07057613980635,
+          "origin": 192.07057613980635
+        }
+      ],
+      "extras": [],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 0,
+        "minDet": 1,
+        "maxStrain": 0
+      },
+      "marks": null
+    },
+    {
+      "case": "relocated-whole-mc-block",
+      "valid": false,
+      "baseline": "retake",
+      "baselineReasons": [
+        "response-geometry"
+      ],
+      "baseMs": 142,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 3,
+      "heldout": 1.2918737925642412,
+      "rawP95": 13.122776524744037,
+      "refinedP95": 4.5493580956834405,
+      "candidate": "review",
+      "reason": "response-geometry",
+      "details": [
+        {
+          "order": 1,
+          "rms": 1.6775298633170197,
+          "max": 2.8207266811811387
+        },
+        {
+          "order": 3,
+          "rms": 1.2918737925642412,
+          "max": 1.5168501319245637
+        },
+        {
+          "order": 2,
+          "rms": 2.781966021846401,
+          "max": 4.760267657848598
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 3,
+          "dy": 0,
+          "score": 136.98794266856163,
+          "origin": 45.703708338510864
+        },
+        {
+          "dx": -2,
+          "dy": 0,
+          "score": 136.64635623678026,
+          "origin": 70.03110653104297
+        },
+        {
+          "dx": -2,
+          "dy": 0,
+          "score": 144.42630784696152,
+          "origin": 56.7930688836762
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 144.48817773357746,
+          "origin": 144.48817773357746
+        }
+      ],
+      "extras": [],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 13.450493343825336,
+        "minDet": 0.9515669115766948,
+        "maxStrain": 0.03927320011048252
+      },
+      "marks": null
+    },
+    {
+      "case": "relocated-whole-nr-block",
+      "valid": false,
+      "baseline": "retake",
+      "baselineReasons": [
+        "response-geometry"
+      ],
+      "baseMs": 145,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 2,
+      "heldout": 1.560739460861665,
+      "rawP95": 12.92897989204907,
+      "refinedP95": 4.866150094224633,
+      "candidate": "review",
+      "reason": "heldout-disagreement",
+      "details": [
+        {
+          "order": 1,
+          "rms": 3.018413582732533,
+          "max": 3.6582259113827247
+        },
+        {
+          "order": 3,
+          "rms": 2.3787289067063178,
+          "max": 3.2629985678386886
+        },
+        {
+          "order": 2,
+          "rms": 1.560739460861665,
+          "max": 3.0236717638218193
+        }
+      ],
+      "shifts": null,
+      "extras": null,
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 15.11629318263644,
+        "minDet": 0.956846497136393,
+        "maxStrain": 0.04656804262943624
+      },
+      "marks": null
+    },
+    {
+      "case": "adjacent-extra-row",
+      "valid": false,
+      "baseline": "registered",
+      "baselineReasons": [],
+      "baseMs": 3206,
+      "matched": 16,
+      "perBlock": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "model": 1,
+      "heldout": 0,
+      "rawP95": 0,
+      "refinedP95": 0,
+      "candidate": "review",
+      "reason": "adjacent-extra-row",
+      "details": [
+        {
+          "order": 1,
+          "rms": 0,
+          "max": 0
+        },
+        {
+          "order": 3,
+          "rms": 6.550880341146756e-14,
+          "max": 1.1368683772161603e-13
+        },
+        {
+          "order": 2,
+          "rms": 0,
+          "max": 0
+        }
+      ],
+      "shifts": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 189.21058187052128,
+          "origin": 189.21058187052128
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 189.04921758562142,
+          "origin": 189.04921758562142
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 191.2252665820722,
+          "origin": 191.2252665820722
+        },
+        {
+          "dx": 0,
+          "dy": 0,
+          "score": 191.0039733257997,
+          "origin": 191.0039733257997
+        }
+      ],
+      "extras": [
+        {
+          "block": "B0",
+          "y": 292,
+          "scores": [
+            101.60375141906655,
+            97.43965943771538,
+            108.28743282516723,
+            99.54288150251303
+          ]
+        }
+      ],
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 0,
+        "minDet": 1,
+        "maxStrain": 0
+      },
+      "marks": null
+    },
+    {
+      "case": "changed-identity-labels",
+      "valid": false,
+      "baseline": "registered",
+      "baselineReasons": [],
+      "baseMs": 3242,
+      "matched": 14,
+      "perBlock": [
+        2,
+        4,
+        4,
+        4
+      ],
+      "model": 1,
+      "heldout": 0,
+      "rawP95": 0,
+      "refinedP95": 0,
+      "candidate": "review",
+      "reason": "insufficient-per-block-landmarks",
+      "details": [
+        {
+          "order": 1,
+          "rms": 0,
+          "max": 0
+        },
+        {
+          "order": 3,
+          "rms": 8.836668573137572e-14,
+          "max": 1.1368683772161603e-13
+        },
+        {
+          "order": 2,
+          "rms": 0,
+          "max": 0
+        }
+      ],
+      "shifts": null,
+      "extras": null,
+      "safety": {
+        "ok": true,
+        "maxDisplacement": 0,
+        "minDet": 1,
+        "maxStrain": 0
+      },
+      "marks": null
+    }
+  ]
+}
