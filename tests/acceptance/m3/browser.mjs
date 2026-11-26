@@ -1033,17 +1033,22 @@ try {
     assert.deepEqual(durableKeys.stores, ['profiles']);
     assert.deepEqual(durableKeys.assets, Object.keys(appRelease).map((path) => new URL(path, target).href).sort());
 
-    const beforeOffline = server.requests.length;
     await context.setOffline(true);
+    const beforeReload = server.requests.length;
     await page.reload();
+    await page.waitForFunction(() => /^Offline ready\b/.test(document.querySelector('#offline-status').textContent));
     await selector.locator('option').filter({ hasText: 'QA mixed' }).first().waitFor({ state: 'attached' });
+    const offlineStart = server.requests.length;
+    const updateFiles = new Set(['sw.js', 'precache.generated.js'].map((path) => new URL(path, target).pathname));
+    assert.deepEqual(server.requests.slice(beforeReload, offlineStart).filter(({ method, url }) =>
+      method !== 'GET' || !updateFiles.has(url)), [], 'Only browser service-worker update probes may reach the server during reload');
     assert.equal(await rows.count(), 0);
     await selector.selectOption(active);
     await assertNotReading();
     await start();
     await choose(family.fixtures[0]);
     await assertReadRows(page, family.fixtures[0].truth);
-    assert.equal(server.requests.length, beforeOffline);
+    assert.deepEqual(server.requests.slice(offlineStart), [], 'Offline scan must not reach the server');
   });
 
   await group('M3 profile-only persistence, revision immutability and offline reload', async (page, context) => {
