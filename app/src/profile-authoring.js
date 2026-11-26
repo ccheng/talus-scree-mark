@@ -228,7 +228,7 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
     'An MC-only profile can contain only multiple-choice blocks.');
   fail(mcCompleteness === undefined || (scope === 'mc-only' && ['complete', 'partial'].includes(mcCompleteness)),
     'Choose a valid MC coverage decision.');
-  fail(mcExpectedCount === undefined || (scope === 'mc-only' && Number.isInteger(mcExpectedCount) &&
+  fail(mcExpectedCount === undefined || (Number.isInteger(mcExpectedCount) &&
     mcExpectedCount >= 1 && mcExpectedCount <= 1536), 'Enter a whole expected question count from 1 to 1536.');
   fail(Array.isArray(exclusions) && exclusions.length <= 24 &&
     exclusions.every((bounds) => validBounds(bounds) && contains(frame, bounds)),
@@ -245,7 +245,7 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
     const symbols = new Set();
     fail(Array.isArray(raw) && raw.length >= (kind === 'mc' ? 2 : 1) && raw.length <= 13, 'An item or slot has an unsupported number of symbols.');
     for (const entry of raw) {
-      const { symbol, x, y, radius, blankInk } = entry ?? {};
+      const { symbol, x, y, radius, blankInk, provenance } = entry ?? {};
       fail(typeof symbol === 'string' && (kind === 'mc' ? /^[A-Z0-9]{1,5}$/ : /^[0-9.\-+]$/).test(symbol) &&
         !symbols.has(symbol), 'Each choice in an item or slot needs a unique supported symbol.');
       const bubbleBounds = { x: x - radius, y: y - radius, width: 2 * radius, height: 2 * radius };
@@ -254,7 +254,10 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
       symbols.add(symbol);
       fail(blankInk === undefined || (kind === 'nr' && Number.isFinite(blankInk) && blankInk >= 0 &&
         blankInk <= maximumPrintedBlankInk), 'A numerical bubble has an invalid blank ink baseline.');
-      const bubble = { symbol, x, y, radius, ...(blankInk === undefined ? {} : { blankInk }) };
+      fail(provenance === undefined || ['observed', 'inferred', 'manual'].includes(provenance),
+        'A bubble has invalid placement provenance.');
+      const bubble = { symbol, x, y, radius, ...(blankInk === undefined ? {} : { blankInk }),
+        ...(provenance === undefined ? {} : { provenance }) };
       allBubbles.push(bubble);
       result.push(bubble);
     }

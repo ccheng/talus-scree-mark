@@ -8,6 +8,8 @@ const staticFiles = [
   'assets/icon-180.png',
   'assets/icon-192.png',
   'assets/icon-512.png',
+  'assets/psa-mc/glyph-bank.f32',
+  'assets/psa-mc/glyph-bank.json',
   'assets/psa-nr/svm-meta.json',
   'assets/psa-nr/svm.f64',
   ...['interleaved', 'mc-only', 'mixed'].flatMap((variant) =>
@@ -46,6 +48,9 @@ const staticFiles = [
   'src/profile-omr.js',
   'src/profile-store.js',
   'src/profile-workspace.js',
+  'src/psa-structured.js',
+  'src/profile-diagnostics.js',
+  ...['raster', 'structure', 'worker', 'worker-client'].map((module) => `src/psa-mc/${module}.js`),
   'src/psa-nr-discovery.js',
   ...['geometry', 'pixels', 'hog', 'verifier', 'svm', 'worker', 'worker-client']
     .map((module) => `src/psa-nr/${module}.js`),

@@ -6,7 +6,9 @@ import { inspectBoundedAlberta } from './alberta-nr-detection.js';
 import { fitAlbertaAnchors, validateAlbertaMapping } from './alberta-nr-grid.js';
 import { discoverBoxedAlberta } from './layout-discovery.js';
 import { measureNumericalBlankInk } from './marks.js';
-import { reconcilePsaPage, startPsaDiscovery, startPsaPageDiscovery } from './psa-nr-discovery.js';
+import { pageScale, startPsaDiscovery } from './psa-nr-discovery.js';
+import { reconcileStructured, startStructuredDiscovery } from './psa-structured.js';
+import { downloadProfileDiagnostics } from './profile-diagnostics.js';
 import { toGrayImage } from './omr-image.js';
 
 const byId = (id) => document.getElementById(id);
@@ -16,6 +18,7 @@ const write = (id, next) => { byId(id).value = Number.isFinite(next) ? Number(ne
 const coordinates = (x, y) => ({ x, y });
 const idFor = (prefix) => prefix + '-' + crypto.randomUUID().slice(0, 8);
 const cornerLabels = ['Top left', 'Top right', 'Bottom right', 'Bottom left'];
+const placementColors = { observed: '#287651', inferred: '#c05224', manual: '#245c8e' };
 function itemLabel({ items }) {
   const ids = items.map(({ id }) => id);
   const start = /^(.*?)([0-9]+)$/.exec(ids[0]);
@@ -155,6 +158,8 @@ export function createProfileEditor({ onSave, onClose }) {
     'unassigned-near-grid': 'There are unmapped outlines next to a response grid.',
     'unusual-nr-grid': 'A numerical grid does not have the expected digit rows.',
     'psa-conflicting-grids': 'Some PSA NR candidates conflicted with another block or its printed symbols. Check those regions and use a bounded fit if needed.',
+    'psa-mc-review': 'Check the new orange MC rows and any estimated bubbles before keeping them.',
+    'psa-type-review': 'Some MC and NR interpretations compete. Check the print, remove the incorrect block, and fit that region if needed.',
     'psa-provisional-grids': 'Check the orange PSA NR grids against the print before keeping them.',
     'too-many-candidates': 'There are too many printed outlines to separate reliably.',
   };
@@ -190,7 +195,7 @@ export function createProfileEditor({ onSave, onClose }) {
     if (state.discoveryStale) return 'Exclusions or scope changed. Find blocks again, or clear replaceable proposals and finish manually.';
     const conflicts = duplicateDetails(state.blocks);
     if (conflicts) return `Duplicate identifiers. ${conflicts}. Renumber the affected block before saving.`;
-    if (state.grid || state.editing || state.mappingBlock || state.renumberBlock ||
+    if (state.grid || state.editing || state.rowTarget || state.mappingBlock || state.renumberBlock ||
         state.exclusionEdit !== undefined || state.endpoints) {
       return 'Confirm or cancel the open grid, numbering, or exclusion edit.';
     }
@@ -199,9 +204,9 @@ export function createProfileEditor({ onSave, onClose }) {
       return 'Remove numerical response blocks or rediscover with exclusions before saving an MC-only profile.';
     }
     const { expected, mapped, invalid, mismatch } = mcCoverage();
-    if (state.scope && invalid) return 'Enter a whole expected question count from 1 to 1536.';
-    if (state.scope && mismatch && value('mc-completeness') !== 'partial') {
-      return `Mapped ${mapped} of ${expected} expected MC questions. Correct the mapping or explicitly save a partial profile.`;
+    if (invalid) return 'Enter a whole expected question count from 1 to 1536.';
+    if (mismatch && !(state.scope && value('mc-completeness') === 'partial')) {
+      return `Mapped ${mapped} of ${expected} expected MC questions. Correct the mapping.`;
     }
     if (state.scope && state.coverageReview && !value('mc-completeness')) {
       return 'Check the overlay and choose whether all intended MC questions are mapped or only a subset.';
@@ -237,16 +242,15 @@ export function createProfileEditor({ onSave, onClose }) {
     const blocked = saveBlocker();
     saveTemplate.disabled = Boolean(blocked);
     const coverage = mcCoverage();
-    byId('mc-expected-status').textContent = state.scope
-      ? coverage.invalid ? 'Enter a whole question count.' : coverage.expected === null
-        ? `${coverage.mapped} MC questions mapped. Enter an expected count to check coverage.`
-        : `${coverage.mapped} of ${coverage.expected} expected MC questions mapped.` : '';
+    byId('mc-expected-status').textContent = coverage.invalid ? 'Enter a whole question count.' : coverage.expected === null
+      ? `${coverage.mapped} MC questions mapped.`
+      : `${coverage.mapped} of ${coverage.expected} expected MC questions mapped.`;
     const scope = byId('mc-completeness-panel');
     scope.hidden = !state.scope;
     byId('template-save-status').textContent = blocked || (state.scope
       ? `${mcCount(state.blocks)} MC questions mapped. ${value('mc-completeness') === 'partial'
         ? 'Only these questions will be included.' : 'Compare the overlay with the sheet before saving.'}` : '');
-    byId('cancel-block-edit').hidden = !(state.grid || state.editing || state.endpoints);
+    byId('cancel-block-edit').hidden = !(state.grid || state.editing || state.rowTarget || state.endpoints);
   }
 
   function recheckCoverage() {
@@ -274,12 +278,15 @@ export function createProfileEditor({ onSave, onClose }) {
       !state.discoveryIssues.length || state.discoveryIssues.includes('frame-aspect');
     renderSaveStatus();
     const finding = Boolean(state.discoveryWorker);
-    byId('profile-mc-only').disabled = placingCorners || finding;
-    byId('discover-psa-page').hidden = !state.matrix || placingCorners || finding || Boolean(state.scope);
+    byId('profile-mc-only').disabled = placingCorners || finding || Boolean(state.rowTarget);
+    byId('block-kind').disabled = Boolean(state.rowTarget);
+    byId('discover-psa-page').hidden = !state.matrix || placingCorners || finding;
     byId('cancel-psa-page').hidden = !state.pagePsaJob;
     blocksList.inert = Boolean(state.pagePsaJob);
     byId('profile-mc-review').hidden = !state.scope;
-    byId('mc-fit-controls').hidden = !state.scope;
+    byId('mc-fit-controls').hidden = !state.scope && !state.rowTarget && value('block-kind') !== 'mc';
+    byId('fit-mc-grid').hidden = Boolean(state.rowTarget);
+    byId('fit-mc-row').hidden = byId('place-mc-row').hidden = !state.rowTarget;
     byId('review-discovery').textContent = state.scope
       ? 'Acknowledge warning and review mapping' : 'Keep found blocks and check gaps';
     byId('rediscover-layout').hidden = !state.matrix || finding ||
@@ -333,10 +340,10 @@ export function createProfileEditor({ onSave, onClose }) {
       box(block.bounds, color, itemLabel(block));
       for (const item of block.items) {
         if (item.kind === 'mc') {
-          for (const choice of item.choices) dot(choice, choice.radius + .75, color, `${item.id} ${choice.symbol}`);
+          for (const choice of item.choices) dot(choice, choice.radius + .75, placementColors[choice.provenance] ?? placementColors.observed, `${item.id} ${choice.symbol}`);
         } else {
           for (const [slot, entry] of item.slots.entries()) {
-            for (const choice of entry.choices) dot(choice, choice.radius + .75, color, `${slot + 1}:${choice.symbol}`);
+            for (const choice of entry.choices) dot(choice, choice.radius + .75, placementColors[choice.provenance] ?? placementColors.observed, `${slot + 1}:${choice.symbol}`);
           }
         }
       }
@@ -353,7 +360,8 @@ export function createProfileEditor({ onSave, onClose }) {
       ctx.setLineDash([]);
     }
     for (const cell of (state.grid?.cells ?? [])) {
-      if (!cell.omit) dot(cell, cell.radius + 1, cell.missing ? '#c05224' : '#245c8e', cell.symbol || '?');
+      if (!cell.omit) dot(cell, cell.radius + 1, cell.missing ? placementColors.inferred :
+        placementColors[cell.provenance] ?? placementColors.manual, cell.symbol || '?');
     }
     state.endpoints?.forEach((point, index) => dot(point, 4, '#a33415', String(index + 1)));
   }
@@ -363,6 +371,9 @@ export function createProfileEditor({ onSave, onClose }) {
     delete canvas.dataset.pose;
     delete discoveryStatus.dataset.pose;
     state.discoveryIssues = [];
+    state.conflictRegions = [];
+    state.structuredDiagnostics = undefined;
+    state.rowTarget = null;
     discoveryMessage('idle');
     state.matrix = null;
     state.drag = null;
@@ -424,7 +435,7 @@ export function createProfileEditor({ onSave, onClose }) {
 
   function findLayout(useExistingCorners = false, usePsa = false) {
     if (state.discoveryWorker || state.cornerEdit) return;
-    if (state.grid || state.editing || state.mappingBlock || state.renumberBlock || state.exclusionEdit !== undefined) {
+    if (state.grid || state.editing || state.rowTarget || state.mappingBlock || state.renumberBlock || state.exclusionEdit !== undefined) {
       return say('Finish the current edit before finding more blocks.');
     }
     const kept = state.blocks.filter(({ id }) => state.kept.has(id));
@@ -450,20 +461,32 @@ export function createProfileEditor({ onSave, onClose }) {
         const frame = page();
         const pose = result.poseDiagnostics?.transform ?? pageTransform(frame, result.corners);
         if (pose) {
-          discoveryMessage('processing', 'Searching the whole page for Alberta NR grids…');
+          discoveryMessage('processing', 'Searching for structured MC and NR blocks…');
           try {
-            psaSearch = startPsaPageDiscovery(state.image, pose, frame);
+            psaSearch = startStructuredDiscovery(state.image, pose, frame, state.scope === 'mc-only');
             const proposals = await psaSearch.result;
             if (state !== original || state.discoveryWorker !== job) return;
-            result = reconcilePsaPage(result, proposals, exclusions);
-            const { added, reviewCount } = result.psa;
-            psaSummary = ` PSA proposed ${added} NR grid${added === 1 ? '' : 's'}${reviewCount ? ` (${reviewCount} to review)` : ''}.`;
+            result = reconcileStructured(result, proposals, exclusions, frame);
+            state.structuredDiagnostics = {
+              summary: result.psa,
+              mc: proposals.mc.rows.map(({ points, observed, number, decision, review_reasons, arbitration }) =>
+                ({ points: points.map(([x, y]) => ({ x: x / pageScale, y: y / pageScale })), observed, number, decision, review_reasons, arbitration })),
+              nr: proposals.nr.proposals.map(({ path, decision, completeOutlines, evidence, centers, decimals }) => ({
+                path, decision, completeOutlines, status: evidence?.status, support: evidence?.support,
+                digitOrderMargin: evidence?.svm_margin, digitOrderWins: evidence?.svm_wins,
+                centers: centers?.map(([x, y]) => ({ x: x / pageScale, y: y / pageScale })),
+                decimals: decimals?.map(([x, y]) => ({ x: x / pageScale, y: y / pageScale })),
+              })),
+            };
+            const { added, reviewCount, mcAdded, mcRefined } = result.psa;
+            psaSummary = ` PSA Structured added ${mcAdded} MC rows, corroborated ${mcRefined}, and proposed ${added} NR grids${reviewCount ? ` (${reviewCount} to review)` : ''}.`;
           } catch {
             if (state !== original || state.discoveryWorker !== job) return;
             psaSummary = ' PSA could not finish. Showing Established results. Try a bounded PSA search for individual NR blocks.';
           }
         }
       }
+      if (!result?.psa) state.structuredDiagnostics = undefined;
       stopDiscovery();
       if (!result || result.status === 'needs-corners') {
         if (!state.matrix) state.corners = result?.corners ?? [];
@@ -486,6 +509,7 @@ export function createProfileEditor({ onSave, onClose }) {
       const ids = new Set(kept.flatMap(({ id, items }) => [id, ...items.flatMap((item) => [item.id,
         ...(item.slots ?? []).map(({ id: slot }) => slot)])]));
       const counters = { mc: 1, nr: 1 };
+      const proposalItemIds = new Map();
       const added = result.components.map((block) => {
         let id = block.id;
         while (ids.has(id)) id += '-new';
@@ -498,6 +522,7 @@ export function createProfileEditor({ onSave, onClose }) {
           } while (ids.has(itemId) || slots?.some((slot) => ids.has(slot.id)));
           ids.add(itemId);
           slots?.forEach((slot) => ids.add(slot.id));
+          proposalItemIds.set(item.id, itemId);
           return { ...item, id: itemId, ...(slots ? { slots } : {}) };
         });
         return { ...block, id, items };
@@ -510,9 +535,11 @@ export function createProfileEditor({ onSave, onClose }) {
         ...(state.discoveryDiagnostics ?? []).filter(({ id }) => state.kept.has(id)),
         ...(result.diagnostics ?? []).map((data) => ({
           ...data, id: added[result.components.findIndex(({ id }) => id === data.id)]?.id ?? data.id,
+          ...(data.row ? { row: proposalItemIds.get(data.row) ?? data.row } : {}),
         })),
       ];
       state.discoveryIssues = kept.length && result.issues.length === 1 && result.issues[0] === 'no-grid' ? [] : result.issues;
+      state.conflictRegions = result.conflictRegions ?? [];
       if (state.discoveryIssues.length) recheckCoverage();
       discoveryStatus.dataset.pose = result.pagePose ?? 'page-boundary';
       canvas.dataset.pose = discoveryStatus.dataset.pose;
@@ -651,8 +678,9 @@ export function createProfileEditor({ onSave, onClose }) {
   function showAlberta(slots, region) {
     validateAlbertaMapping(slots, region);
     const existingIds = state.editing ? state.grid?.existingIds : undefined;
-    const cells = slots.flatMap(({ choices }, column) => choices.map(({ x, y, radius, symbol, observed }) => ({
+    const cells = slots.flatMap(({ choices }, column) => choices.map(({ x, y, radius, symbol, observed, provenance }) => ({
       row: symbol === '.' ? 0 : Number(symbol) + 1, column, order: column, x, y, radius, symbol, missing: observed === false,
+      provenance: provenance ?? (observed === false ? 'inferred' : 'observed'),
     })));
     state.grid = { cells, rows: 11, columns: 4, alberta: true, existingIds };
     byId('grid-axis').value = 'rows';
@@ -725,7 +753,7 @@ export function createProfileEditor({ onSave, onClose }) {
     const { rows, columns } = counts();
     const proposal = proposeGrid(state.image, state.matrix, region, { rows, columns, printedCenters: value('block-kind') === 'nr' });
     if (!proposal.cells.length) throw new TypeError('No reliable bubble lattice was found. Adjust the box or place the grid manually.');
-    const known = new Map(proposal.cells.map((cell) => [`${cell.row}/${cell.column}`, cell]));
+    const known = new Map(proposal.cells.map((cell) => [`${cell.row}/${cell.column}`, { ...cell, provenance: 'observed' }]));
     const absent = new Map(proposal.missing.map((cell) => [`${cell.row}/${cell.column}`, cell]));
     const radius = proposal.radius;
     const estimated = defaultAxes(region, radius);
@@ -737,7 +765,7 @@ export function createProfileEditor({ onSave, onClose }) {
     const preview = manualGrid(axes());
     preview.cells = preview.cells.map((fallback) => {
       const key = `${fallback.row}/${fallback.column}`;
-      return known.get(key) ?? { ...fallback, ...absent.get(key), radius, missing: true };
+      return known.get(key) ?? { ...fallback, ...absent.get(key), radius, missing: true, provenance: 'inferred' };
     });
     assignGrid(preview, true);
   }
@@ -769,14 +797,15 @@ export function createProfileEditor({ onSave, onClose }) {
     }
     const used = new Set();
     const previous = overlapping.flatMap(({ items }) => items.flatMap(({ choices }) => choices));
-    const cellsToFit = [...fit.cells, ...fit.missing.map((cell) => ({ ...cell, radius: fit.radius, missing: true }))];
+    const cellsToFit = [...fit.cells.map((cell) => ({ ...cell, provenance: 'observed' })),
+      ...fit.missing.map((cell) => ({ ...cell, radius: fit.radius, missing: true, provenance: 'inferred' }))];
     const retained = cellsToFit.map((cell) => {
       const nearest = previous.filter((choice) => !used.has(choice))
         .map((choice) => ({ choice, distance: Math.hypot(choice.x - cell.x, choice.y - cell.y) }))
         .sort((a, b) => a.distance - b.distance)[0];
       if (!nearest || nearest.distance > cell.radius * .60) return cell;
       used.add(nearest.choice);
-      return { ...cell, ...nearest.choice, missing: false };
+      return { ...cell, ...nearest.choice, missing: false, provenance: nearest.choice.provenance ?? 'observed' };
     });
     const cells = retained.sort((a, b) => a.row - b.row || a.column - b.column);
     byId('block-kind').value = 'mc';
@@ -839,7 +868,7 @@ export function createProfileEditor({ onSave, onClose }) {
     if (!cell) throw new TypeError('Place a grid before changing a position.');
     Object.assign(cell, {
       x: number('cell-x'), y: number('cell-y'), radius: number('cell-radius'), symbol: value('cell-symbol').trim(),
-      omit: byId('cell-omit').checked, missing: false,
+      omit: byId('cell-omit').checked, missing: false, provenance: 'manual',
     });
     updateCellSelector();
     byId('cell-selector').value = String(index);
@@ -883,7 +912,8 @@ export function createProfileEditor({ onSave, onClose }) {
     if (state.grid.alberta) validateAlbertaMapping(numericalSlots(state.grid), bounds);
     const orders = [...new Set(state.grid.cells.map((cell) => cell.order))].sort((a, b) => a - b);
     const groups = orders.map((order) => available.filter((cell) => cell.order === order));
-    const choices = (cells) => cells.map(({ symbol, x, y, radius }) => ({ symbol, x, y, radius }));
+    const choices = (cells) => cells.map(({ symbol, x, y, radius, provenance }) =>
+      ({ symbol, x, y, radius, provenance: provenance ?? 'manual' }));
     const preserved = state.grid.existingIds;
     const preserveIds = preserved && prefix === preserved.prefix && start === preserved.first;
     const itemId = (index) => (preserveIds ? preserved.ids[index] : undefined) ?? `${prefix}${start + index}`;
@@ -894,6 +924,11 @@ export function createProfileEditor({ onSave, onClose }) {
       : [{ id: itemId(0), kind, bounds, slots: groups.map((cells, index) => ({
         id: `${itemId(0)}.${index + 1}`, choices: choices(cells),
       })) }];
+    if (state.rowTarget) {
+      if (kind !== 'mc' || items.length !== 1) throw new Error('Place exactly one MC row.');
+      insertMcRow(items[0]);
+      return;
+    }
     const block = { id: state.editing ?? idFor('block'), kind, bounds, items };
     const replaced = state.fittedMc?.replacements ?? [];
     if (replaced.some((id) => state.kept.has(id))) throw new Error('A block targeted by the fit is now kept. Refit the box.');
@@ -953,7 +988,8 @@ export function createProfileEditor({ onSave, onClose }) {
       const order = mc ? cell.row : cell.column;
       const symbolIndex = mc ? cell.column : cell.row;
       const choice = mc ? grouped[order][symbolIndex] : grouped[order].find(({ symbol }) => symbol === symbols[symbolIndex]);
-      return { ...cell, ...choice, symbol: choice?.symbol ?? symbols[symbolIndex], order, omit: !choice };
+      return { ...cell, ...choice, provenance: choice?.provenance ?? 'observed',
+        symbol: choice?.symbol ?? symbols[symbolIndex], order, omit: !choice };
     });
     fallback.existingIds = { ids: items, prefix, first };
     if (alberta) fallback.alberta = true;
@@ -972,6 +1008,7 @@ export function createProfileEditor({ onSave, onClose }) {
   }
 
   function chooseDraft(block) {
+    if (state.rowTarget) throw new Error('Confirm or cancel the new row before editing another block.');
     clearMcFit();
     state.editing = block.id;
     try {
@@ -986,6 +1023,109 @@ export function createProfileEditor({ onSave, onClose }) {
       updateCellSelector();
       show('Edit the box, grid or individual bubbles, then confirm this block again.');
     } catch (error) { state.editing = null; say(error.message); }
+  }
+
+  function requireIdleRowEdit() {
+    if (state.discoveryWorker || state.grid || state.editing || state.rowTarget || state.mappingBlock ||
+        state.renumberBlock || state.exclusionEdit !== undefined || state.endpoints) {
+      throw new Error('Finish or cancel the current edit first.');
+    }
+  }
+
+  function beginMcRow(block, reference) {
+    requireIdleRowEdit();
+    state.rowTarget = block.id;
+    state.region = null;
+    for (const field of ['x', 'y', 'width', 'height']) byId('region-' + field).value = '';
+    const [, prefix, first] = /^([A-Za-z0-9_.-]*?)([0-9]+)$/.exec(reference.id) ?? ['', 'MC', '1'];
+    byId('block-kind').value = 'mc';
+    byId('grid-axis').value = 'rows';
+    byId('reverse-grid-order').checked = false;
+    byId('grid-symbols').value = reference.choices.map(({ symbol }) => symbol).join(',');
+    byId('grid-rows').value = '1';
+    byId('grid-columns').value = String(reference.choices.length);
+    byId('item-prefix').value = prefix;
+    byId('item-start').value = String(Number(first) + 1);
+    write('grid-radius', reference.choices[0].radius);
+    show('Draw a box around only the new MC row. Set its printed question number, then find or place its bubbles.');
+    canvas.scrollIntoView({ block: 'nearest' });
+  }
+
+  function fitMcRow() {
+    const region = inputRegion();
+    const { columns } = counts();
+    const fit = proposeGrid(state.image, state.matrix, region, { rows: 1, columns });
+    if (fit.rows !== 1 || fit.columns !== columns || fit.missing.length || fit.conflicts.length || fit.cells.length !== columns) {
+      throw new Error('Could not find every bubble in this row. Tighten the box or place the row and adjust its bubbles.');
+    }
+    assignGrid({ ...fit, cells: fit.cells.map((cell) => ({ ...cell, provenance: 'observed' })) }, true);
+  }
+
+  function finishRowEdit(block, message) {
+    state.drafts.delete(block.id);
+    state.kept.add(block.id);
+    clearBlockEdit();
+    recheckCoverage();
+    lists();
+    show(message);
+  }
+
+  function insertMcRow(row) {
+    const target = state.blocks.find(({ id }) => id === state.rowTarget);
+    if (!target) throw new Error('The target block is no longer available.');
+    if (state.exclusions.some((zone) => intersects(zone, row.bounds))) throw new Error('The row crosses an exclusion.');
+    const { bounds, items } = target;
+    const x = Math.min(bounds.x, row.bounds.x);
+    const y = Math.min(bounds.y, row.bounds.y);
+    const right = Math.max(bounds.x + bounds.width, row.bounds.x + row.bounds.width);
+    const bottom = Math.max(bounds.y + bounds.height, row.bounds.y + row.bounds.height);
+    const first = items[0].bounds;
+    const last = items.at(-1).bounds;
+    const axis = Math.abs(first.x - last.x) > Math.abs(first.y - last.y) ? 'x' : 'y';
+    const direction = Math.sign(last[axis] - first[axis]) || 1;
+    const updated = { ...target, bounds: { x, y, width: right - x, height: bottom - y },
+      items: [...items, row].sort((a, b) => direction * (a.bounds[axis] - b.bounds[axis])) };
+    const next = state.blocks.map((block) => block === target ? updated : block);
+    createMarkerlessProfile({ id: 'draft', revision: 1, name: 'Draft', page: page(), components: next });
+    state.blocks = next;
+    finishRowEdit(target, `Inserted ${row.id}. Existing question IDs and bubble positions were preserved.`);
+  }
+
+  function addMcRowControls(row, block) {
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = 'Insert or delete an MC row';
+    const label = document.createElement('label');
+    label.textContent = 'Reference or target row ';
+    const choices = document.createElement('select');
+    choices.replaceChildren(...block.items.map(({ id }, index) => {
+      const diagnostic = state.discoveryDiagnostics.find((entry) => entry.id === block.id && entry.row === id);
+      const suggestion = diagnostic?.number ? ` · printed number suggestion ${diagnostic.number}` : '';
+      return new Option(id + suggestion, String(index));
+    }));
+    label.append(choices);
+    const actions = document.createElement('div');
+    actions.className = 'block-actions';
+    for (const [caption, action] of [
+      ['Insert row', () => beginMcRow(block, block.items[choices.selectedIndex])],
+      ['Delete selected row', () => {
+        requireIdleRowEdit();
+        if (block.items.length === 1) throw new Error('Use Remove to delete a block with one row.');
+        const removed = block.items[choices.selectedIndex];
+        state.blocks = state.blocks.map((entry) => entry === block
+          ? { ...block, items: block.items.filter((item) => item !== removed) } : entry);
+        state.discoveryDiagnostics = state.discoveryDiagnostics.filter((d) => d.id !== block.id || d.row !== removed.id);
+        finishRowEdit(block, `Deleted ${removed.id}. Review the remaining question IDs against the sheet.`);
+      }],
+    ]) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = caption;
+      button.onclick = () => { try { action(); } catch (error) { say(error.message); } };
+      actions.append(button);
+    }
+    details.append(summary, label, actions);
+    row.append(details);
   }
 
   function listEntry(list, caption, actions) {
@@ -1111,6 +1251,16 @@ export function createProfileEditor({ onSave, onClose }) {
     conflictStatus.hidden = conflicts.size === 0;
     conflictStatus.textContent = conflicts.size ? `Duplicate identifiers. ${duplicateDetails(state.blocks)}. Renumber the affected blocks.` : '';
     renderSaveStatus();
+    const conflictsList = byId('profile-discovery-conflicts');
+    conflictsList.replaceChildren();
+    state.conflictRegions.forEach(({ bounds, reason }) => {
+      listEntry(conflictsList, reason, [['Show region', () => {
+        requireIdleRowEdit();
+        setRegion(bounds);
+        show('Check the printed response in this region. Remove any incorrect proposal, then draw a box and fit the correct block if needed.');
+        canvas.scrollIntoView({ block: 'nearest' });
+      }]]);
+    });
     const zones = byId('profile-exclusions');
     zones.replaceChildren();
     state.exclusions.forEach((bounds, index) => {
@@ -1122,6 +1272,7 @@ export function createProfileEditor({ onSave, onClose }) {
           show('Resize or redraw the exclusion, then save the box.');
         }],
         ['Remove', () => {
+          if (state.rowTarget) throw new Error('Confirm or cancel the new row before removing a block.');
           if (state.discoveryWorker) return;
           state.exclusions.splice(index, 1);
           state.discoveryStale = state.blocks.some(({ id }) => !state.kept.has(id));
@@ -1170,6 +1321,7 @@ export function createProfileEditor({ onSave, onClose }) {
       ]);
       row.dataset.profileBlock = block.id;
       row.dataset.blockKind = block.kind;
+      if (block.kind === 'mc') addMcRowControls(row, block);
       row.dataset.numberingConflict = String(conflicts.has(block.id) || block.items.some(({ id, slots }) =>
         conflicts.has(id) || slots?.some((slot) => conflicts.has(slot.id))));
     }
@@ -1204,6 +1356,13 @@ export function createProfileEditor({ onSave, onClose }) {
   handle('discover-layout', () => findLayout(state.corners.length === 4));
   handle('rediscover-layout', () => findLayout(state.corners.length === 4));
   handle('discover-psa-page', () => findLayout(state.corners.length === 4, true));
+  handle('export-template-diagnostics', () => downloadProfileDiagnostics({
+    release: document.querySelector('meta[name="scree-release"]').content,
+    page: page(), expectedMC: mcCoverage().expected, components: state.blocks, exclusions: state.exclusions,
+    issues: state.discoveryIssues, conflictRegions: state.conflictRegions,
+    blockDiagnostics: state.discoveryDiagnostics, discovery: state.structuredDiagnostics,
+    draft: state.grid && { region: state.region, cells: state.grid.cells },
+  }));
   handle('cancel-psa-page', () => {
     const { progress, message } = state.pagePsaJob;
     stopDiscovery();
@@ -1211,7 +1370,7 @@ export function createProfileEditor({ onSave, onClose }) {
     show('PSA page search canceled. The current mapping is unchanged.');
   });
   handle('add-exclusion', () => {
-    if (state.discoveryWorker || state.grid || state.editing) throw new Error('Finish the current block edit first.');
+    if (state.discoveryWorker || state.grid || state.editing || state.rowTarget) throw new Error('Finish the current block edit first.');
     const bounds = inputRegion();
     if (state.exclusionEdit === undefined) {
       if (state.exclusions.length >= 24) throw new Error('Use up to 24 exclusion zones.');
@@ -1260,6 +1419,8 @@ export function createProfileEditor({ onSave, onClose }) {
     state.editing = null;
     state.endpoints = null;
     state.discoveryIssues = [];
+    state.conflictRegions = [];
+    state.structuredDiagnostics = undefined;
     state.discoveryDiagnostics = state.discoveryDiagnostics.filter(({ id }) => state.kept.has(id));
     closeMapping();
     discoveryMessage('idle');
@@ -1312,6 +1473,8 @@ export function createProfileEditor({ onSave, onClose }) {
       throw error;
     }
   });
+  handle('fit-mc-row', fitMcRow);
+  handle('place-mc-row', makeDefault);
   handle('accept-mc-fit', () => {
     if (!state.fittedMc) return;
     const estimates = state.grid.cells.filter((cell) => cell.missing);
@@ -1333,6 +1496,7 @@ export function createProfileEditor({ onSave, onClose }) {
     clearMcFit();
     state.grid = null;
     state.editing = null;
+    state.rowTarget = null;
     state.endpoints = null;
     state.region = null;
     byId('cell-selector').replaceChildren();
@@ -1372,7 +1536,7 @@ export function createProfileEditor({ onSave, onClose }) {
         printedLandmarks, id: state.prior?.id ?? idFor('layout'), revision: (state.prior?.revision ?? 0) + 1,
         name: value('profile-name'), page: page(), components, scope: state.scope, exclusions: state.exclusions,
         mcCompleteness: state.scope ? value('mc-completeness') || undefined : undefined,
-        mcExpectedCount: state.scope ? mcCoverage().expected ?? undefined : undefined,
+        mcExpectedCount: mcCoverage().expected ?? undefined,
       });
       const draft = state;
       draft.saving = true;
@@ -1408,7 +1572,7 @@ export function createProfileEditor({ onSave, onClose }) {
     write('grid-columns', 4);
     write('item-start', 1 + (state?.blocks.filter(({ kind }) => kind === (mc ? 'mc' : 'nr'))
       .reduce((count, block) => count + block.items.length, 0) ?? 0));
-    if (state) paint();
+    if (state) show();
   });
 
   canvas.addEventListener('pointerdown', (event) => {
@@ -1482,7 +1646,7 @@ export function createProfileEditor({ onSave, onClose }) {
       image, prior, matrix: null, zoom: 1, pan: false, blocks: structuredClone(prior?.components ?? []),
       scope: prior?.scope, coverageReview: prior?.mcCompleteness === 'partial', exclusions: structuredClone(prior?.exclusions ?? []),
       kept: new Set(prior?.components.map(({ id }) => id)),
-      drafts: new Map(), discoveryIssues: [], discoveryDiagnostics: [],
+      drafts: new Map(), discoveryIssues: [], discoveryDiagnostics: [], conflictRegions: [],
     };
     clearMcFit();
     byId('nr-discovery-engine').value = 'established';
