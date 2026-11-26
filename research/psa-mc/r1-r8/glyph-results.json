@@ -1,0 +1,12 @@
+{
+  "fonts": [
+    "open-sans/OpenSans-Regular.ttf",
+    "croscore/Arimo-Regular.ttf",
+    "gentiumplus/GentiumPlus-Regular.ttf"
+  ],
+  "digit_samples": 120,
+  "svm_correct": 120,
+  "template_digit_correct": 120,
+  "letter_samples": 60,
+  "template_letter_correct": 60
+}

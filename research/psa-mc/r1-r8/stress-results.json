@@ -1,0 +1,154 @@
+[
+  {
+    "case": "clean",
+    "angle": -5,
+    "estimated_correction": 4.975,
+    "before": {
+      "mapped": 0,
+      "proposed": 0,
+      "wrong": 0,
+      "review": 0
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "labels": 12,
+    "conflicts": 0
+  },
+  {
+    "case": "clean",
+    "angle": 3,
+    "estimated_correction": -3.013,
+    "before": {
+      "mapped": 12,
+      "proposed": 12,
+      "wrong": 0,
+      "review": 0
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "labels": 14,
+    "conflicts": 0
+  },
+  {
+    "case": "partial",
+    "angle": -5,
+    "estimated_correction": 4.975,
+    "before": {
+      "mapped": 0,
+      "proposed": 0,
+      "wrong": 0,
+      "review": 0
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1
+    },
+    "labels": 12,
+    "conflicts": 0
+  },
+  {
+    "case": "partial",
+    "angle": 3,
+    "estimated_correction": -3.01,
+    "before": {
+      "mapped": 12,
+      "proposed": 12,
+      "wrong": 0,
+      "review": 0
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1
+    },
+    "labels": 14,
+    "conflicts": 0
+  },
+  {
+    "case": "empty-ring-distractor",
+    "angle": -5,
+    "estimated_correction": 4.98,
+    "before": {
+      "mapped": 0,
+      "proposed": 0,
+      "wrong": 0,
+      "review": 0
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2
+    },
+    "labels": 12,
+    "conflicts": 2
+  },
+  {
+    "case": "empty-ring-distractor",
+    "angle": 3,
+    "estimated_correction": -3.013,
+    "before": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 0
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2
+    },
+    "labels": 14,
+    "conflicts": 2
+  },
+  {
+    "case": "five",
+    "angle": -5,
+    "estimated_correction": 4.985,
+    "before": {
+      "mapped": 0,
+      "proposed": 0,
+      "wrong": 0,
+      "review": 0
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "labels": 12,
+    "conflicts": 0
+  },
+  {
+    "case": "five",
+    "angle": 3,
+    "estimated_correction": -3.013,
+    "before": {
+      "mapped": 12,
+      "proposed": 12,
+      "wrong": 0,
+      "review": 0
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "labels": 14,
+    "conflicts": 0
+  }
+]

@@ -1,0 +1,76 @@
+[
+  {
+    "seed": 93117,
+    "kinds": [
+      "normal",
+      "faint",
+      "separate",
+      "broken"
+    ],
+    "before": {
+      "mapped": 22,
+      "confirmed": 22,
+      "correct_numbers": 22,
+      "wrong_numbers": 0,
+      "false_rows": 9,
+      "false_confirmed": 1,
+      "review": 8,
+      "center_p95": 0.0
+    },
+    "after": {
+      "mapped": 22,
+      "confirmed": 0,
+      "correct_numbers": 22,
+      "wrong_numbers": 0,
+      "false_rows": 9,
+      "false_confirmed": 0,
+      "review": 31,
+      "center_p95": 0.0
+    },
+    "conflicts": 9,
+    "preferred": 1,
+    "nr_decisions": [
+      "accept",
+      "accept",
+      "accept",
+      "accept"
+    ]
+  },
+  {
+    "seed": 93118,
+    "kinds": [
+      "normal",
+      "swap",
+      "outer",
+      "missing_decimal"
+    ],
+    "before": {
+      "mapped": 22,
+      "confirmed": 22,
+      "correct_numbers": 22,
+      "wrong_numbers": 0,
+      "false_rows": 0,
+      "false_confirmed": 0,
+      "review": 0,
+      "center_p95": 0.0
+    },
+    "after": {
+      "mapped": 22,
+      "confirmed": 0,
+      "correct_numbers": 22,
+      "wrong_numbers": 0,
+      "false_rows": 0,
+      "false_confirmed": 0,
+      "review": 22,
+      "center_p95": 0.0
+    },
+    "conflicts": 0,
+    "preferred": 0,
+    "nr_decisions": [
+      "accept",
+      "reject",
+      "review",
+      "review"
+    ]
+  }
+]

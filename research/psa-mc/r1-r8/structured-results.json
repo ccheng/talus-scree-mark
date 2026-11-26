@@ -1,0 +1,176 @@
+[
+  {
+    "case": "clean",
+    "outline": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "fused": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "labelled": 14,
+    "conflict_review": 0,
+    "headers": [
+      {
+        "header": "ABCD",
+        "anchors": 9,
+        "observed_calibration_rows": 9
+      },
+      {
+        "header": "ABCD",
+        "anchors": 5,
+        "observed_calibration_rows": 5
+      }
+    ]
+  },
+  {
+    "case": "missing-row",
+    "outline": {
+      "mapped": 13,
+      "proposed": 13,
+      "wrong": 0,
+      "review": 0
+    },
+    "fused": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1
+    },
+    "labelled": 14,
+    "conflict_review": 0,
+    "headers": [
+      {
+        "header": "ABCD",
+        "anchors": 9,
+        "observed_calibration_rows": 8
+      },
+      {
+        "header": "ABCD",
+        "anchors": 5,
+        "observed_calibration_rows": 5
+      }
+    ]
+  },
+  {
+    "case": "partial",
+    "outline": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1
+    },
+    "fused": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1
+    },
+    "labelled": 14,
+    "conflict_review": 0,
+    "headers": [
+      {
+        "header": "ABCD",
+        "anchors": 9,
+        "observed_calibration_rows": 9
+      },
+      {
+        "header": "ABCD",
+        "anchors": 5,
+        "observed_calibration_rows": 5
+      }
+    ]
+  },
+  {
+    "case": "empty-ring-distractor",
+    "outline": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 0
+    },
+    "fused": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2
+    },
+    "labelled": 14,
+    "conflict_review": 2,
+    "headers": [
+      {
+        "header": "ABCD",
+        "anchors": 9,
+        "observed_calibration_rows": 9
+      },
+      {
+        "header": "ABCD",
+        "anchors": 5,
+        "observed_calibration_rows": 5
+      }
+    ]
+  },
+  {
+    "case": "five",
+    "outline": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "fused": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "labelled": 14,
+    "conflict_review": 0,
+    "headers": [
+      {
+        "header": "ABCDE",
+        "anchors": 9,
+        "observed_calibration_rows": 9
+      },
+      {
+        "header": "ABCDE",
+        "anchors": 5,
+        "observed_calibration_rows": 5
+      }
+    ]
+  },
+  {
+    "case": "shadow",
+    "outline": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "fused": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0
+    },
+    "labelled": 12,
+    "conflict_review": 0,
+    "headers": [
+      {
+        "header": "ABCD",
+        "anchors": 9,
+        "observed_calibration_rows": 9
+      },
+      {
+        "header": "ABCD",
+        "anchors": 3,
+        "observed_calibration_rows": 3
+      }
+    ]
+  }
+]

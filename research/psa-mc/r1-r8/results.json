@@ -1,0 +1,62 @@
+[
+  {
+    "case": "clean",
+    "hash": "fe20b29d",
+    "mapped": 14,
+    "proposed": 14,
+    "wrong": 0,
+    "review": 0,
+    "points": 56,
+    "seconds": 0.217
+  },
+  {
+    "case": "gap-distractor",
+    "hash": "bcf258bd",
+    "mapped": 14,
+    "proposed": 14,
+    "wrong": 0,
+    "review": 0,
+    "points": 56,
+    "seconds": 0.211
+  },
+  {
+    "case": "partial",
+    "hash": "f1eb0609",
+    "mapped": 14,
+    "proposed": 14,
+    "wrong": 0,
+    "review": 2,
+    "points": 54,
+    "seconds": 0.204
+  },
+  {
+    "case": "missing-row",
+    "hash": "e680215d",
+    "mapped": 13,
+    "proposed": 13,
+    "wrong": 0,
+    "review": 0,
+    "points": 52,
+    "seconds": 0.201
+  },
+  {
+    "case": "five-choice",
+    "hash": "d142c285",
+    "mapped": 14,
+    "proposed": 14,
+    "wrong": 0,
+    "review": 0,
+    "points": 70,
+    "seconds": 0.223
+  },
+  {
+    "case": "mixed-nr",
+    "hash": "ec45f1cd",
+    "mapped": 14,
+    "proposed": 14,
+    "wrong": 0,
+    "review": 0,
+    "points": 60,
+    "seconds": 0.252
+  }
+]

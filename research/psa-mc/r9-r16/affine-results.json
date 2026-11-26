@@ -1,0 +1,362 @@
+[
+  {
+    "case": "clean",
+    "shear": 0.018,
+    "before": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "clean",
+    "shear": 0.036,
+    "before": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "clean",
+    "shear": -0.036,
+    "before": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "missing-row",
+    "shear": 0.018,
+    "before": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "missing-row",
+    "shear": 0.036,
+    "before": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "missing-row",
+    "shear": -0.036,
+    "before": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "edge-loss",
+    "shear": 0.018,
+    "before": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "edge-loss",
+    "shear": 0.036,
+    "before": {
+      "mapped": 12,
+      "proposed": 14,
+      "wrong": 2,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "edge-loss",
+    "shear": -0.036,
+    "before": {
+      "mapped": 12,
+      "proposed": 14,
+      "wrong": 2,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "gap-rings",
+    "shear": 0.018,
+    "before": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "gap-rings",
+    "shear": 0.036,
+    "before": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "gap-rings",
+    "shear": -0.036,
+    "before": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "after": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  }
+]

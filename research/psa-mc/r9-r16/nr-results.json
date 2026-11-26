@@ -1,0 +1,114 @@
+[
+  {
+    "kinds": [
+      "normal",
+      "separate",
+      "faint",
+      "broken"
+    ],
+    "mc_before": {
+      "mapped": 22,
+      "proposed": 30,
+      "wrong": 8,
+      "review": 7
+    },
+    "mc_after": {
+      "mapped": 22,
+      "proposed": 30,
+      "wrong": 8,
+      "review": 8
+    },
+    "nr_evaluation": [
+      {
+        "idx": 3,
+        "kind": "broken",
+        "path": "decimal",
+        "decision": "accept",
+        "exact42": true,
+        "maxerr": 0.034399887806670304
+      },
+      {
+        "idx": 0,
+        "kind": "normal",
+        "path": "header",
+        "decision": "accept",
+        "exact42": true,
+        "maxerr": 0.029131840884790636
+      },
+      {
+        "idx": 1,
+        "kind": "separate",
+        "path": "header",
+        "decision": "accept",
+        "exact42": true,
+        "maxerr": 0.03976469734378931
+      },
+      {
+        "idx": 2,
+        "kind": "faint",
+        "path": "header",
+        "decision": "accept",
+        "exact42": true,
+        "maxerr": 0.03471437393197251
+      }
+    ],
+    "conflicts": 8,
+    "forced_overlap_guard": "pass"
+  },
+  {
+    "kinds": [
+      "normal",
+      "swap",
+      "missing_decimal",
+      "outer"
+    ],
+    "mc_before": {
+      "mapped": 22,
+      "proposed": 25,
+      "wrong": 3,
+      "review": 1
+    },
+    "mc_after": {
+      "mapped": 22,
+      "proposed": 25,
+      "wrong": 3,
+      "review": 3
+    },
+    "nr_evaluation": [
+      {
+        "idx": 3,
+        "kind": "outer",
+        "path": "decimal",
+        "decision": "reject",
+        "exact42": false,
+        "maxerr": 0.03277051140340112
+      },
+      {
+        "idx": 0,
+        "kind": "normal",
+        "path": "header",
+        "decision": "accept",
+        "exact42": true,
+        "maxerr": 0.029131840884790636
+      },
+      {
+        "idx": 1,
+        "kind": "swap",
+        "path": "header",
+        "decision": "review",
+        "exact42": false,
+        "maxerr": 0.03977899818870862
+      },
+      {
+        "idx": 2,
+        "kind": "missing_decimal",
+        "path": "header",
+        "decision": "review",
+        "exact42": false,
+        "maxerr": 0.194472731350655
+      }
+    ],
+    "conflicts": 3,
+    "forced_overlap_guard": "pass"
+  }
+]

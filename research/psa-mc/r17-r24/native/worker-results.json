@@ -1,0 +1,8 @@
+{
+  "normal": "pass",
+  "malformed": "pass",
+  "corruptBank": "pass",
+  "corruptLabels": "pass",
+  "cancel": "pass",
+  "timeout": "pass"
+}

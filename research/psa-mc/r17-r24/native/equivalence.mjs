@@ -1,0 +1,5 @@
+import {readFile,writeFile} from 'node:fs/promises';import {discoverFeatures} from './structure.mjs';
+const fixtures=JSON.parse(await readFile(process.argv[2]+'/fixtures.json','utf8'));
+const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+export function compare(actual,ref,tol=1e-6){let matched=new Set(),exact=0,decision=0,number=0,observed=0,max=0;for(const r of ref){let j=actual.findIndex((a,i)=>!matched.has(i)&&a.points.length===r.points.length&&a.points.every((p,k)=>d(p,r.points[k])<=tol));if(j<0)continue;matched.add(j);exact++;const a=actual[j];decision+=a.decision===r.decision;number+=a.number===r.number;observed+=JSON.stringify(a.observed)===JSON.stringify(r.observed);max=Math.max(max,...a.points.map((p,i)=>d(p,r.points[i])));}return {expected:ref.length,actual:actual.length,exact,decision,number,observed,max};}
+const out=[];for(const f of fixtures){const r=discoverFeatures(f.points,f.glyphs);out.push({name:f.name,...compare(r.rows,f.reference)});}console.log(JSON.stringify(out,null,2));await writeFile('feature-equivalence.json',JSON.stringify(out,null,2));

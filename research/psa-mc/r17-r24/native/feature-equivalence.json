@@ -1,0 +1,242 @@
+[
+  {
+    "name": "fresh-clean",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "fresh-no-header",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "fresh-missing-row",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "fresh-partial-all",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "fresh-five",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "fresh-missing-label",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "fresh-gap-rings",
+    "expected": 16,
+    "actual": 16,
+    "exact": 16,
+    "decision": 16,
+    "number": 16,
+    "observed": 16,
+    "max": 0
+  },
+  {
+    "name": "fresh-restart",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "fresh-no-numbers",
+    "expected": 16,
+    "actual": 16,
+    "exact": 16,
+    "decision": 16,
+    "number": 16,
+    "observed": 16,
+    "max": 0
+  },
+  {
+    "name": "fresh-shadow",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "fresh-tiny",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "fresh-missing-edge",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-clean",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-no-header",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-missing-row",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-no-header-missing",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-edge-loss",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-gap-rings",
+    "expected": 16,
+    "actual": 16,
+    "exact": 16,
+    "decision": 16,
+    "number": 16,
+    "observed": 16,
+    "max": 0
+  },
+  {
+    "name": "prior-no-header-gap",
+    "expected": 16,
+    "actual": 16,
+    "exact": 16,
+    "decision": 16,
+    "number": 16,
+    "observed": 16,
+    "max": 0
+  },
+  {
+    "name": "prior-five",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-no-numbers",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-missing-label",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-mixed",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  },
+  {
+    "name": "prior-shadow",
+    "expected": 14,
+    "actual": 14,
+    "exact": 14,
+    "decision": 14,
+    "number": 14,
+    "observed": 14,
+    "max": 0
+  }
+]

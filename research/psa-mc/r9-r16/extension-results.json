@@ -1,0 +1,240 @@
+[
+  {
+    "case": "every-row-missing-one-no-labels",
+    "first": {
+      "mapped": 0,
+      "proposed": 0,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 0,
+        "proposed": 0,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "joint": {
+      "mapped": 0,
+      "proposed": 0,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 0,
+        "proposed": 0,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "header": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 14,
+      "confirmed": {
+        "mapped": 0,
+        "proposed": 0,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    }
+  },
+  {
+    "case": "perspective-clean",
+    "raw": {
+      "mapped": 11,
+      "proposed": 11,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 11,
+        "proposed": 11,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "rectified": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "perspective-edge-loss",
+    "raw": {
+      "mapped": 5,
+      "proposed": 5,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 5,
+        "proposed": 5,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "rectified": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "perspective-gap-rings",
+    "raw": {
+      "mapped": 12,
+      "proposed": 14,
+      "wrong": 2,
+      "review": 0,
+      "confirmed": {
+        "mapped": 12,
+        "proposed": 14,
+        "wrong": 2,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "rectified": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "perspective-mixed",
+    "raw": {
+      "mapped": 11,
+      "proposed": 11,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 11,
+        "proposed": 11,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "rectified": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    }
+  },
+  {
+    "case": "header-clean",
+    "header": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    }
+  },
+  {
+    "case": "header-five",
+    "header": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    }
+  },
+  {
+    "case": "header-no-numbers",
+    "header": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    }
+  },
+  {
+    "case": "header-mixed",
+    "header": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    }
+  },
+  {
+    "case": "header-gap-rings",
+    "header": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 16,
+        "wrong": 2,
+        "review": 0
+      },
+      "numbered": 0
+    }
+  }
+]

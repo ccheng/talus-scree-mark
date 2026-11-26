@@ -1,0 +1,249 @@
+{
+  "header_recovery": {
+    "mapped": 14,
+    "proposed": 14,
+    "wrong": 0,
+    "review": 14,
+    "confirmed": {
+      "mapped": 0,
+      "proposed": 0,
+      "wrong": 0,
+      "review": 0
+    },
+    "numbered": 0
+  },
+  "combined": [
+    {
+      "case": "clean",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.24
+    },
+    {
+      "case": "no-header",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.194
+    },
+    {
+      "case": "missing-row",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.195
+    },
+    {
+      "case": "no-header-missing",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.176
+    },
+    {
+      "case": "edge-loss",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.194
+    },
+    {
+      "case": "gap-rings",
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.23
+    },
+    {
+      "case": "no-header-gap",
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.203
+    },
+    {
+      "case": "five",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.239
+    },
+    {
+      "case": "no-numbers",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0,
+      "seconds": 0.179
+    },
+    {
+      "case": "missing-label",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 12,
+      "seconds": 0.211
+    },
+    {
+      "case": "mixed",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.305
+    },
+    {
+      "case": "shadow",
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14,
+      "seconds": 0.18
+    }
+  ],
+  "glyph_transfer": [
+    {
+      "size": 9,
+      "n": 120,
+      "svm": 86,
+      "template": 70,
+      "agree": 72
+    },
+    {
+      "size": 13,
+      "n": 120,
+      "svm": 111,
+      "template": 109,
+      "agree": 106
+    },
+    {
+      "size": 20,
+      "n": 120,
+      "svm": 117,
+      "template": 117,
+      "agree": 116
+    },
+    {
+      "size": 30,
+      "n": 120,
+      "svm": 118,
+      "template": 120,
+      "agree": 118
+    }
+  ],
+  "private_aggregate": {
+    "rows": 14,
+    "numbered": 14,
+    "numbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "review": 0,
+    "headers": 2
+  }
+}

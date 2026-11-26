@@ -1,0 +1,881 @@
+[
+  {
+    "case": "clean",
+    "first": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 2,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.317
+  },
+  {
+    "case": "no-header",
+    "first": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 0,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": false,
+        "hypotheses": 5,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 4,
+        "header": false,
+        "hypotheses": 5,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.285
+  },
+  {
+    "case": "missing-row",
+    "first": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 2,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.285
+  },
+  {
+    "case": "no-header-missing",
+    "first": {
+      "mapped": 13,
+      "proposed": 13,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 1,
+      "confirmed": {
+        "mapped": 13,
+        "proposed": 13,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 0,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": false,
+        "hypotheses": 5,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 4,
+        "header": false,
+        "hypotheses": 5,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.266
+  },
+  {
+    "case": "edge-loss",
+    "first": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 2,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.284
+  },
+  {
+    "case": "gap-rings",
+    "first": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 2,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.331
+  },
+  {
+    "case": "no-header-gap",
+    "first": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 16,
+        "wrong": 2,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 16,
+      "wrong": 2,
+      "review": 2,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 0,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": false,
+        "hypotheses": 5,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 4,
+        "header": false,
+        "hypotheses": 5,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.307
+  },
+  {
+    "case": "five",
+    "first": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 5,
+      "confirmed": {
+        "mapped": 9,
+        "proposed": 9,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 2,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 5,
+        "header": true,
+        "hypotheses": 7,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 5,
+        "header": true,
+        "hypotheses": 7,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.355
+  },
+  {
+    "case": "no-numbers",
+    "first": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 0
+    },
+    "headers": 2,
+    "details": [],
+    "seconds": 0.261
+  },
+  {
+    "case": "missing-label",
+    "first": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 8
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 12
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 12
+    },
+    "headers": 2,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          14
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.296
+  },
+  {
+    "case": "mixed",
+    "first": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 2,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 6,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.425
+  },
+  {
+    "case": "shadow",
+    "first": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "joint": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "number": {
+      "mapped": 14,
+      "proposed": 14,
+      "wrong": 0,
+      "review": 0,
+      "confirmed": {
+        "mapped": 14,
+        "proposed": 14,
+        "wrong": 0,
+        "review": 0
+      },
+      "numbered": 14
+    },
+    "headers": 2,
+    "details": [
+      {
+        "labels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 4,
+        "ambiguous": false
+      },
+      {
+        "labels": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "choices": 4,
+        "header": true,
+        "hypotheses": 5,
+        "ambiguous": false
+      }
+    ],
+    "seconds": 0.257
+  }
+]
