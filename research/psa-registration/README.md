@@ -1,0 +1,30 @@
+# REG-R1–R8 initial completed-sheet registration research
+
+## Scope and reproducibility
+
+Frozen deployed baseline: main 896cabc04ecb2a468a0a76d0b69a117afc73d855 (build 17240ea326d6d2fe470c5270). No application files were changed. No private forms or real student data were used.
+
+The three self-contained synthetic generators and experiment harnesses import the actual pinned application registration and projective modules. Run from repository root with a Node version supporting the application's ES modules:
+```
+node research/psa-registration/initial.mjs
+node research/psa-registration/refined.mjs
+node research/psa-registration/ordinary-print.mjs
+```
+JSON files record the runs actually executed in the tool's JavaScript isolate using the same application source and experiment functions, not an independent Node rerun. Runtime values are environment-specific. The fixtures are one four-block synthetic mixed layout with 14 MC questions (63 bubbles) and two NR grids (84 bubbles), 147 centers total. NR bubble symbols are assigned in the profile but the synthetic raster draws rings, not real internal printed digits. Some bubbles are filled as a geometry challenge; no mark-reading/grade correctness claim is made. Initial and refined suites are the same 10 cases, so count only the refined suite plus ordinary-print suite (21 cases), not 31 independent cases. Ordinary labels are a simple hand-rendered bitmap font at known enrollment locations; not a full photographic or typographic evaluation. All fixtures and thresholds are PSA-authored; these are development results.
+
+## Findings
+
+- R1: Existing batch-geometry-v6 gate verifies row, slot, column, spacing and outline support, and has edge/bubble/virtual-corner hypotheses. Block correction and enrollment of printed landmarks are MC-only. Existing verifier accepted two deliberately incompatible synthetic controls in each of the refined and ordinary-print suites: an adjacent extra row just beyond the MC block bounds and changed required identity print. The latter is an experimental identity contract; current product intentionally allows incidental printed text to differ, so not every print change is a defect.
+- R2: NCC-based local matching of printed patches outside answer regions, with ambiguity margin, smoothed bilinear sampling and half-pixel search. Manually selected known enrollment sites in this prototype. R2 remains open for automatic detection/enrollment, ordinary form diversity and marks obscuring nearby print.
+- R3: Competing affine, projective and regularized quadratic correction models over a supplied initial page pose. Fixed held-out landmark per region; projective wins corner bias, quadratic wins smooth deformation. Only one ordinary-label case uses actual proposePageCorners; full automatic multi-pose search, rotation, cropping, mirror and multiple-sheet evaluation remain open.
+- R4: Template-guided radial ring diagnostics for each MC/NR block after shared correction. Relocated MC and NR blocks each report the known 9-point offset and fail the existing geometry gate. The local offsets are diagnostic only, not independent corrective transforms. Filled rings contribute support, but actual NR digit print and marks are not fully modeled.
+- R5: Quadratic shared displacement field can correct the tested smooth warp. This is not a validated physical paper model; explicit Jacobian/fold, displacement, extrapolation and smoothness bounds are required before product use. Candidate rectifies a raster for existing geometry verification, not yet a production mapping used by mark sampling.
+- R6: Adjacent-row guard flagged the tested extra four-bubble row in both suites. A row outside the selected scope may be legitimate, so emit review and respect profile exclusions/kept blocks; current research guard has not been validated on partial scopes. Whole-block relocation (including nearby printed labels) in ordinary suite failed held-out consistency. Geometry-identical templates with different identities need explicit identity evidence; arbitrary incidental text must not be treated as disqualifying.
+- R7: Review on low landmark coverage, ambiguous patch match, held-out disagreement or response-geometry failure. Valid occlusion control is rejected by the experimental gate despite Established success. Keep established safe paths available, investigate fallback and calibrate uncertainty. No probabilistic confidence or item-level uncertainty propagation yet.
+- R8: Refined distinct-landmark suite: valid 5/5 candidate vs 2/5 baseline; incompatible 5/5 sent to review vs 3/5 baseline. Ordinary print suite: valid 5/6 candidate vs 3/6 baseline; incompatible 5/5 review vs 3/5 baseline. Combined case counts: 10/11 valid vs 5/11; 10/10 incompatible held vs 6/10. Both suites share layout; not independent. Model selection and first-versus-refined comparison are initial ablations, not comprehensive attribution.
+
+Valid case geometric 95th percentile source-pixel errors: distinct corner bias 6.294 -> .298; bend 5 3.738 -> .227; bend 9 6.729 -> .454. Ordinary corner bias 6.294 -> .298; bend 4 2.990 -> .388; bend 8 5.981 -> .366. Raw errors are based on initial pose, not measured accepted baseline output. For incompatible cases with missing or additional positions, do not treat these error metrics as an identity score.
+
+## Disposition
+
+Initial research only. Do not integrate, replace registration, or deploy this prototype. Next: automatic invariant printed feature enrollment from real-looking blank mock sheets, true mixed NR print/filled marks, multi-hypothesis pose generation without trusted corners, bounded deformation and held-out spatial coverage tests, repeated-pattern ambiguity, identity and scope contracts, robust mark-reading/grade regression, mobile resource benchmarking, independent fixture authorship and validation. No new model training needed at this stage. The adjacent-row boundary failure is a narrow issue worth referring to LSDE for independent reproduction; a review-level guard is preferable to an automatic rejection when scope is ambiguous.
