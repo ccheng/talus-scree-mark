@@ -1,0 +1,62 @@
+[
+  {
+    "name": "complete-unexpected",
+    "blankSupports": 0,
+    "observed": 4,
+    "disposition": "review-extra-row",
+    "expected": "review-extra-row",
+    "pass": true,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ]
+  },
+  {
+    "name": "partial-enrolled",
+    "blankSupports": 4,
+    "observed": 4,
+    "disposition": "enrolled-print-outside-scope",
+    "expected": "enrolled-print-outside-scope",
+    "pass": true,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ]
+  },
+  {
+    "name": "partial-new",
+    "blankSupports": 0,
+    "observed": 4,
+    "disposition": "review-scope-uncertain",
+    "expected": "review-scope-uncertain",
+    "pass": true,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ]
+  },
+  {
+    "name": "explicit-exclusion",
+    "blankSupports": 0,
+    "observed": 4,
+    "disposition": "excluded",
+    "expected": "excluded",
+    "pass": true,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ]
+  },
+  {
+    "name": "incomplete-exclusion",
+    "blankSupports": 0,
+    "observed": 4,
+    "disposition": "review-scope-uncertain",
+    "expected": "review-scope-uncertain",
+    "pass": true,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ]
+  }
+]
