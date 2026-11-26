@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { reconcileStructured } from '../app/src/psa-structured.js';
-import { pageScale } from '../app/src/psa-nr-discovery.js';
+import { pagePsaProposals, pageScale } from '../app/src/psa-nr-discovery.js';
 
 const page = { width: 612, height: 792, orientation: 'portrait', origin: 'top-left', units: 'pt' };
 const points = (y) => [100, 120, 140, 160, 180].map((x) => [x * pageScale, y * pageScale]);
@@ -46,4 +46,30 @@ test('Structured locates competing MC/NR evidence without adding a disputed row'
   assert.deepEqual(result.components, layout.components);
   assert.equal(result.conflictRegions.length, 1);
   assert.deepEqual(result.issues, ['psa-type-review']);
+});
+
+test('A withheld NR grid cannot turn its digit rows into MC proposals', () => {
+  const center = (x, y) => [x * pageScale, y * pageScale];
+  const digitCenters = Array.from({ length: 40 }, (_, index) =>
+    center(406 + 20 * (index % 4), 200 + 12 * Math.floor(index / 4)));
+  const nrProposal = { centers: digitCenters, decimals: [center(426, 186), center(446, 186)],
+    rasterShape: [4 * pageScale, 4 * pageScale], completeOutlines: true, decision: 'review',
+    evidence: { svm_margin: -1.79 } };
+  const nr = { proposals: [nrProposal] };
+  const established = pagePsaProposals(nr, page)[0].block;
+  const digitRows = Array.from({ length: 10 }, (_, index) => ({
+    points: digitCenters.slice(index * 4, index * 4 + 4), observed: [true, true, true, true],
+    number: index + 1, decision: 'confirmed',
+  }));
+  const outlines = digitCenters.map(([x, y]) => [x, y, 4 * pageScale]);
+  const withNumerical = { ...layout, components: [...layout.components, established] };
+  const result = reconcileStructured(withNumerical, { mc: { rows: digitRows, outlines }, nr }, [], page);
+  assert.equal(result.psa.mcAdded, 0);
+  assert.deepEqual(result.components, layout.components);
+  assert.equal(result.conflictRegions.length, 1);
+  assert.ok(result.issues.includes('psa-conflicting-grids'));
+  const mcOnly = { ...layout, excludedNumericalRegions: [established.bounds] };
+  const inScope = reconcileStructured(mcOnly, { mc: { rows: digitRows, outlines }, nr: { proposals: [] } }, [], page);
+  assert.equal(inScope.psa.mcAdded, 0);
+  assert.deepEqual(inScope.issues, []);
 });
