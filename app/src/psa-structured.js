@@ -50,6 +50,9 @@ export function reconcileStructured(result, { mc, nr }, exclusions, page) {
   const numerical = reconcilePsaPage(result, pagePsaProposals(nr, page), exclusions);
   const issues = new Set(numerical.issues);
   let blocks = [...numerical.components];
+  // An NR geometry remains contested when its symbols fail verification.
+  // Its digit rows cannot become MC simply because the NR proposal was withheld.
+  const establishedNumerical = result.components.filter(({ kind }) => kind === 'nr');
   const diagnostics = [...numerical.diagnostics];
   let added = 0;
   let refined = 0;
@@ -63,6 +66,15 @@ export function reconcileStructured(result, { mc, nr }, exclusions, page) {
   for (const row of rows) {
     const { item } = row;
     if (exclusions.some((zone) => intersects(zone, item.bounds))) continue;
+    if (result.excludedNumericalRegions?.some((bounds) => intersects(bounds, item.bounds))) continue;
+    const numericalRegion = establishedNumerical.find(({ bounds }) => intersects(bounds, item.bounds));
+    if (numericalRegion) {
+      const occupied = blocks.some(({ kind, bounds }) => kind === 'nr' && intersects(bounds, item.bounds));
+      if (!occupied || row.arbitration === 'unresolved') {
+        recordConflict(numericalRegion.bounds, 'MC and NR interpretations compete in this region');
+      }
+      continue;
+    }
     if (row.arbitration) {
       if (row.arbitration === 'unresolved' || !blocks.some((b) => b.kind === 'nr' && intersects(b.bounds, item.bounds))) {
         recordConflict(item.bounds, 'MC and NR interpretations compete in this region');
@@ -78,7 +90,7 @@ export function reconcileStructured(result, { mc, nr }, exclusions, page) {
       continue;
     }
     if ((overlaps.length && !target) || target?.items.some((other) => intersects(other.bounds, item.bounds))) {
-      recordConflict(item.bounds, 'The PSA MC row overlaps an existing response');
+      recordConflict(target?.bounds ?? item.bounds, 'The PSA MC row overlaps an existing response');
       continue;
     }
     const proposal = target

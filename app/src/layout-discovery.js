@@ -327,6 +327,9 @@ function inspectBlankLayout(image, page, corners, { exclusions = [], scope, refi
   const outsideExclusions = blocks.filter(({ bounds }) => !exclusions.some((zone) => intersects(bounds, zone)));
   const proposals = outsideExclusions.filter(({ kind, columns }) =>
     scope !== 'mc-only' || (kind === 'mc' && (columns === 4 || columns === 5)));
+  const excludedNumericalRegions = scope === 'mc-only'
+    ? outsideExclusions.filter(({ kind }) => kind === 'nr').map(({ bounds }) => bounds)
+    : [];
   const issues = [];
   if (!proposals.length) issues.push('no-grid');
   if (outsideExclusions.some(({ kind, columns }) => scope === 'mc-only' && kind === 'mc' && columns !== 4 && columns !== 5)) {
@@ -399,10 +402,10 @@ function inspectBlankLayout(image, page, corners, { exclusions = [], scope, refi
     try {
       createMarkerlessProfile({ id: 'proposal', name: 'Proposal', revision: 1, page, components: independent });
     } catch {
-      return { status: 'review', corners, components: [], issues: [...issues, 'invalid-grids'], diagnostics };
+      return { status: 'review', corners, components: [], issues: [...issues, 'invalid-grids'], diagnostics, excludedNumericalRegions };
     }
   }
-  return { status: issues.length ? 'review' : 'proposed', corners, components: independent, issues, diagnostics };
+  return { status: issues.length ? 'review' : 'proposed', corners, components: independent, issues, diagnostics, excludedNumericalRegions };
 }
 
 
