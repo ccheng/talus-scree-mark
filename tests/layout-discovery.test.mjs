@@ -13,6 +13,7 @@ const page = { width: 612, height: 792, units: 'pt', origin: 'top-left', orienta
 
 function syntheticBlank({
   missing = false, marks = false, numeric = false, digitInk = false, tallBoxes = false, mcRadius = 3.4, answer, rival,
+  upperDecimal = false, numericPitch = 24, missingDigit, choiceOffsets = [0, 0, 0, 0],
 } = {}) {
   const width = 1225, height = 1585;
   const pixels = new Uint8ClampedArray(width * height * 4).fill(255);
@@ -35,12 +36,12 @@ function syntheticBlank({
   for (let row = 0; row < 6; row++) {
     for (let column = 0; column < 4; column++) {
       if (missing && row === 2 && column === 3) continue;
-      ring(92 + column * 24, 202 + row * 19, marks && row === 0 && column === 1, mcRadius);
+      ring(92 + column * 24 + choiceOffsets[column], 202 + row * 19, marks && row === 0 && column === 1, mcRadius);
     }
   }
   if (numeric) {
     for (let pos = 0; pos < 4; pos++) {
-      const x = 367 + pos * 24;
+      const x = 367 + pos * numericPitch;
       const halfWidth = tallBoxes ? 12 : 8;
       const left = x - halfWidth, right = x + halfWidth;
       const top = tallBoxes ? 388 : 413;
@@ -57,8 +58,10 @@ function syntheticBlank({
           paint(x - 2.5, y - 2.5, x + 2.5, y + 2.5, (px, py) => Math.hypot(px - x, py - y) < 2.5, rival.level);
         }
       }
-      for (let digit = 0; digit < 10; digit++) numericChoice(String(digit), 447 + digit * 10);
-      if (pos === 1 || pos === 2) numericChoice('.', 547);
+      for (let digit = 0; digit < 10; digit++) {
+        if (digit !== missingDigit) numericChoice(String(digit), 447 + digit * 10);
+      }
+      if (pos === 1 || pos === 2) numericChoice('.', upperDecimal ? 437 : 547);
     }
   }
   return { id: 'synthetic-layout', width, height, pixels };
@@ -83,10 +86,61 @@ test('discovers a whole-sheet MC grid and a boxed NR grid with lower decimal pos
   assert.deepEqual(result.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null, '7   ']);
 });
 
+test('discovery exclusions remove NR evidence and preserve original pixels and saved scope', () => {
+  const blank = syntheticBlank({ numeric: true, digitInk: true });
+  const baseline = discoverBlankLayout(blank, page);
+  assert.deepEqual(baseline.components.map(({ kind }) => kind), ['mc', 'nr']);
+  const exclusions = [{ x: 340, y: 400, width: 115, height: 174 }];
+  const before = blank.pixels.slice();
+  const proposal = discoverBlankLayout(blank, page, baseline.corners, { scope: 'mc-only', exclusions });
+  assert.equal(proposal.status, 'proposed');
+  assert.deepEqual(proposal.components, baseline.components.filter(({ kind }) => kind === 'mc'));
+  assert(proposal.diagnostics.every(({ kind }) => kind === 'mc'));
+  assert.deepEqual(blank.pixels, before);
+  const profile = { id: 'mc-qa', revision: 1, name: 'MC QA', page, scope: 'mc-only',
+    components: baseline.components, exclusions };
+  assert.throws(() => createMarkerlessProfile(profile), /MC-only/);
+  const saved = profileRecord(createMarkerlessProfile({ ...profile, components: proposal.components }));
+  assert.equal(saved.scope, 'mc-only');
+  assert.deepEqual(saved.exclusions, exclusions);
+  const marked = syntheticBlank({ numeric: true, marks: true, digitInk: true });
+  const read = readProfileSheet(marked, saved, { batch: { profileId: saved.id, revision: saved.revision } });
+  assert.equal(read.status, 'read');
+  assert.deepEqual(read.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null]);
+});
+
+test('MC-only discovery refines pitch without dropping the furthest printed choice', () => {
+  const blank = syntheticBlank({ choiceOffsets: [-.40, .40, 0, 0] });
+  const proposal = discoverBlankLayout(blank, page, undefined, { scope: 'mc-only' });
+  assert.equal(proposal.status, 'proposed');
+  assert.equal(proposal.components.length, 1);
+  assert.equal(proposal.components[0].items.length, 6);
+  assert(proposal.components[0].items.every(({ choices }) => choices.map(({ symbol }) => symbol).join('') === 'ABCD'));
+});
+
+test('wide upper-decimal NR requires all ten observed digit rows', () => {
+  const options = { numeric: true, upperDecimal: true, numericPitch: 37.5, tallBoxes: true };
+  const complete = discoverBlankLayout(syntheticBlank(options), page);
+  assert.equal(complete.status, 'proposed');
+  const [item] = complete.components.find(({ kind }) => kind === 'nr').items;
+  assert.deepEqual(item.slots.map(({ choices }) => choices.map(({ symbol }) => symbol).join('')), [
+    '0123456789', '.0123456789', '.0123456789', '0123456789',
+  ]);
+  for (const missingDigit of [0, 9]) {
+    const incomplete = discoverBlankLayout(syntheticBlank({ ...options, missingDigit }), page);
+    assert.equal(incomplete.status, 'review');
+    assert(incomplete.issues.includes('unusual-nr-grid'));
+    assert(!incomplete.components.some(({ kind }) => kind === 'nr'));
+  }
+});
+
 test('a missing bubble in a repeated row is exposed for teacher review', () => {
   const proposal = discoverBlankLayout(syntheticBlank({ missing: true }), page);
   assert.equal(proposal.status, 'review');
   assert(proposal.issues.includes('interrupted-grid'));
+  const scoped = discoverBlankLayout(syntheticBlank({ missing: true }), page, undefined, { scope: 'mc-only' });
+  assert.equal(scoped.status, 'review');
+  assert(scoped.issues.includes('check-mc-choice-counts'));
 });
 
 test('invalid or reversed corners cannot create an automatic proposal', () => {
@@ -131,15 +185,18 @@ function weakEdgePhoto(image, background = 244, {
 }
 
 test('faint page edges recover a complete blank and a verified marked pose', () => {
-  const proposal = discoverBlankLayout(weakEdgePhoto(syntheticBlank({ numeric: true })), page);
+  const blank = weakEdgePhoto(syntheticBlank({ numeric: true }));
+  const proposal = discoverBlankLayout(blank, page);
   assert.equal(proposal.status, 'proposed', JSON.stringify(proposal.issues));
-  assert.equal(proposal.pagePose, 'faint-boundary');
+  // Visible faint edges now establish the physical frame before the layout is inspected.
+  assert(proposal.corners.every(({ x, y }, index) =>
+    Math.hypot(x - blank.corners[index].x, y - blank.corners[index].y) < 3));
   assert.deepEqual(proposal.components.map(({ kind }) => kind), ['mc', 'nr']);
   const profile = createMarkerlessProfile({ id: 'recovered-layout', revision: 1, name: 'Synthetic', page, components: proposal.components });
   const batch = { profileId: profile.id, revision: profile.revision };
   const result = readProfileSheet(weakEdgePhoto(syntheticBlank({ numeric: true, marks: true })), profile, { batch });
   assert.equal(result.status, 'read', JSON.stringify(result.registration.reasons));
-  assert.equal(result.registration.cornerPath, 'bubble-fit');
+  assert.equal(result.registration.cornerPath, 'page-boundary');
   assert.equal(result.registration.diagnostics.orientation.status, 'verified');
   assert.deepEqual(result.items.map(({ rawText }) => rawText), ['B', null, null, null, null, null, '7   ']);
 

@@ -98,10 +98,15 @@ function geometryErrors(profile, expected, actual) {
   });
 }
 
+// The markerless grader preserves literal marks and sends unnecessary leading zeros to review.
+const hasLeadingZeros = ({ status, value }) => status === 'single' && /^0[0-9]/.test(value);
+const expectedReview = (item) => item.review || hasLeadingZeros(item);
+
 function assertObservation(item, expected) {
   assert(item, `Missing mapped item ${expected.id}`);
   const observed = { status: item.status, value: item.rawText, review: item.review };
-  assert.deepEqual(observed, { status: expected.status, value: expected.value, review: expected.review }, expected.id);
+  assert.deepEqual(observed, { status: expected.status, value: expected.value, review: expectedReview(expected) }, expected.id);
+  if (hasLeadingZeros(expected)) assert(item.reasons.includes('nr-format'), expected.id);
 }
 
 async function scan(page, profile, family, fixture, options = {}) {
@@ -145,7 +150,7 @@ async function assertReadRows(page, truth) {
     id: row.dataset.itemId, status: row.dataset.status, review: row.dataset.review === 'true',
     value: row.querySelector('[data-raw-text]')?.dataset.rawText ?? null,
   })));
-  assert.deepEqual(rows, truth);
+  assert.deepEqual(rows, truth.map((item) => ({ ...item, review: expectedReview(item) })));
 }
 
 function assertDiscoveredMapping(profile, oracle) {
@@ -548,6 +553,11 @@ try {
     const fixture = resolve(appPath, 'fixtures/m3/mixed-blank.png');
     await selectImage(page, fixture, 'region-practice.png', 'image/png', '#setup-profile');
     await page.locator('#discovery-status[data-status="proposed"]').waitFor();
+    const save = page.locator('#enroll-profile');
+    assert(await save.isDisabled());
+    assert.match(await page.locator('#template-save-status').textContent(), /template name/i);
+    await page.locator('#profile-name').fill('Region and corner recovery');
+    assert(await save.isEnabled());
     const canvas = page.locator('#profile-canvas');
     await canvas.scrollIntoViewIfNeeded();
     const bounds = await canvas.boundingBox();
@@ -570,6 +580,22 @@ try {
     assert.notEqual(await canvas.getAttribute('data-dragging-region'), 'true');
     assert(Math.abs(Number(await region.inputValue()) - (.32 - .13) * pageShape.width) < 4);
     assert(Math.abs(Number(await page.locator('#region-height').inputValue()) - (.32 - .15) * pageShape.height) < 4);
+    const selectedRegion = await region.inputValue();
+    const rectified = await canvas.evaluate((element) => element.toDataURL());
+    const blocks = await page.locator('#profile-blocks').innerText();
+    await page.locator('#reset-blank-corners').click();
+    assert.equal(await page.locator('#enroll-profile').isDisabled(), true);
+    await canvas.scrollIntoViewIfNeeded();
+    const raw = await canvas.boundingBox();
+    assert(raw);
+    await dispatch('touchStart', [{ x: raw.x + 4, y: raw.y + 4 }]);
+    await dispatch('touchMove', [{ x: raw.x + 25, y: raw.y + 25 }]);
+    await dispatch('touchEnd', []);
+    await page.locator('#cancel-blank-corners').click();
+    assert.equal(await canvas.evaluate((element) => element.toDataURL()), rectified);
+    assert.equal(await region.inputValue(), selectedRegion);
+    assert.equal(await page.locator('#profile-blocks').innerText(), blocks);
+    assert.equal(await page.locator('#enroll-profile').isEnabled(), true);
   }, { isMobile: true, hasTouch: true });
 
   await group('Automatic discovery exposes incomplete geometry and permits explicit correction', async (page) => {
@@ -710,7 +736,8 @@ try {
     await page.locator('#scan-completed').tap();
     await verifyRead(first.filled, 'verified');
     await next();
-    await verifyRead(weak.filled, 'recovered');
+    await verifyRead(weak.filled, 'verified');
+    assert.equal(await stage('page-pose').getAttribute('data-path'), 'page-boundary');
     await next();
     await capture(poses.missingBlock);
     await retake.waitFor();
@@ -974,7 +1001,23 @@ try {
     assert.deepEqual(afterScopes.profiles, [profile]);
     assert.deepEqual(afterScopes.local, []);
     assert.deepEqual(afterScopes.session, []);
-    assert.deepEqual(afterScopes.dbs, ['talus-scree-mark-profiles']);
+    assert.deepEqual(afterScopes.dbs.sort(), ['talus-scree-mark-classroom', 'talus-scree-mark-profiles']);
+    const classroom = await page.evaluate(async () => {
+      const { loadGrading, loadPendingCaptures } = await import('./src/grading-store.js');
+      const { keys, scans } = await loadGrading();
+      const captures = await loadPendingCaptures(location.pathname);
+      return {
+        keys,
+        scans: scans.map(({ id, photo, observation }) => ({ id, photoBytes: photo.size, status: observation.status })),
+        captures: captures.map(({ id, photo }) => ({ id, photoBytes: photo.size })),
+      };
+    });
+    assert.deepEqual(classroom.keys, []);
+    assert.equal(classroom.scans.length, 3);
+    assert(classroom.scans.every(({ status, photoBytes }) => status === 'read' && photoBytes > 0));
+    assert.equal(classroom.captures.length, 2);
+    assert(classroom.captures.every(({ id, photoBytes }) => photoBytes > 0 && !classroom.scans.some((scan) => scan.id === id)),
+      'An interrupted or rejected capture should remain local without creating a result');
     const durableKeys = await page.evaluate(async () => {
       const database = await new Promise((resolve, reject) => {
         const request = indexedDB.open('talus-scree-mark-profiles', 1);
@@ -990,9 +1033,10 @@ try {
     assert.deepEqual(durableKeys.stores, ['profiles']);
     assert.deepEqual(durableKeys.assets, Object.keys(appRelease).map((path) => new URL(path, target).href).sort());
 
-    const beforeOffline = server.requests.length;
     await context.setOffline(true);
+    const beforeReload = server.requests.length;
     await page.reload();
+    await page.waitForFunction(() => /^Offline ready\b/.test(document.querySelector('#offline-status').textContent));
     await selector.locator('option').filter({ hasText: 'QA mixed' }).first().waitFor({ state: 'attached' });
     assert.equal(await rows.count(), 0);
     await selector.selectOption(active);
@@ -1000,7 +1044,12 @@ try {
     await start();
     await choose(family.fixtures[0]);
     await assertReadRows(page, family.fixtures[0].truth);
-    assert.equal(server.requests.length, beforeOffline);
+    // Chromium can check service-worker update files outside the page's offline emulation.
+    const updateFiles = new Set(['sw.js', 'precache.generated.js'].map((path) => new URL(path, target).pathname));
+    const offlineRequests = server.requests.slice(beforeReload);
+    assert.deepEqual(offlineRequests.filter(({ method, url, bytes }) =>
+      method !== 'GET' || bytes || !updateFiles.has(url)), [], 'Only bodyless service-worker update probes may reach the server');
+    assert.equal(new Set(offlineRequests.map(({ url }) => url)).size, offlineRequests.length, 'Unexpected repeated offline requests');
   });
 
   await group('M3 profile-only persistence, revision immutability and offline reload', async (page, context) => {

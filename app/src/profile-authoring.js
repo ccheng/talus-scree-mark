@@ -1,3 +1,4 @@
+import { copyPrintedLandmarks } from './printed-landmarks.js';
 import { grayAt, quantile, toGrayImage } from './omr-image.js';
 import { project } from './projective.js';
 import { maximumPrintedBlankInk } from './marks.js';
@@ -42,14 +43,23 @@ export function manualGrid({ topLeft, topRight, bottomLeft, rows, columns, radiu
   return { rows, columns, rowSpacing, columnSpacing, cells };
 }
 
-function rasterizeRegion(gray, matrix, region, maxEdge = 840) {
+function rasterizeRegion(gray, matrix, region, maxEdge = 840, exclusions = []) {
   const scale = Math.min(3, maxEdge / Math.max(region.width, region.height));
   const width = Math.max(1, Math.floor(region.width * scale));
   const height = Math.max(1, Math.floor(region.height * scale));
   const values = new Uint8Array(width * height);
   const samples = [];
+  const masks = exclusions.map(({ x, y, width, height }) => ({
+    left: (x - region.x) * scale, right: (x + width - region.x) * scale,
+    top: (y - region.y) * scale, bottom: (y + height - region.y) * scale,
+  }));
   for (let y = 0; y < height; y++) {
+    const maskedRow = masks.filter(({ top, bottom }) => y >= top && y <= bottom);
     for (let x = 0; x < width; x++) {
+      if (maskedRow.some(({ left, right }) => x >= left && x <= right)) {
+        values[y * width + x] = 255;
+        continue;
+      }
       const source = project(matrix, region.x + x / scale, region.y + y / scale);
       const value = source ? grayAt(gray, source.x, source.y) : NaN;
       values[y * width + x] = Number.isFinite(value) ? value : 255;
@@ -59,7 +69,7 @@ function rasterizeRegion(gray, matrix, region, maxEdge = 840) {
   return { width, height, values, scale, background: quantile(samples, .75) };
 }
 
-function ringCandidates(raster, region, threshold, printedCenters = false) {
+function ringCandidates(raster, region, threshold, printedCenters = false, maxRadius = 8, markedCenters = false) {
   const { width, height, values, scale } = raster;
   const visited = new Uint8Array(values.length);
   const queue = new Int32Array(values.length);
@@ -94,10 +104,11 @@ function ringCandidates(raster, region, threshold, printedCenters = false) {
     const fill = count / (w * h);
     const cx = (left + right) / 2;
     const cy = (top + bottom) / 2;
-    if (radius < 1.5 || radius > 8 || w / h < .70 || w / h > 1.43 || fill < .14 || fill > .78) continue;
+    if (radius < 1.5 || radius > maxRadius || w / h < .70 || w / h > 1.43 ||
+        fill < .14 || fill > (markedCenters ? .86 : .78)) continue;
     const lightAt = (x, y) => values[Math.round(y) * width + Math.round(x)] >= threshold;
     if (!lightAt(cx, cy)) {
-      if (!printedCenters) continue;
+      if (!printedCenters && !markedCenters) continue;
       // A printed numeral can pass through the center of a valid circle.
       // Keep a candidate only when its perimeter remains circular and some
       // paper is still visible around the glyph.
@@ -110,7 +121,7 @@ function ringCandidates(raster, region, threshold, printedCenters = false) {
         if (lightAt(cx + .55 * dx, cy + .55 * dy)) visibleInterior++;
         if ([.76, .87, .98].some((step) => !lightAt(cx + step * dx, cy + step * dy))) circumference++;
       }
-      if (visibleInterior < 5 || circumference < 9) continue;
+      if (circumference < 9 || (visibleInterior < 5 && !(markedCenters && fill >= .52))) continue;
     }
     candidates.push({ x: region.x + cx / scale, y: region.y + cy / scale, radius });
   }
@@ -177,15 +188,22 @@ export function proposeGrid(image, pageToSource, region, { rows, columns, printe
 
 export function pageRingCandidates(gray, pageToSource, page, {
   minRadius = 2.3, maxRadius = 7, margin = 13, limit = 1800, printedCenters = false,
+  region = { x: margin, y: margin, width: page.width - 2 * margin, height: page.height - 2 * margin },
+  fineOutlines = false, exclusions = [], markedCenters = false,
 } = {}) {
-  const region = { x: margin, y: margin, width: page.width - 2 * margin, height: page.height - 2 * margin };
-  const raster = rasterizeRegion(gray, pageToSource, region, 1680);
+  const raster = rasterizeRegion(gray, pageToSource, region, fineOutlines ? 2200 : 1680, exclusions);
   const candidates = [];
   for (const threshold of [.64, .82]) {
-    for (const candidate of ringCandidates(raster, region, raster.background * threshold, printedCenters)) {
-      if (candidate.radius < minRadius || candidate.radius > maxRadius || candidates.some((entry) =>
-        Math.hypot(entry.x - candidate.x, entry.y - candidate.y) < 1.5)) continue;
-      candidates.push(candidate);
+    for (const candidate of ringCandidates(raster, region, raster.background * threshold, printedCenters, maxRadius, markedCenters)) {
+      const { x, y, radius } = candidate;
+      if (radius < minRadius || radius > maxRadius || exclusions.some((zone) =>
+        intersects(zone, { x: x - radius, y: y - radius, width: radius * 2, height: radius * 2 }))) continue;
+      const index = candidates.findIndex((entry) => Math.hypot(entry.x - candidate.x, entry.y - candidate.y) < 1.5);
+      if (index >= 0) {
+        // A stronger threshold can find the full outline where the first
+        // pass only saw a smaller glyph or a faint fragment at its center.
+        if (fineOutlines && candidate.radius > candidates[index].radius) candidates[index] = candidate;
+      } else candidates.push(candidate);
       if (candidates.length >= limit) return candidates;
     }
   }
@@ -196,7 +214,8 @@ function fail(condition, message) {
   if (!condition) throw new TypeError(message);
 }
 
-export function createMarkerlessProfile({ id, revision, name, page, components, features = [], allowManualIdentity = false }) {
+export function createMarkerlessProfile({ id, revision, name, page, components, features = [], allowManualIdentity = false,
+  scope, exclusions = [], mcCompleteness, mcExpectedCount, printedLandmarks }) {
   fail(typeof id === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(id) && Number.isInteger(revision) && revision > 0,
     'The profile needs a valid ID and revision.');
   fail(typeof name === 'string' && name.trim() && name.trim().length <= 80, 'Enter a name of up to 80 characters.');
@@ -205,6 +224,15 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
   'Choose a supported page size and orientation.');
   fail(Array.isArray(components) && components.length > 0 && components.length <= 24, 'Confirm one or more answer blocks.');
   const frame = { x: 0, y: 0, width: page.width, height: page.height };
+  fail(scope === undefined || (scope === 'mc-only' && components.every(({ kind }) => kind === 'mc')),
+    'An MC-only profile can contain only multiple-choice blocks.');
+  fail(mcCompleteness === undefined || (scope === 'mc-only' && ['complete', 'partial'].includes(mcCompleteness)),
+    'Choose a valid MC coverage decision.');
+  fail(mcExpectedCount === undefined || (scope === 'mc-only' && Number.isInteger(mcExpectedCount) &&
+    mcExpectedCount >= 1 && mcExpectedCount <= 1536), 'Enter a whole expected question count from 1 to 1536.');
+  fail(Array.isArray(exclusions) && exclusions.length <= 24 &&
+    exclusions.every((bounds) => validBounds(bounds) && contains(frame, bounds)),
+    'Discovery exclusions must be on-page rectangles (up to 24).');
   const seen = new Set();
   const allBubbles = [];
   function unique(value) {
@@ -288,11 +316,16 @@ export function createMarkerlessProfile({ id, revision, name, page, components, 
   for (const [index, feature] of sanitized.entries()) {
     fail(!sanitized.slice(0, index).some((other) => intersects(feature.bounds, other.bounds)), 'Printed feature regions may not overlap.');
   }
+  const landmarks = copyPrintedLandmarks(printedLandmarks, page, verified);
   return {
     schemaVersion: 1, id, revision, name: name.trim(), strategy: 'markerless', page: {
       width: page.width, height: page.height, units: 'pt', origin: 'top-left', orientation: page.orientation,
     },
-    components: verified, features: sanitized, allowManualIdentity: Boolean(allowManualIdentity),
+    components: verified, features: sanitized, ...(landmarks.length ? { printedLandmarks: landmarks } : {}), allowManualIdentity: Boolean(allowManualIdentity),
+    ...(scope ? { scope } : {}),
+    ...(mcCompleteness ? { mcCompleteness } : {}),
+    ...(mcExpectedCount === undefined ? {} : { mcExpectedCount }),
+    ...(exclusions.length ? { exclusions: exclusions.map(({ x, y, width, height }) => ({ x, y, width, height })) } : {}),
     provenance: { source: 'teacher-confirmed-blank' },
   };
 }

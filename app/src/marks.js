@@ -62,13 +62,17 @@ function observeBubble(image, matrix, option) {
   return { symbol, score, quality, evidence, rawScore, blankInk: option.blankInk };
 }
 
-export const maximumPrintedBlankInk = .55;
+export const maximumPrintedBlankInk = .72;
+const isolatedBlankInkLimit = .55;
 
 export function measureNumericalBlankInk(image, matrix, components) {
   return components.map((block) => block.kind === 'mc' ? block : {
     ...block,
     items: block.items.map((item) => {
-      const slots = item.slots.map(({ choices }) => choices.map(({ blankInk: _, ...choice }) => {
+      const uncalibrated = item.slots.map(({ choices, ...slot }) => ({
+        ...slot, choices: choices.map(({ blankInk: _, ...choice }) => choice),
+      }));
+      const slots = uncalibrated.map(({ choices }) => choices.map((choice) => {
         const { score } = observeBubble(image, matrix, choice);
         return score >= .035 && score <= maximumPrintedBlankInk ? Number(score.toFixed(3)) : null;
       }));
@@ -76,12 +80,20 @@ export function measureNumericalBlankInk(image, matrix, components) {
       // stray mark or an isolated printed dot must never become a baseline.
       const printedSlots = item.slots.filter(({ choices }, position) => choices.filter(({ symbol }, choice) =>
         /^[0-9]$/.test(symbol) && slots[position][choice] !== null).length >= 6).length;
-      if (printedSlots < 3) return item;
-      return { ...item, slots: item.slots.map(({ choices, ...slot }, position) => ({
+      if (printedSlots < 3) return { ...item, slots: uncalibrated };
+      // A dense glyph can cover more than half the sampled center. Only
+      // allow that baseline when the same digit is dark in several slots.
+      const denseDigits = new Set('0123456789'.split('').filter((digit) =>
+        item.slots.filter(({ choices }, position) => {
+          const index = choices.findIndex(({ symbol }) => symbol === digit);
+          return slots[position][index] >= .42;
+        }).length >= 3));
+      return { ...item, slots: uncalibrated.map(({ choices, ...slot }, position) => ({
         ...slot,
         choices: choices.map((choice, index) => {
           const blankInk = slots[position][index];
-          return blankInk === null ? choice : { ...choice, blankInk };
+          return blankInk === null || (blankInk > isolatedBlankInkLimit && !denseDigits.has(choice.symbol))
+            ? choice : { ...choice, blankInk };
         }),
       })) };
     }),
@@ -113,7 +125,8 @@ function observeGroup(image, matrix, choices) {
   return { status: 'ambiguous', symbol: null, review: true, reasons: [reason], ...evidence };
 }
 
-export function readBubbleRegions(image, pageToSource, items) {
+export function readBubbleRegions(image, pageToSource, items, { allowLeadingZeros = false } = {}) {
+  const numericalFormat = allowLeadingZeros ? /^[0-9]+(?:\.[0-9]+)? *$/ : /^(?:0|[1-9][0-9]*)(?:\.[0-9]+)? *$/;
   return items.map((item) => {
     const fields = { id: item.id, kind: item.kind, bounds: item.bounds };
     if (item.kind === 'mc') {
@@ -128,7 +141,7 @@ export function readBubbleRegions(image, pageToSource, items) {
     }
     const rawText = slots.map(({ symbol }) => symbol ?? ' ').join('');
     const blank = rawText === '    ';
-    const review = !blank && !/^\d+(?:\.\d+)? *$/.test(rawText);
+    const review = !blank && !numericalFormat.test(rawText);
     return { ...fields, slots, status: blank ? 'blank' : 'single', rawText, review, reasons: review ? ['nr-format'] : [] };
   });
 }

@@ -173,3 +173,33 @@ figcaption { color: var(--muted); margin-top: .45rem; font-size: .87rem; text-al
   height: auto;
   margin-inline: auto;
 }
+
+.grading-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.grading-fields label {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+#grading-key-inputs input {
+  width: 6rem;
+}
+
+.grading-table {
+  overflow-x: auto;
+}
+
+.grading-table td:nth-child(2),
+.grading-table td:nth-child(3) {
+  white-space: pre;
+}
+
+#grading-photo {
+  width: 100%;
+  max-width: 48rem;
+}

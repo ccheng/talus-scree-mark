@@ -17,6 +17,10 @@ export function readProfileSheet(image, profile, options = {}) {
   }
   const registration = registerMarkerless(image, validated, options);
   if (registration.status !== 'registered') return { ...header, status: 'retake', registration, items: [] };
-  const items = readBubbleRegions(toGrayImage(image), registration.pageToSource, validated.components.flatMap((block) => block.items));
+  const gray = toGrayImage(image);
+  const items = validated.components.flatMap(({ id, items }) => {
+    const refined = registration.refinedBlocks?.find((block) => block.id === id);
+    return readBubbleRegions(gray, refined?.matrix ?? registration.pageToSource, items);
+  });
   return { ...header, status: 'read', registration, items };
 }
