@@ -6,9 +6,9 @@ import { project } from './projective.js';
 import { NRWorker } from './psa-nr/worker-client.js';
 
 const regionScale = 3;
-const pageScale = 2.4;
+export const pageScale = 2.4;
 
-function rectifiedRegion(image, matrix, region, scale) {
+export function rectifiedRegion(image, matrix, region, scale) {
   const width = Math.ceil(region.width * scale);
   const height = Math.ceil(region.height * scale);
   const source = toGrayImage(image);
@@ -67,7 +67,9 @@ export function pagePsaProposals({ proposals }, page) {
     const id = `psa-nr-${index + 1}`;
     const item = { id: `NR${index + 1}`, kind: 'nr', bounds,
       slots: slots.map(({ choices }, i) => ({
-        id: `NR${index + 1}.${i + 1}`, choices: choices.map(({ observed, ...choice }) => choice),
+        id: `NR${index + 1}.${i + 1}`, choices: choices.map(({ observed, ...choice }) => ({
+          ...choice, provenance: proposal.completeOutlines ? 'observed' : 'inferred',
+        })),
       })),
     };
     return [{
@@ -91,7 +93,7 @@ export function reconcilePsaPage(result, psa, exclusions) {
   const matched = new Set();
   const added = [];
   const diagnostics = [...(result.diagnostics ?? [])];
-  let conflicts = 0;
+  const conflictRegions = [];
   let reviewCount = 0;
 
   for (const { block, usable, needsReview } of candidates) {
@@ -102,12 +104,12 @@ export function reconcilePsaPage(result, psa, exclusions) {
       // A localized PSA disagreement requires review instead of silently falling back to the same NR grid.
       if (equivalents.length) {
         equivalents.forEach((existing) => matched.add(existing));
-        conflicts++;
+        conflictRegions.push({ bounds: block.bounds, reason: 'PSA and Established disagree on the printed NR symbols' });
       }
       continue;
     }
     if (competing || overlap.length !== equivalents.length || equivalents.length > 1) {
-      conflicts++;
+      conflictRegions.push({ bounds: block.bounds, reason: 'The PSA NR grid overlaps another interpretation' });
       continue;
     }
     equivalents.forEach((existing) => matched.add(existing));
@@ -119,10 +121,10 @@ export function reconcilePsaPage(result, psa, exclusions) {
 
   const components = orderBlocks([...result.components.filter((block) => !matched.has(block)), ...added]);
   const issues = result.issues.filter((issue) => issue !== 'no-grid' || !components.length);
-  if (conflicts) issues.push('psa-conflicting-grids');
+  if (conflictRegions.length) issues.push('psa-conflicting-grids');
   if (reviewCount) issues.push('psa-provisional-grids');
   return { ...result, status: issues.length ? 'review' : 'proposed', components, issues, diagnostics,
-    psa: { added: added.length, reviewCount, conflicts } };
+    conflictRegions, psa: { added: added.length, reviewCount, conflicts: conflictRegions.length } };
 }
 
 function startSearch(image, matrix, region, page, scale, map) {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="a6336153135e073e78b4607e">
+  <meta name="scree-release" content="af0005ffd8fabf16f94d1cea">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -112,9 +112,11 @@
           </label>
         </div>
         <label><input id="profile-mc-only" type="checkbox"> MC-only grading (NR and WR excluded)</label>
-        <div id="profile-mc-review" hidden>
+        <div>
           <label>Expected MC questions (optional) <input id="mc-expected-count" type="number" min="1" max="1536" step="1" inputmode="numeric"></label>
           <p id="mc-expected-status" role="status"></p>
+        </div>
+        <div id="profile-mc-review" hidden>
           <p>Draw a box around one group of MC bubbles, including missing rows and a little margin. Use the controls below the page to fit the block.</p>
         </div>
         <p id="editor-status" role="status"></p>
@@ -127,7 +129,8 @@
           <button id="apply-blank-corners" type="button" disabled>Use these corners</button>
           <button id="cancel-blank-corners" type="button" hidden>Cancel corner placement</button>
           <button id="discover-layout" type="button" hidden>Find all response blocks</button>
-          <button id="discover-psa-page" type="button" hidden>Find all blocks with PSA NR</button>
+          <button id="discover-psa-page" type="button" hidden>Find all blocks with PSA Structured</button>
+          <button id="export-template-diagnostics" type="button">Export template diagnostics</button>
           <button id="cancel-psa-page" type="button" hidden>Cancel page search</button>
           <button id="rediscover-layout" type="button" hidden>Find blocks outside exclusions</button>
           <button id="clear-discovery" type="button" hidden>Clear proposed blocks</button>
@@ -135,6 +138,8 @@
         </div>
         <div class="profile-viewport"><canvas id="profile-canvas" width="1" height="1" aria-label="Blank reference image and layout marks"></canvas></div>
         <div id="profile-grid-controls" hidden>
+          <p>Bubble rings show placement. Green is observed, orange is estimated, and blue is manually adjusted. An orange block outline needs review.</p>
+          <ol id="profile-discovery-conflicts"></ol>
           <fieldset id="profile-region-options">
             <legend>Response region</legend>
             <p>Drag across the preview to select one response block, or enter its bounds in Letter points. For numerical response, box one question at a time, including its decimal bubbles. Leave names and headings outside the region.</p>
@@ -165,6 +170,8 @@
             </div>
             <div id="mc-fit-controls" class="controls" hidden>
               <button id="fit-mc-grid" type="button">Fit MC block in box</button>
+              <button id="fit-mc-row" type="button" hidden>Find bubbles in new row</button>
+              <button id="place-mc-row" type="button" hidden>Place new row in box</button>
               <button id="accept-mc-fit" type="button" hidden>Use estimated positions</button>
             </div>
             <p id="mc-fit-status" role="status"></p>
