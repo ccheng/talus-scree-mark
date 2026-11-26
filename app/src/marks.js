@@ -125,7 +125,8 @@ function observeGroup(image, matrix, choices) {
   return { status: 'ambiguous', symbol: null, review: true, reasons: [reason], ...evidence };
 }
 
-export function readBubbleRegions(image, pageToSource, items) {
+export function readBubbleRegions(image, pageToSource, items, { allowLeadingZeros = false } = {}) {
+  const numericalFormat = allowLeadingZeros ? /^[0-9]+(?:\.[0-9]+)? *$/ : /^(?:0|[1-9][0-9]*)(?:\.[0-9]+)? *$/;
   return items.map((item) => {
     const fields = { id: item.id, kind: item.kind, bounds: item.bounds };
     if (item.kind === 'mc') {
@@ -140,7 +141,7 @@ export function readBubbleRegions(image, pageToSource, items) {
     }
     const rawText = slots.map(({ symbol }) => symbol ?? ' ').join('');
     const blank = rawText === '    ';
-    const review = !blank && !/^(?:0|[1-9][0-9]*)(?:\.[0-9]+)? *$/.test(rawText);
+    const review = !blank && !numericalFormat.test(rawText);
     return { ...fields, slots, status: blank ? 'blank' : 'single', rawText, review, reasons: review ? ['nr-format'] : [] };
   });
 }

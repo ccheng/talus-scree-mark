@@ -1,6 +1,6 @@
 # PSA structured Alberta NR discovery
 
-Application release `ed1b640bbcafaed281a82e6c` incorporates the native runtime
+Application release `47cd5f2f8503992c0372dd78` incorporates the native runtime
 from PSA commit `83a0e5645233fbb57ba28568f58c28f4562f6593` on the Classroom
 recovery baseline. The [research branch](https://github.com/ccheng/talus-scree-mark/tree/research/psa-nr-structured-inference/research/psa-nr/portable)
 contains the Python reference, cross-language evidence, and model reproduction
@@ -28,7 +28,8 @@ and support local processing after the app reaches Offline ready.
 
 ## Verification
 
-The Independent Software Test Engineer prepared and froze seven synthetic
+For the first preview (`ed1b640bbcafaed281a82e6c`), the Independent Software
+Test Engineer prepared and froze seven synthetic
 photographic pages, then used the real editor in desktop Chromium with an
 iPhone viewport and the network disabled after cache installation.
 
@@ -39,7 +40,7 @@ iPhone viewport and the network disabled after cache installation.
 | Mixed workflow | PSA proposed a reviewable NR region that the tester explicitly reviewed and confirmed. A separately posed capture scored 10/10. A second moved from 6/10 with two pending to 8/10 with zero pending after correction. Category totals, correction history, CSV and photo-inclusive JSON restore were verified. |
 | Worker unavailable | Cancel, engine switch and editor close/reopen passed. A missing model and a one-bit change to the cached model each failed safely. The tester completed the block with Established while offline. All 24 observed requests in the corruption and fallback check were same-origin GETs with no HTTP server arrivals. |
 | Classroom regression | 38 synthetic classroom scans, interruption recovery, batch isolation and photo-inclusive backup and restore in desktop Chromium. |
-| Automated regression | 64/64 passing Node tests and reproducible shell metadata (`npm test` and `npm run check:release`). |
+| Automated regression | 65/65 passing Node tests and reproducible shell metadata (`npm test` and `npm run check:release`). |
 
 The initial integration inherited size limits relative to the raster width. A
 tight crop therefore rejected correctly sized components. The correction keeps
@@ -51,3 +52,14 @@ Physical iPhone Safari camera, timing and memory validation are outstanding.
 The model adds about 8 MB of cached app assets. A valid low-contrast, unusual or
 incomplete grid may still need Established or four-tap recovery. This evaluation
 does not establish general accuracy or a field false-acceptance rate.
+
+## Existing reference compatibility
+
+The first preview reproduced an inherited compatibility defect in the
+fixed-reference reader. The release restores the M2 coded reference's literal
+leading-zero behavior. Grading with a markerless Alberta profile still sends
+unnecessary leading zeros to review and preserves the literal observation.
+The Independent Tester reran all four M2 browser acceptance groups (20/20
+clean-sheet oracles and 46 total fixture cases) and the offline mixed PSA workflow
+on the corrected release. The M3 assertions now explicitly distinguish an
+exact literal observation from its required markerless format review.

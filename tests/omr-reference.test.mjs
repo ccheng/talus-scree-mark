@@ -164,3 +164,14 @@ test('oracle geometry separates ambiguous, double, blank and unreadable and pres
   }
   assert.deepEqual(items.get('NR4').slots.map(({ symbol }) => symbol), ['3', null, '0', '8']);
 });
+
+test('the fixed reference preserves leading zeros as literal recognized marks', () => {
+  const item = referenceProfile.items.find(({ kind }) => kind === 'nr');
+  const readings = Object.fromEntries(item.slots.map(({ id }, slot) => [id, { ['03.0'[slot]]: 22 }]));
+  const image = drawFixture({ readings });
+  for (const items of [readReferenceWithGeometry(image, rectified), readReferenceSheet(image).items]) {
+    const result = items.find(({ id }) => id === item.id);
+    assert.equal(result.rawText, '03.0');
+    assert.equal(result.review, false);
+  }
+});

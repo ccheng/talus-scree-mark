@@ -98,10 +98,15 @@ function geometryErrors(profile, expected, actual) {
   });
 }
 
+// The markerless grader preserves literal marks and sends unnecessary leading zeros to review.
+const hasLeadingZeros = ({ status, value }) => status === 'single' && /^0[0-9]/.test(value);
+const expectedReview = (item) => item.review || hasLeadingZeros(item);
+
 function assertObservation(item, expected) {
   assert(item, `Missing mapped item ${expected.id}`);
   const observed = { status: item.status, value: item.rawText, review: item.review };
-  assert.deepEqual(observed, { status: expected.status, value: expected.value, review: expected.review }, expected.id);
+  assert.deepEqual(observed, { status: expected.status, value: expected.value, review: expectedReview(expected) }, expected.id);
+  if (hasLeadingZeros(expected)) assert(item.reasons.includes('nr-format'), expected.id);
 }
 
 async function scan(page, profile, family, fixture, options = {}) {
@@ -145,7 +150,7 @@ async function assertReadRows(page, truth) {
     id: row.dataset.itemId, status: row.dataset.status, review: row.dataset.review === 'true',
     value: row.querySelector('[data-raw-text]')?.dataset.rawText ?? null,
   })));
-  assert.deepEqual(rows, truth);
+  assert.deepEqual(rows, truth.map((item) => ({ ...item, review: expectedReview(item) })));
 }
 
 function assertDiscoveredMapping(profile, oracle) {
