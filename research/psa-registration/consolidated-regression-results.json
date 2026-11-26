@@ -1,0 +1,4507 @@
+{
+  "unitChecks": 9,
+  "results": [
+    {
+      "layout": 0,
+      "semanticEnrollment": [
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q1",
+          "symbol": "Q1",
+          "x": 76.75,
+          "y": 150,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q2",
+          "symbol": "Q2",
+          "x": 76.5,
+          "y": 171.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q3",
+          "symbol": "Q3",
+          "x": 76.5,
+          "y": 194,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q4",
+          "symbol": "Q4",
+          "x": 76.75,
+          "y": 216.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q5",
+          "symbol": "Q5",
+          "x": 76.75,
+          "y": 237.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q6",
+          "symbol": "Q6",
+          "x": 76.75,
+          "y": 259.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q7",
+          "symbol": "Q7",
+          "x": 76.5,
+          "y": 281.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "header",
+          "block": "B0",
+          "item": null,
+          "symbol": "A",
+          "x": 94.75,
+          "y": 132.65,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "header",
+          "block": "B0",
+          "item": null,
+          "symbol": "B",
+          "x": 113.75,
+          "y": 132.9,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "header",
+          "block": "B0",
+          "item": null,
+          "symbol": "C",
+          "x": 132.75,
+          "y": 133.15,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "header",
+          "block": "B0",
+          "item": null,
+          "symbol": "D",
+          "x": 152,
+          "y": 133.4,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q8",
+          "symbol": "Q8",
+          "x": 331.5,
+          "y": 150.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q9",
+          "symbol": "Q9",
+          "x": 331.5,
+          "y": 171.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q10",
+          "symbol": "Q10",
+          "x": 332.25,
+          "y": 194.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q11",
+          "symbol": "Q11",
+          "x": 331.75,
+          "y": 215.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q12",
+          "symbol": "Q12",
+          "x": 332.25,
+          "y": 238,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q13",
+          "symbol": "Q13",
+          "x": 332,
+          "y": 260.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q14",
+          "symbol": "Q14",
+          "x": 332,
+          "y": 282.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "A",
+          "x": 350,
+          "y": 132.65,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "B",
+          "x": 369,
+          "y": 133.15,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "C",
+          "x": 388,
+          "y": 133.15,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "D",
+          "x": 407,
+          "y": 133.4,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "E",
+          "x": 426,
+          "y": 132.65,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "0",
+          "x": 95,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "1",
+          "x": 95,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "2",
+          "x": 95,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "3",
+          "x": 95,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "4",
+          "x": 95,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "5",
+          "x": 95,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "6",
+          "x": 95,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "7",
+          "x": 95,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "8",
+          "x": 95,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "9",
+          "x": 95,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "0",
+          "x": 112,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "1",
+          "x": 112,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "2",
+          "x": 112,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "3",
+          "x": 112,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "4",
+          "x": 112,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "5",
+          "x": 112,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "6",
+          "x": 112,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "7",
+          "x": 112,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "8",
+          "x": 112,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "9",
+          "x": 112,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "0",
+          "x": 129,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "1",
+          "x": 129,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "2",
+          "x": 129,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "3",
+          "x": 129,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "4",
+          "x": 129,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "5",
+          "x": 129,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "6",
+          "x": 129,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "7",
+          "x": 129,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "8",
+          "x": 129,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "9",
+          "x": 129,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "decimal",
+          "block": "B2",
+          "item": "N2",
+          "symbol": ".",
+          "x": 129,
+          "y": 431,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "0",
+          "x": 146,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "1",
+          "x": 146,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "2",
+          "x": 146,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "3",
+          "x": 146,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "4",
+          "x": 146,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "5",
+          "x": 146,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "6",
+          "x": 146,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "7",
+          "x": 146,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "8",
+          "x": 146,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "9",
+          "x": 146,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "0",
+          "x": 350,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "1",
+          "x": 350,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "2",
+          "x": 350,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "3",
+          "x": 350,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "4",
+          "x": 350,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "5",
+          "x": 350,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "6",
+          "x": 350,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "7",
+          "x": 350,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "8",
+          "x": 350,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "9",
+          "x": 350,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "0",
+          "x": 367,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "1",
+          "x": 367,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "2",
+          "x": 367,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "3",
+          "x": 367,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "4",
+          "x": 367,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "5",
+          "x": 367,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "6",
+          "x": 367,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "7",
+          "x": 367,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "8",
+          "x": 367,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "9",
+          "x": 367,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "decimal",
+          "block": "B3",
+          "item": "N3",
+          "symbol": ".",
+          "x": 367,
+          "y": 431,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "0",
+          "x": 384,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "2",
+          "x": 384,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "3",
+          "x": 384,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "4",
+          "x": 384,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "5",
+          "x": 384,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "6",
+          "x": 384,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "7",
+          "x": 384,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "8",
+          "x": 384,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "9",
+          "x": 384,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "0",
+          "x": 401,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "1",
+          "x": 401,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "2",
+          "x": 401,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "3",
+          "x": 401,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "4",
+          "x": 401,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "5",
+          "x": 401,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "6",
+          "x": 401,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "7",
+          "x": 401,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "8",
+          "x": 401,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "9",
+          "x": 401,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        }
+      ],
+      "enrolled": [
+        {
+          "x": 203,
+          "y": 314,
+          "b": 0,
+          "k": 0
+        },
+        {
+          "x": 203,
+          "y": 116,
+          "b": 0,
+          "k": 1
+        },
+        {
+          "x": 65,
+          "y": 116,
+          "b": 0,
+          "k": 2
+        },
+        {
+          "x": 71,
+          "y": 314,
+          "b": 0,
+          "k": 3
+        },
+        {
+          "x": 323,
+          "y": 116,
+          "b": 1,
+          "k": 0
+        },
+        {
+          "x": 455,
+          "y": 314,
+          "b": 1,
+          "k": 1
+        },
+        {
+          "x": 323,
+          "y": 314,
+          "b": 1,
+          "k": 2
+        },
+        {
+          "x": 461,
+          "y": 116,
+          "b": 1,
+          "k": 3
+        },
+        {
+          "x": 203,
+          "y": 413,
+          "b": 2,
+          "k": 0
+        },
+        {
+          "x": 206,
+          "y": 605,
+          "b": 2,
+          "k": 1
+        },
+        {
+          "x": 65,
+          "y": 413,
+          "b": 2,
+          "k": 2
+        },
+        {
+          "x": 71,
+          "y": 611,
+          "b": 2,
+          "k": 3
+        },
+        {
+          "x": 455,
+          "y": 611,
+          "b": 3,
+          "k": 0
+        },
+        {
+          "x": 458,
+          "y": 413,
+          "b": 3,
+          "k": 1
+        },
+        {
+          "x": 323,
+          "y": 413,
+          "b": 3,
+          "k": 2
+        },
+        {
+          "x": 326,
+          "y": 605,
+          "b": 3,
+          "k": 3
+        }
+      ],
+      "nrCalibrated": 84,
+      "results": [
+        {
+          "case": "photo-question-number-swap",
+          "valid": false,
+          "baseline": "registered",
+          "baselineReasons": [],
+          "baseMs": 3326,
+          "matched": 16,
+          "perBlock": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "model": 1,
+          "heldout": 0,
+          "rawP95": 0,
+          "refinedP95": 0,
+          "candidate": "review",
+          "reason": "mc-question-number-conflict",
+          "details": [
+            {
+              "order": 1,
+              "rms": 0,
+              "max": 0
+            },
+            {
+              "order": 3,
+              "rms": 1.508962596232898e-13,
+              "max": 2.481819080425819e-13
+            },
+            {
+              "order": 2,
+              "rms": 0,
+              "max": 0
+            }
+          ],
+          "shifts": [
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 194.36023708963003,
+              "origin": 194.36023708963003
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 193.55388761568298,
+              "origin": 193.55388761568298
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 192.96265370959267,
+              "origin": 192.96265370959267
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 192.07057613980635,
+              "origin": 192.07057613980635
+            }
+          ],
+          "extras": [],
+          "safety": {
+            "ok": true,
+            "maxDisplacement": 0,
+            "minDet": 1,
+            "maxStrain": 0,
+            "cornerSafe": true,
+            "contentSafe": true
+          },
+          "marks": null,
+          "autoCorners": false,
+          "poseSource": "supplied",
+          "poseAttempts": [
+            {
+              "poseSource": "supplied",
+              "matched": 16
+            }
+          ],
+          "initialP95": 0,
+          "identity": [
+            {
+              "variance": 5179.994159255701,
+              "ncc": 0.8447571007948917,
+              "b": 0,
+              "k": 0
+            },
+            {
+              "variance": 4806.919860311762,
+              "ncc": 0.8760350120156712,
+              "b": 0,
+              "k": 1
+            },
+            {
+              "variance": 4610.538639919658,
+              "ncc": 0.8743601100671097,
+              "b": 0,
+              "k": 2
+            },
+            {
+              "variance": 4433.311987544781,
+              "ncc": 0.9013258788448817,
+              "b": 0,
+              "k": 3
+            },
+            {
+              "variance": 4928.918002704057,
+              "ncc": 0.8528854343191161,
+              "b": 1,
+              "k": 0
+            },
+            {
+              "variance": 4312.888378281517,
+              "ncc": 0.8474631448429053,
+              "b": 1,
+              "k": 1
+            },
+            {
+              "variance": 4717.0201016815845,
+              "ncc": 0.8322987874380758,
+              "b": 1,
+              "k": 2
+            },
+            {
+              "variance": 4599.092000006771,
+              "ncc": 0.9209128799968284,
+              "b": 1,
+              "k": 3
+            },
+            {
+              "variance": 3295.852357043368,
+              "ncc": 0.8853851498563332,
+              "b": 2,
+              "k": 0
+            },
+            {
+              "variance": 2788.7651631863264,
+              "ncc": 0.8923860559131312,
+              "b": 2,
+              "k": 1
+            },
+            {
+              "variance": 3593.1215010591986,
+              "ncc": 0.8717142526635145,
+              "b": 2,
+              "k": 2
+            },
+            {
+              "variance": 2544.4109193463664,
+              "ncc": 0.9272896831958951,
+              "b": 2,
+              "k": 3
+            },
+            {
+              "variance": 3624.7730267968873,
+              "ncc": 0.9258705863550528,
+              "b": 3,
+              "k": 0
+            },
+            {
+              "variance": 2922.3046262888092,
+              "ncc": 0.8614950189761466,
+              "b": 3,
+              "k": 1
+            },
+            {
+              "variance": 3775.76382519897,
+              "ncc": 0.8551890924311354,
+              "b": 3,
+              "k": 2
+            },
+            {
+              "variance": 3139.529127513917,
+              "ncc": 0.8821935881707039,
+              "b": 3,
+              "k": 3
+            }
+          ],
+          "digitEvidence": null,
+          "headerEvidence": null,
+          "numberEvidence": [
+            {
+              "b": 0,
+              "checked": 7,
+              "conflicts": 2
+            },
+            {
+              "b": 1,
+              "checked": 7,
+              "conflicts": 0
+            }
+          ],
+          "decimalEvidence": null,
+          "itemGeometry": null,
+          "grade": null,
+          "directComparison": null,
+          "matchSummary": [
+            {
+              "b": 0,
+              "k": 0,
+              "score": 0.844757100794894,
+              "margin": 0.3298275624828041
+            },
+            {
+              "b": 0,
+              "k": 1,
+              "score": 0.8760350120156613,
+              "margin": 0.24495331132337128
+            },
+            {
+              "b": 0,
+              "k": 2,
+              "score": 0.8743601100671119,
+              "margin": 0.33915830679259096
+            },
+            {
+              "b": 0,
+              "k": 3,
+              "score": 0.9013258788448829,
+              "margin": 0.35022110963770525
+            },
+            {
+              "b": 1,
+              "k": 0,
+              "score": 0.8528854343191162,
+              "margin": 0.24199362655909729
+            },
+            {
+              "b": 1,
+              "k": 1,
+              "score": 0.8474631448429052,
+              "margin": 0.23489351855883667
+            },
+            {
+              "b": 1,
+              "k": 2,
+              "score": 0.832298787438069,
+              "margin": 0.17729484464459355
+            },
+            {
+              "b": 1,
+              "k": 3,
+              "score": 0.9209128799968314,
+              "margin": 0.3621401615567532
+            },
+            {
+              "b": 2,
+              "k": 0,
+              "score": 0.8853851498563337,
+              "margin": 0.4250286267789997
+            },
+            {
+              "b": 2,
+              "k": 1,
+              "score": 0.892386055913133,
+              "margin": 0.4266884518799862
+            },
+            {
+              "b": 2,
+              "k": 2,
+              "score": 0.8717142526635142,
+              "margin": 0.3735451952609668
+            },
+            {
+              "b": 2,
+              "k": 3,
+              "score": 0.9272896831958856,
+              "margin": 0.38018192826680686
+            },
+            {
+              "b": 3,
+              "k": 0,
+              "score": 0.9258705863550529,
+              "margin": 0.3489478793698426
+            },
+            {
+              "b": 3,
+              "k": 1,
+              "score": 0.8614950189761488,
+              "margin": 0.38453166252556176
+            },
+            {
+              "b": 3,
+              "k": 2,
+              "score": 0.855189092431138,
+              "margin": 0.4873180777370956
+            },
+            {
+              "b": 3,
+              "k": 3,
+              "score": 0.8821935881707137,
+              "margin": 0.3158871993350262
+            }
+          ]
+        },
+        {
+          "case": "photo-mc-symbol-permutation",
+          "valid": false,
+          "baseline": "registered",
+          "baselineReasons": [],
+          "baseMs": 3377,
+          "matched": 16,
+          "perBlock": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "model": 1,
+          "heldout": 0,
+          "rawP95": 0,
+          "refinedP95": 0,
+          "candidate": "review",
+          "reason": "mc-symbol-order-conflict",
+          "details": [
+            {
+              "order": 1,
+              "rms": 0,
+              "max": 0
+            },
+            {
+              "order": 3,
+              "rms": 1.508962596232898e-13,
+              "max": 2.481819080425819e-13
+            },
+            {
+              "order": 2,
+              "rms": 0,
+              "max": 0
+            }
+          ],
+          "shifts": [
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 194.36023708963003,
+              "origin": 194.36023708963003
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 193.55388761568298,
+              "origin": 193.55388761568298
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 192.96265370959267,
+              "origin": 192.96265370959267
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 192.07057613980635,
+              "origin": 192.07057613980635
+            }
+          ],
+          "extras": [],
+          "safety": {
+            "ok": true,
+            "maxDisplacement": 0,
+            "minDet": 1,
+            "maxStrain": 0,
+            "cornerSafe": true,
+            "contentSafe": true
+          },
+          "marks": null,
+          "autoCorners": false,
+          "poseSource": "supplied",
+          "poseAttempts": [
+            {
+              "poseSource": "supplied",
+              "matched": 16
+            }
+          ],
+          "initialP95": 0,
+          "identity": [
+            {
+              "variance": 5179.994159255701,
+              "ncc": 0.8447571007948917,
+              "b": 0,
+              "k": 0
+            },
+            {
+              "variance": 4806.919860311762,
+              "ncc": 0.8760350120156712,
+              "b": 0,
+              "k": 1
+            },
+            {
+              "variance": 4610.538639919658,
+              "ncc": 0.8743601100671097,
+              "b": 0,
+              "k": 2
+            },
+            {
+              "variance": 4433.311987544781,
+              "ncc": 0.9013258788448817,
+              "b": 0,
+              "k": 3
+            },
+            {
+              "variance": 4928.918002704057,
+              "ncc": 0.8528854343191161,
+              "b": 1,
+              "k": 0
+            },
+            {
+              "variance": 4312.888378281517,
+              "ncc": 0.8474631448429053,
+              "b": 1,
+              "k": 1
+            },
+            {
+              "variance": 4717.0201016815845,
+              "ncc": 0.8322987874380758,
+              "b": 1,
+              "k": 2
+            },
+            {
+              "variance": 4599.092000006771,
+              "ncc": 0.9209128799968284,
+              "b": 1,
+              "k": 3
+            },
+            {
+              "variance": 3295.852357043368,
+              "ncc": 0.8853851498563332,
+              "b": 2,
+              "k": 0
+            },
+            {
+              "variance": 2788.7651631863264,
+              "ncc": 0.8923860559131312,
+              "b": 2,
+              "k": 1
+            },
+            {
+              "variance": 3593.1215010591986,
+              "ncc": 0.8717142526635145,
+              "b": 2,
+              "k": 2
+            },
+            {
+              "variance": 2544.4109193463664,
+              "ncc": 0.9272896831958951,
+              "b": 2,
+              "k": 3
+            },
+            {
+              "variance": 3624.7730267968873,
+              "ncc": 0.9258705863550528,
+              "b": 3,
+              "k": 0
+            },
+            {
+              "variance": 2922.3046262888092,
+              "ncc": 0.8614950189761466,
+              "b": 3,
+              "k": 1
+            },
+            {
+              "variance": 3775.76382519897,
+              "ncc": 0.8551890924311354,
+              "b": 3,
+              "k": 2
+            },
+            {
+              "variance": 3139.529127513917,
+              "ncc": 0.8821935881707039,
+              "b": 3,
+              "k": 3
+            }
+          ],
+          "digitEvidence": null,
+          "headerEvidence": [
+            {
+              "b": 0,
+              "checked": 4,
+              "conflicts": 2
+            },
+            {
+              "b": 1,
+              "checked": 5,
+              "conflicts": 0
+            }
+          ],
+          "numberEvidence": [
+            {
+              "b": 0,
+              "checked": 7,
+              "conflicts": 0
+            },
+            {
+              "b": 1,
+              "checked": 7,
+              "conflicts": 0
+            }
+          ],
+          "decimalEvidence": null,
+          "itemGeometry": null,
+          "grade": null,
+          "directComparison": null,
+          "matchSummary": [
+            {
+              "b": 0,
+              "k": 0,
+              "score": 0.844757100794894,
+              "margin": 0.3298275624828041
+            },
+            {
+              "b": 0,
+              "k": 1,
+              "score": 0.8760350120156613,
+              "margin": 0.24495331132337128
+            },
+            {
+              "b": 0,
+              "k": 2,
+              "score": 0.8743601100671119,
+              "margin": 0.33915830679259096
+            },
+            {
+              "b": 0,
+              "k": 3,
+              "score": 0.9013258788448829,
+              "margin": 0.35022110963770525
+            },
+            {
+              "b": 1,
+              "k": 0,
+              "score": 0.8528854343191162,
+              "margin": 0.24199362655909729
+            },
+            {
+              "b": 1,
+              "k": 1,
+              "score": 0.8474631448429052,
+              "margin": 0.23489351855883667
+            },
+            {
+              "b": 1,
+              "k": 2,
+              "score": 0.832298787438069,
+              "margin": 0.17729484464459355
+            },
+            {
+              "b": 1,
+              "k": 3,
+              "score": 0.9209128799968314,
+              "margin": 0.3621401615567532
+            },
+            {
+              "b": 2,
+              "k": 0,
+              "score": 0.8853851498563337,
+              "margin": 0.4250286267789997
+            },
+            {
+              "b": 2,
+              "k": 1,
+              "score": 0.892386055913133,
+              "margin": 0.4266884518799862
+            },
+            {
+              "b": 2,
+              "k": 2,
+              "score": 0.8717142526635142,
+              "margin": 0.3735451952609668
+            },
+            {
+              "b": 2,
+              "k": 3,
+              "score": 0.9272896831958856,
+              "margin": 0.38018192826680686
+            },
+            {
+              "b": 3,
+              "k": 0,
+              "score": 0.9258705863550529,
+              "margin": 0.3489478793698426
+            },
+            {
+              "b": 3,
+              "k": 1,
+              "score": 0.8614950189761488,
+              "margin": 0.38453166252556176
+            },
+            {
+              "b": 3,
+              "k": 2,
+              "score": 0.855189092431138,
+              "margin": 0.4873180777370956
+            },
+            {
+              "b": 3,
+              "k": 3,
+              "score": 0.8821935881707137,
+              "margin": 0.3158871993350262
+            }
+          ]
+        },
+        {
+          "case": "photo-flat",
+          "valid": true,
+          "baseline": "registered",
+          "baselineReasons": [],
+          "baseMs": 3379,
+          "matched": 16,
+          "perBlock": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "model": 1,
+          "heldout": 0.37283926436556897,
+          "rawP95": 0.39793414020213697,
+          "refinedP95": 0.33835825114567486,
+          "candidate": "registered",
+          "reason": "verified",
+          "details": [
+            {
+              "order": 1,
+              "rms": 0.37283926436556897,
+              "max": 0.5289535919940173
+            },
+            {
+              "order": 3,
+              "rms": 0.3657254607888165,
+              "max": 0.546197516256967
+            },
+            {
+              "order": 2,
+              "rms": 0.36588903947599133,
+              "max": 0.5196370485388592
+            }
+          ],
+          "shifts": [
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 193.61283068436748,
+              "origin": 193.61283068436748
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 188.25908546871128,
+              "origin": 188.25908546871128
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 187.5007918466335,
+              "origin": 187.5007918466335
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 189.33430735271904,
+              "origin": 189.33430735271904
+            }
+          ],
+          "extras": [],
+          "safety": {
+            "ok": true,
+            "maxDisplacement": 0.5618945092315276,
+            "minDet": 0.9985218216058973,
+            "maxStrain": 0.001215065500778282,
+            "cornerSafe": true,
+            "contentSafe": true
+          },
+          "marks": {
+            "matched": 16,
+            "total": 16,
+            "wrong": []
+          },
+          "autoCorners": true,
+          "poseSource": "detected",
+          "poseAttempts": [
+            {
+              "poseSource": "detected",
+              "matched": 16
+            }
+          ],
+          "initialP95": 0.39793414020213697,
+          "identity": [
+            {
+              "variance": 5065.871631971248,
+              "ncc": 0.8283816382016931,
+              "b": 0,
+              "k": 0
+            },
+            {
+              "variance": 4842.90307152579,
+              "ncc": 0.8640080032289867,
+              "b": 0,
+              "k": 1
+            },
+            {
+              "variance": 4535.600658339223,
+              "ncc": 0.8779895467063761,
+              "b": 0,
+              "k": 2
+            },
+            {
+              "variance": 4417.827708018078,
+              "ncc": 0.8777431557636761,
+              "b": 0,
+              "k": 3
+            },
+            {
+              "variance": 4851.060694716143,
+              "ncc": 0.8695789441635898,
+              "b": 1,
+              "k": 0
+            },
+            {
+              "variance": 4477.626238346878,
+              "ncc": 0.862801528374262,
+              "b": 1,
+              "k": 1
+            },
+            {
+              "variance": 4584.457027071345,
+              "ncc": 0.8449770763529709,
+              "b": 1,
+              "k": 2
+            },
+            {
+              "variance": 4179.27919396988,
+              "ncc": 0.9005796696346128,
+              "b": 1,
+              "k": 3
+            },
+            {
+              "variance": 3687.8741905499846,
+              "ncc": 0.8620375859703174,
+              "b": 2,
+              "k": 0
+            },
+            {
+              "variance": 3268.7655594781245,
+              "ncc": 0.8453955270944836,
+              "b": 2,
+              "k": 1
+            },
+            {
+              "variance": 3585.260779779419,
+              "ncc": 0.8837584723962212,
+              "b": 2,
+              "k": 2
+            },
+            {
+              "variance": 2659.8477301530947,
+              "ncc": 0.8499276390471756,
+              "b": 2,
+              "k": 3
+            },
+            {
+              "variance": 3716.6031623156086,
+              "ncc": 0.9242611380595184,
+              "b": 3,
+              "k": 0
+            },
+            {
+              "variance": 2410.2089955263,
+              "ncc": 0.8581190867462418,
+              "b": 3,
+              "k": 1
+            },
+            {
+              "variance": 4064.6893876592876,
+              "ncc": 0.8207895159380987,
+              "b": 3,
+              "k": 2
+            },
+            {
+              "variance": 3601.2102538760737,
+              "ncc": 0.8767732601885941,
+              "b": 3,
+              "k": 3
+            }
+          ],
+          "digitEvidence": [
+            {
+              "b": 2,
+              "j": 0,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 2,
+              "j": 1,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 2,
+              "j": 2,
+              "checked": 10,
+              "conflicts": 0,
+              "masked": 0,
+              "weak": 0
+            },
+            {
+              "b": 2,
+              "j": 3,
+              "checked": 9,
+              "conflicts": 1,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 3,
+              "j": 0,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 3,
+              "j": 1,
+              "checked": 10,
+              "conflicts": 0,
+              "masked": 0,
+              "weak": 0
+            },
+            {
+              "b": 3,
+              "j": 2,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 3,
+              "j": 3,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            }
+          ],
+          "headerEvidence": [
+            {
+              "b": 0,
+              "checked": 4,
+              "conflicts": 0
+            },
+            {
+              "b": 1,
+              "checked": 5,
+              "conflicts": 0
+            }
+          ],
+          "numberEvidence": [
+            {
+              "b": 0,
+              "checked": 7,
+              "conflicts": 0
+            },
+            {
+              "b": 1,
+              "checked": 7,
+              "conflicts": 0
+            }
+          ],
+          "decimalEvidence": [
+            {
+              "b": 2,
+              "slot": 1,
+              "expected": 0.014218101001976898,
+              "best": 0.08316846170060821,
+              "conflict": false
+            },
+            {
+              "b": 2,
+              "slot": 2,
+              "masked": true
+            },
+            {
+              "b": 3,
+              "slot": 1,
+              "masked": true
+            },
+            {
+              "b": 3,
+              "slot": 2,
+              "expected": 0.006003380234428822,
+              "best": 0.05753283402554005,
+              "conflict": false
+            }
+          ],
+          "itemGeometry": [
+            {
+              "id": "Q1",
+              "dx": 0,
+              "dy": 0,
+              "score": 186.2496396049666,
+              "origin": 186.2496396049666,
+              "conflict": false
+            },
+            {
+              "id": "Q2",
+              "dx": 0,
+              "dy": 0,
+              "score": 192.66112148713734,
+              "origin": 192.66112148713734,
+              "conflict": false
+            },
+            {
+              "id": "Q3",
+              "dx": 0,
+              "dy": 0,
+              "score": 197.71904730285578,
+              "origin": 197.71904730285578,
+              "conflict": false
+            },
+            {
+              "id": "Q4",
+              "dx": 0,
+              "dy": 0,
+              "score": 187.80039357896834,
+              "origin": 187.80039357896834,
+              "conflict": false
+            },
+            {
+              "id": "Q5",
+              "dx": 0,
+              "dy": 0,
+              "score": 188.82227663346495,
+              "origin": 188.82227663346495,
+              "conflict": false
+            },
+            {
+              "id": "Q6",
+              "dx": 0,
+              "dy": 0,
+              "score": 197.64685252321718,
+              "origin": 197.64685252321718,
+              "conflict": false
+            },
+            {
+              "id": "Q7",
+              "dx": 0,
+              "dy": 0,
+              "score": 204.3904836599617,
+              "origin": 204.3904836599617,
+              "conflict": false
+            },
+            {
+              "id": "Q8",
+              "dx": 0,
+              "dy": 0,
+              "score": 189.20616398990325,
+              "origin": 189.20616398990325,
+              "conflict": false
+            },
+            {
+              "id": "Q9",
+              "dx": 0,
+              "dy": 0,
+              "score": 178.63845025179165,
+              "origin": 178.63845025179165,
+              "conflict": false
+            },
+            {
+              "id": "Q10",
+              "dx": 0,
+              "dy": 0,
+              "score": 193.7656740201372,
+              "origin": 193.7656740201372,
+              "conflict": false
+            },
+            {
+              "id": "Q11",
+              "dx": 0,
+              "dy": 0,
+              "score": 186.97932802642552,
+              "origin": 186.97932802642552,
+              "conflict": false
+            },
+            {
+              "id": "Q12",
+              "dx": 0,
+              "dy": 0,
+              "score": 185.76937679423006,
+              "origin": 185.76937679423006,
+              "conflict": false
+            },
+            {
+              "id": "Q13",
+              "dx": 0,
+              "dy": 0,
+              "score": 191.04640169327698,
+              "origin": 191.04640169327698,
+              "conflict": false
+            },
+            {
+              "id": "Q14",
+              "dx": 0,
+              "dy": 0,
+              "score": 192.40820350521432,
+              "origin": 192.40820350521432,
+              "conflict": false
+            },
+            {
+              "id": "N2",
+              "dx": 0,
+              "dy": 0,
+              "score": 187.5007918466335,
+              "origin": 187.5007918466335,
+              "conflict": false
+            },
+            {
+              "id": "N3",
+              "dx": 0,
+              "dy": 0,
+              "score": 189.33430735271904,
+              "origin": 189.33430735271904,
+              "conflict": false
+            }
+          ],
+          "grade": {
+            "before": {
+              "score": 12,
+              "denominator": 16,
+              "pending": 2,
+              "status": "provisional"
+            },
+            "after": {
+              "score": 12,
+              "denominator": 16,
+              "pending": 0,
+              "status": "final"
+            },
+            "unexpectedClear": []
+          },
+          "directComparison": {
+            "matched": 16,
+            "unexpectedClear": [],
+            "review": [
+              "Q3",
+              "Q10"
+            ]
+          },
+          "matchSummary": [
+            {
+              "b": 0,
+              "k": 0,
+              "score": 0.8370433968973132,
+              "margin": 0.3165686219833601
+            },
+            {
+              "b": 0,
+              "k": 1,
+              "score": 0.8696107322714023,
+              "margin": 0.23810880199975226
+            },
+            {
+              "b": 0,
+              "k": 2,
+              "score": 0.8426248285370413,
+              "margin": 0.20176775689930226
+            },
+            {
+              "b": 0,
+              "k": 3,
+              "score": 0.910780556382825,
+              "margin": 0.34039188046550384
+            },
+            {
+              "b": 1,
+              "k": 0,
+              "score": 0.85296418168203,
+              "margin": 0.2115055065026471
+            },
+            {
+              "b": 1,
+              "k": 1,
+              "score": 0.8436387131169254,
+              "margin": 0.2532235088480871
+            },
+            {
+              "b": 1,
+              "k": 2,
+              "score": 0.8288786691694792,
+              "margin": 0.18225641995433184
+            },
+            {
+              "b": 1,
+              "k": 3,
+              "score": 0.8762631776160099,
+              "margin": 0.3446011934111277
+            },
+            {
+              "b": 2,
+              "k": 0,
+              "score": 0.8666350842272049,
+              "margin": 0.41284324691841
+            },
+            {
+              "b": 2,
+              "k": 1,
+              "score": 0.874490930161151,
+              "margin": 0.3985177343038881
+            },
+            {
+              "b": 2,
+              "k": 2,
+              "score": 0.8588177702864922,
+              "margin": 0.33762829825873775
+            },
+            {
+              "b": 2,
+              "k": 3,
+              "score": 0.8596019310396585,
+              "margin": 0.3269279364017509
+            },
+            {
+              "b": 3,
+              "k": 0,
+              "score": 0.8710530734834561,
+              "margin": 0.21292335359679793
+            },
+            {
+              "b": 3,
+              "k": 1,
+              "score": 0.8528597525552359,
+              "margin": 0.36855405370562616
+            },
+            {
+              "b": 3,
+              "k": 2,
+              "score": 0.8546519515566211,
+              "margin": 0.5003640317215121
+            },
+            {
+              "b": 3,
+              "k": 3,
+              "score": 0.8851723636018297,
+              "margin": 0.2992006534878138
+            }
+          ]
+        },
+        {
+          "case": "photo-extra-row",
+          "valid": false,
+          "baseline": "registered",
+          "baselineReasons": [],
+          "baseMs": 3238,
+          "matched": 16,
+          "perBlock": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "model": 1,
+          "heldout": 0,
+          "rawP95": 0,
+          "refinedP95": 0,
+          "candidate": "review",
+          "reason": "adjacent-extra-row",
+          "details": [
+            {
+              "order": 1,
+              "rms": 0,
+              "max": 0
+            },
+            {
+              "order": 3,
+              "rms": 1.508962596232898e-13,
+              "max": 2.481819080425819e-13
+            },
+            {
+              "order": 2,
+              "rms": 0,
+              "max": 0
+            }
+          ],
+          "shifts": [
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 194.0697790183622,
+              "origin": 194.0697790183622
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 193.55388761568298,
+              "origin": 193.55388761568298
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 192.96265370959267,
+              "origin": 192.96265370959267
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 192.07057613980635,
+              "origin": 192.07057613980635
+            }
+          ],
+          "extras": [
+            {
+              "block": "B0",
+              "y": 292,
+              "scores": [
+                101.60375141906655,
+                97.43965943771538,
+                108.28743282516723,
+                99.54288150251303
+              ],
+              "disposition": "review-extra-row"
+            }
+          ],
+          "safety": {
+            "ok": true,
+            "maxDisplacement": 0,
+            "minDet": 1,
+            "maxStrain": 0,
+            "cornerSafe": true,
+            "contentSafe": true
+          },
+          "marks": null,
+          "autoCorners": false,
+          "poseSource": "supplied",
+          "poseAttempts": [
+            {
+              "poseSource": "supplied",
+              "matched": 16
+            }
+          ],
+          "initialP95": 0,
+          "identity": [
+            {
+              "variance": 5179.994159255701,
+              "ncc": 0.8447571007948917,
+              "b": 0,
+              "k": 0
+            },
+            {
+              "variance": 4806.919860311762,
+              "ncc": 0.8760350120156712,
+              "b": 0,
+              "k": 1
+            },
+            {
+              "variance": 4610.538639919658,
+              "ncc": 0.8743601100671097,
+              "b": 0,
+              "k": 2
+            },
+            {
+              "variance": 4433.311987544781,
+              "ncc": 0.9013258788448817,
+              "b": 0,
+              "k": 3
+            },
+            {
+              "variance": 4928.918002704057,
+              "ncc": 0.8528854343191161,
+              "b": 1,
+              "k": 0
+            },
+            {
+              "variance": 4312.888378281517,
+              "ncc": 0.8474631448429053,
+              "b": 1,
+              "k": 1
+            },
+            {
+              "variance": 4717.0201016815845,
+              "ncc": 0.8322987874380758,
+              "b": 1,
+              "k": 2
+            },
+            {
+              "variance": 4599.092000006771,
+              "ncc": 0.9209128799968284,
+              "b": 1,
+              "k": 3
+            },
+            {
+              "variance": 3295.852357043368,
+              "ncc": 0.8853851498563332,
+              "b": 2,
+              "k": 0
+            },
+            {
+              "variance": 2788.7651631863264,
+              "ncc": 0.8923860559131312,
+              "b": 2,
+              "k": 1
+            },
+            {
+              "variance": 3593.1215010591986,
+              "ncc": 0.8717142526635145,
+              "b": 2,
+              "k": 2
+            },
+            {
+              "variance": 2544.4109193463664,
+              "ncc": 0.9272896831958951,
+              "b": 2,
+              "k": 3
+            },
+            {
+              "variance": 3624.7730267968873,
+              "ncc": 0.9258705863550528,
+              "b": 3,
+              "k": 0
+            },
+            {
+              "variance": 2922.3046262888092,
+              "ncc": 0.8614950189761466,
+              "b": 3,
+              "k": 1
+            },
+            {
+              "variance": 3775.76382519897,
+              "ncc": 0.8551890924311354,
+              "b": 3,
+              "k": 2
+            },
+            {
+              "variance": 3139.529127513917,
+              "ncc": 0.8821935881707039,
+              "b": 3,
+              "k": 3
+            }
+          ],
+          "digitEvidence": null,
+          "headerEvidence": null,
+          "numberEvidence": null,
+          "decimalEvidence": null,
+          "itemGeometry": null,
+          "grade": null,
+          "directComparison": null,
+          "matchSummary": [
+            {
+              "b": 0,
+              "k": 0,
+              "score": 0.844757100794894,
+              "margin": 0.3298275624828041
+            },
+            {
+              "b": 0,
+              "k": 1,
+              "score": 0.8760350120156613,
+              "margin": 0.24495331132337128
+            },
+            {
+              "b": 0,
+              "k": 2,
+              "score": 0.8743601100671119,
+              "margin": 0.33915830679259096
+            },
+            {
+              "b": 0,
+              "k": 3,
+              "score": 0.9013258788448829,
+              "margin": 0.35022110963770525
+            },
+            {
+              "b": 1,
+              "k": 0,
+              "score": 0.8528854343191162,
+              "margin": 0.24199362655909729
+            },
+            {
+              "b": 1,
+              "k": 1,
+              "score": 0.8474631448429052,
+              "margin": 0.23489351855883667
+            },
+            {
+              "b": 1,
+              "k": 2,
+              "score": 0.832298787438069,
+              "margin": 0.17729484464459355
+            },
+            {
+              "b": 1,
+              "k": 3,
+              "score": 0.9209128799968314,
+              "margin": 0.3621401615567532
+            },
+            {
+              "b": 2,
+              "k": 0,
+              "score": 0.8853851498563337,
+              "margin": 0.4250286267789997
+            },
+            {
+              "b": 2,
+              "k": 1,
+              "score": 0.892386055913133,
+              "margin": 0.4266884518799862
+            },
+            {
+              "b": 2,
+              "k": 2,
+              "score": 0.8717142526635142,
+              "margin": 0.3735451952609668
+            },
+            {
+              "b": 2,
+              "k": 3,
+              "score": 0.9272896831958856,
+              "margin": 0.38018192826680686
+            },
+            {
+              "b": 3,
+              "k": 0,
+              "score": 0.9258705863550529,
+              "margin": 0.3489478793698426
+            },
+            {
+              "b": 3,
+              "k": 1,
+              "score": 0.8614950189761488,
+              "margin": 0.38453166252556176
+            },
+            {
+              "b": 3,
+              "k": 2,
+              "score": 0.855189092431138,
+              "margin": 0.4873180777370956
+            },
+            {
+              "b": 3,
+              "k": 3,
+              "score": 0.8821935881707137,
+              "margin": 0.3158871993350262
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layout": 0,
+      "semanticEnrollment": [
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q1",
+          "symbol": "Q1",
+          "x": 76.75,
+          "y": 150,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q2",
+          "symbol": "Q2",
+          "x": 76.5,
+          "y": 171.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q3",
+          "symbol": "Q3",
+          "x": 76.5,
+          "y": 194,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q4",
+          "symbol": "Q4",
+          "x": 76.75,
+          "y": 216.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q5",
+          "symbol": "Q5",
+          "x": 76.75,
+          "y": 237.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q6",
+          "symbol": "Q6",
+          "x": 76.75,
+          "y": 259.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B0",
+          "item": "Q7",
+          "symbol": "Q7",
+          "x": 76.5,
+          "y": 281.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "header",
+          "block": "B0",
+          "item": null,
+          "symbol": "A",
+          "x": 94.75,
+          "y": 132.65,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "header",
+          "block": "B0",
+          "item": null,
+          "symbol": "B",
+          "x": 113.75,
+          "y": 132.9,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "header",
+          "block": "B0",
+          "item": null,
+          "symbol": "C",
+          "x": 132.75,
+          "y": 133.15,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "header",
+          "block": "B0",
+          "item": null,
+          "symbol": "D",
+          "x": 152,
+          "y": 133.4,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B0"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q8",
+          "symbol": "Q8",
+          "x": 331.5,
+          "y": 150.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q9",
+          "symbol": "Q9",
+          "x": 331.5,
+          "y": 171.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q10",
+          "symbol": "Q10",
+          "x": 332.25,
+          "y": 194.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q11",
+          "symbol": "Q11",
+          "x": 331.75,
+          "y": 215.75,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q12",
+          "symbol": "Q12",
+          "x": 332.25,
+          "y": 238,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q13",
+          "symbol": "Q13",
+          "x": 332,
+          "y": 260.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "number",
+          "block": "B1",
+          "item": "Q14",
+          "symbol": "Q14",
+          "x": 332,
+          "y": 282.25,
+          "rx": 6,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "A",
+          "x": 350,
+          "y": 132.65,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "B",
+          "x": 369,
+          "y": 133.15,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "C",
+          "x": 388,
+          "y": 133.15,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "D",
+          "x": 407,
+          "y": 133.4,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "header",
+          "block": "B1",
+          "item": null,
+          "symbol": "E",
+          "x": 426,
+          "y": 132.65,
+          "rx": 3.5,
+          "ry": 4,
+          "group": "B1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "0",
+          "x": 95,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "1",
+          "x": 95,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "2",
+          "x": 95,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "3",
+          "x": 95,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "4",
+          "x": 95,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "5",
+          "x": 95,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "6",
+          "x": 95,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "7",
+          "x": 95,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "8",
+          "x": 95,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "9",
+          "x": 95,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "0",
+          "x": 112,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "1",
+          "x": 112,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "2",
+          "x": 112,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "3",
+          "x": 112,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "4",
+          "x": 112,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "5",
+          "x": 112,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "6",
+          "x": 112,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "7",
+          "x": 112,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "8",
+          "x": 112,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "9",
+          "x": 112,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "0",
+          "x": 129,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "1",
+          "x": 129,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "2",
+          "x": 129,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "3",
+          "x": 129,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "4",
+          "x": 129,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "5",
+          "x": 129,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "6",
+          "x": 129,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "7",
+          "x": 129,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "8",
+          "x": 129,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "9",
+          "x": 129,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "decimal",
+          "block": "B2",
+          "item": "N2",
+          "symbol": ".",
+          "x": 129,
+          "y": 431,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "0",
+          "x": 146,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "1",
+          "x": 146,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "2",
+          "x": 146,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "3",
+          "x": 146,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "4",
+          "x": 146,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "5",
+          "x": 146,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "6",
+          "x": 146,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "7",
+          "x": 146,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "8",
+          "x": 146,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B2",
+          "item": "N2",
+          "symbol": "9",
+          "x": 146,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N2.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "0",
+          "x": 350,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "1",
+          "x": 350,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "2",
+          "x": 350,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "3",
+          "x": 350,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "4",
+          "x": 350,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "5",
+          "x": 350,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "6",
+          "x": 350,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "7",
+          "x": 350,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "8",
+          "x": 350,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "9",
+          "x": 350,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.0"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "0",
+          "x": 367,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "1",
+          "x": 367,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "2",
+          "x": 367,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "3",
+          "x": 367,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "4",
+          "x": 367,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "5",
+          "x": 367,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "6",
+          "x": 367,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "7",
+          "x": 367,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "8",
+          "x": 367,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "9",
+          "x": 367,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "decimal",
+          "block": "B3",
+          "item": "N3",
+          "symbol": ".",
+          "x": 367,
+          "y": 431,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.1"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "0",
+          "x": 384,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "2",
+          "x": 384,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "3",
+          "x": 384,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "4",
+          "x": 384,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "5",
+          "x": 384,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "6",
+          "x": 384,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "7",
+          "x": 384,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "8",
+          "x": 384,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "9",
+          "x": 384,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.2"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "0",
+          "x": 401,
+          "y": 445,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "1",
+          "x": 401,
+          "y": 459,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "2",
+          "x": 401,
+          "y": 473,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "3",
+          "x": 401,
+          "y": 487,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "4",
+          "x": 401,
+          "y": 501,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "5",
+          "x": 401,
+          "y": 515,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "6",
+          "x": 401,
+          "y": 529,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "7",
+          "x": 401,
+          "y": 543,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "8",
+          "x": 401,
+          "y": 557,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        },
+        {
+          "kind": "digit",
+          "block": "B3",
+          "item": "N3",
+          "symbol": "9",
+          "x": 401,
+          "y": 571,
+          "rx": 2.3,
+          "ry": 2.3,
+          "group": "N3.3"
+        }
+      ],
+      "enrolled": [
+        {
+          "x": 203,
+          "y": 314,
+          "b": 0,
+          "k": 0
+        },
+        {
+          "x": 203,
+          "y": 116,
+          "b": 0,
+          "k": 1
+        },
+        {
+          "x": 65,
+          "y": 116,
+          "b": 0,
+          "k": 2
+        },
+        {
+          "x": 71,
+          "y": 314,
+          "b": 0,
+          "k": 3
+        },
+        {
+          "x": 323,
+          "y": 116,
+          "b": 1,
+          "k": 0
+        },
+        {
+          "x": 455,
+          "y": 314,
+          "b": 1,
+          "k": 1
+        },
+        {
+          "x": 323,
+          "y": 314,
+          "b": 1,
+          "k": 2
+        },
+        {
+          "x": 461,
+          "y": 116,
+          "b": 1,
+          "k": 3
+        },
+        {
+          "x": 203,
+          "y": 413,
+          "b": 2,
+          "k": 0
+        },
+        {
+          "x": 206,
+          "y": 605,
+          "b": 2,
+          "k": 1
+        },
+        {
+          "x": 65,
+          "y": 413,
+          "b": 2,
+          "k": 2
+        },
+        {
+          "x": 71,
+          "y": 611,
+          "b": 2,
+          "k": 3
+        },
+        {
+          "x": 455,
+          "y": 611,
+          "b": 3,
+          "k": 0
+        },
+        {
+          "x": 458,
+          "y": 413,
+          "b": 3,
+          "k": 1
+        },
+        {
+          "x": 323,
+          "y": 413,
+          "b": 3,
+          "k": 2
+        },
+        {
+          "x": 326,
+          "y": 605,
+          "b": 3,
+          "k": 3
+        }
+      ],
+      "nrCalibrated": 84,
+      "results": [
+        {
+          "case": "photo-extra-row",
+          "valid": false,
+          "baseline": "registered",
+          "baselineReasons": [],
+          "baseMs": 3294,
+          "matched": 16,
+          "perBlock": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "model": 1,
+          "heldout": 0,
+          "rawP95": 0,
+          "refinedP95": 0,
+          "candidate": "registered",
+          "reason": "verified",
+          "details": [
+            {
+              "order": 1,
+              "rms": 0,
+              "max": 0
+            },
+            {
+              "order": 3,
+              "rms": 1.508962596232898e-13,
+              "max": 2.481819080425819e-13
+            },
+            {
+              "order": 2,
+              "rms": 0,
+              "max": 0
+            }
+          ],
+          "shifts": [
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 194.0697790183622,
+              "origin": 194.0697790183622
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 193.55388761568298,
+              "origin": 193.55388761568298
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 192.96265370959267,
+              "origin": 192.96265370959267
+            },
+            {
+              "dx": 0,
+              "dy": 0,
+              "score": 192.07057613980635,
+              "origin": 192.07057613980635
+            }
+          ],
+          "extras": [],
+          "safety": {
+            "ok": true,
+            "maxDisplacement": 0,
+            "minDet": 1,
+            "maxStrain": 0,
+            "cornerSafe": true,
+            "contentSafe": true
+          },
+          "marks": {
+            "matched": 16,
+            "total": 16,
+            "wrong": []
+          },
+          "autoCorners": false,
+          "poseSource": "supplied",
+          "poseAttempts": [
+            {
+              "poseSource": "supplied",
+              "matched": 16
+            }
+          ],
+          "initialP95": 0,
+          "identity": [
+            {
+              "variance": 5179.994159255701,
+              "ncc": 0.8447571007948917,
+              "b": 0,
+              "k": 0
+            },
+            {
+              "variance": 4806.919860311762,
+              "ncc": 0.8760350120156712,
+              "b": 0,
+              "k": 1
+            },
+            {
+              "variance": 4610.538639919658,
+              "ncc": 0.8743601100671097,
+              "b": 0,
+              "k": 2
+            },
+            {
+              "variance": 4433.311987544781,
+              "ncc": 0.9013258788448817,
+              "b": 0,
+              "k": 3
+            },
+            {
+              "variance": 4928.918002704057,
+              "ncc": 0.8528854343191161,
+              "b": 1,
+              "k": 0
+            },
+            {
+              "variance": 4312.888378281517,
+              "ncc": 0.8474631448429053,
+              "b": 1,
+              "k": 1
+            },
+            {
+              "variance": 4717.0201016815845,
+              "ncc": 0.8322987874380758,
+              "b": 1,
+              "k": 2
+            },
+            {
+              "variance": 4599.092000006771,
+              "ncc": 0.9209128799968284,
+              "b": 1,
+              "k": 3
+            },
+            {
+              "variance": 3295.852357043368,
+              "ncc": 0.8853851498563332,
+              "b": 2,
+              "k": 0
+            },
+            {
+              "variance": 2788.7651631863264,
+              "ncc": 0.8923860559131312,
+              "b": 2,
+              "k": 1
+            },
+            {
+              "variance": 3593.1215010591986,
+              "ncc": 0.8717142526635145,
+              "b": 2,
+              "k": 2
+            },
+            {
+              "variance": 2544.4109193463664,
+              "ncc": 0.9272896831958951,
+              "b": 2,
+              "k": 3
+            },
+            {
+              "variance": 3624.7730267968873,
+              "ncc": 0.9258705863550528,
+              "b": 3,
+              "k": 0
+            },
+            {
+              "variance": 2922.3046262888092,
+              "ncc": 0.8614950189761466,
+              "b": 3,
+              "k": 1
+            },
+            {
+              "variance": 3775.76382519897,
+              "ncc": 0.8551890924311354,
+              "b": 3,
+              "k": 2
+            },
+            {
+              "variance": 3139.529127513917,
+              "ncc": 0.8821935881707039,
+              "b": 3,
+              "k": 3
+            }
+          ],
+          "digitEvidence": [
+            {
+              "b": 2,
+              "j": 0,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 2,
+              "j": 1,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 2,
+              "j": 2,
+              "checked": 10,
+              "conflicts": 0,
+              "masked": 0,
+              "weak": 0
+            },
+            {
+              "b": 2,
+              "j": 3,
+              "checked": 9,
+              "conflicts": 1,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 3,
+              "j": 0,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 3,
+              "j": 1,
+              "checked": 10,
+              "conflicts": 0,
+              "masked": 0,
+              "weak": 0
+            },
+            {
+              "b": 3,
+              "j": 2,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            },
+            {
+              "b": 3,
+              "j": 3,
+              "checked": 9,
+              "conflicts": 0,
+              "masked": 1,
+              "weak": 0
+            }
+          ],
+          "headerEvidence": [
+            {
+              "b": 0,
+              "checked": 4,
+              "conflicts": 0
+            },
+            {
+              "b": 1,
+              "checked": 5,
+              "conflicts": 0
+            }
+          ],
+          "numberEvidence": [
+            {
+              "b": 0,
+              "checked": 7,
+              "conflicts": 0
+            },
+            {
+              "b": 1,
+              "checked": 7,
+              "conflicts": 0
+            }
+          ],
+          "decimalEvidence": [
+            {
+              "b": 2,
+              "slot": 1,
+              "expected": 0.0077451383207565545,
+              "best": 0.08119568951438644,
+              "conflict": false
+            },
+            {
+              "b": 2,
+              "slot": 2,
+              "masked": true
+            },
+            {
+              "b": 3,
+              "slot": 1,
+              "masked": true
+            },
+            {
+              "b": 3,
+              "slot": 2,
+              "expected": 0.006922004516624621,
+              "best": 0.052363737849863104,
+              "conflict": false
+            }
+          ],
+          "itemGeometry": [
+            {
+              "id": "Q1",
+              "dx": 0,
+              "dy": 0,
+              "score": 187.16154401775748,
+              "origin": 187.16154401775748,
+              "conflict": false
+            },
+            {
+              "id": "Q2",
+              "dx": 0,
+              "dy": 0,
+              "score": 194.2595641399938,
+              "origin": 194.2595641399938,
+              "conflict": false
+            },
+            {
+              "id": "Q3",
+              "dx": 0,
+              "dy": 0,
+              "score": 199.20660472407127,
+              "origin": 199.20660472407127,
+              "conflict": false
+            },
+            {
+              "id": "Q4",
+              "dx": 0,
+              "dy": 0,
+              "score": 186.84734975478634,
+              "origin": 186.84734975478634,
+              "conflict": false
+            },
+            {
+              "id": "Q5",
+              "dx": 0,
+              "dy": 0,
+              "score": 189.32068295468497,
+              "origin": 189.32068295468497,
+              "conflict": false
+            },
+            {
+              "id": "Q6",
+              "dx": 0,
+              "dy": 0,
+              "score": 198.96174476528728,
+              "origin": 198.96174476528728,
+              "conflict": false
+            },
+            {
+              "id": "Q7",
+              "dx": 0,
+              "dy": 0,
+              "score": 202.73096277195424,
+              "origin": 202.73096277195424,
+              "conflict": false
+            },
+            {
+              "id": "Q8",
+              "dx": 0,
+              "dy": 0,
+              "score": 193.54145972770434,
+              "origin": 193.54145972770434,
+              "conflict": false
+            },
+            {
+              "id": "Q9",
+              "dx": 0,
+              "dy": 0,
+              "score": 187.92801909293442,
+              "origin": 187.92801909293442,
+              "conflict": false
+            },
+            {
+              "id": "Q10",
+              "dx": 0,
+              "dy": 0,
+              "score": 199.63690980942047,
+              "origin": 199.63690980942047,
+              "conflict": false
+            },
+            {
+              "id": "Q11",
+              "dx": 0,
+              "dy": 0,
+              "score": 186.30012292006649,
+              "origin": 186.30012292006649,
+              "conflict": false
+            },
+            {
+              "id": "Q12",
+              "dx": 0,
+              "dy": 0,
+              "score": 189.8922761506834,
+              "origin": 189.8922761506834,
+              "conflict": false
+            },
+            {
+              "id": "Q13",
+              "dx": 0,
+              "dy": 0,
+              "score": 200.3927517740544,
+              "origin": 200.3927517740544,
+              "conflict": false
+            },
+            {
+              "id": "Q14",
+              "dx": 0,
+              "dy": 0,
+              "score": 197.18567383491728,
+              "origin": 197.18567383491728,
+              "conflict": false
+            },
+            {
+              "id": "N2",
+              "dx": 0,
+              "dy": 0,
+              "score": 192.96265370959267,
+              "origin": 192.96265370959267,
+              "conflict": false
+            },
+            {
+              "id": "N3",
+              "dx": 0,
+              "dy": 0,
+              "score": 192.07057613980635,
+              "origin": 192.07057613980635,
+              "conflict": false
+            }
+          ],
+          "grade": {
+            "before": {
+              "score": 12,
+              "denominator": 16,
+              "pending": 2,
+              "status": "provisional"
+            },
+            "after": {
+              "score": 12,
+              "denominator": 16,
+              "pending": 0,
+              "status": "final"
+            },
+            "unexpectedClear": []
+          },
+          "directComparison": {
+            "matched": 16,
+            "unexpectedClear": [],
+            "review": [
+              "Q3",
+              "Q10"
+            ]
+          },
+          "matchSummary": [
+            {
+              "b": 0,
+              "k": 0,
+              "score": 0.844757100794894,
+              "margin": 0.3298275624828041
+            },
+            {
+              "b": 0,
+              "k": 1,
+              "score": 0.8760350120156613,
+              "margin": 0.24495331132337128
+            },
+            {
+              "b": 0,
+              "k": 2,
+              "score": 0.8743601100671119,
+              "margin": 0.33915830679259096
+            },
+            {
+              "b": 0,
+              "k": 3,
+              "score": 0.9013258788448829,
+              "margin": 0.35022110963770525
+            },
+            {
+              "b": 1,
+              "k": 0,
+              "score": 0.8528854343191162,
+              "margin": 0.24199362655909729
+            },
+            {
+              "b": 1,
+              "k": 1,
+              "score": 0.8474631448429052,
+              "margin": 0.23489351855883667
+            },
+            {
+              "b": 1,
+              "k": 2,
+              "score": 0.832298787438069,
+              "margin": 0.17729484464459355
+            },
+            {
+              "b": 1,
+              "k": 3,
+              "score": 0.9209128799968314,
+              "margin": 0.3621401615567532
+            },
+            {
+              "b": 2,
+              "k": 0,
+              "score": 0.8853851498563337,
+              "margin": 0.4250286267789997
+            },
+            {
+              "b": 2,
+              "k": 1,
+              "score": 0.892386055913133,
+              "margin": 0.4266884518799862
+            },
+            {
+              "b": 2,
+              "k": 2,
+              "score": 0.8717142526635142,
+              "margin": 0.3735451952609668
+            },
+            {
+              "b": 2,
+              "k": 3,
+              "score": 0.9272896831958856,
+              "margin": 0.38018192826680686
+            },
+            {
+              "b": 3,
+              "k": 0,
+              "score": 0.9258705863550529,
+              "margin": 0.3489478793698426
+            },
+            {
+              "b": 3,
+              "k": 1,
+              "score": 0.8614950189761488,
+              "margin": 0.38453166252556176
+            },
+            {
+              "b": 3,
+              "k": 2,
+              "score": 0.855189092431138,
+              "margin": 0.4873180777370956
+            },
+            {
+              "b": 3,
+              "k": 3,
+              "score": 0.8821935881707137,
+              "margin": 0.3158871993350262
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
