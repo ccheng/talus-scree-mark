@@ -5,3 +5,5 @@ svm-meta.json
 svm-fixtures.json
 features.json
 *-results.json
+hog-fixtures.json
+native-fixtures/
