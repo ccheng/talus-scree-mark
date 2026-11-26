@@ -29,3 +29,9 @@ Recognition acceptance reports must include counts and denominators, independent
 ## Permanent recognition regression
 
 Preserve the M1 and M2 Node and Chromium checks on application changes. Keep at least one frozen M2 reference revision, printable/profile digest, known-answer input and literal expected result, alongside geometry, review, rejection, offline and privacy cases. Later fixture generation or layout revisions must not replace the compatibility oracle. See the [M3 specification](docs/MILESTONE_3_SPECIFICATION.md) for the markerless and variable-layout extension.
+
+## PSA NR integration evidence
+
+See the [PSA NR integration report](docs/PSA_NR_INTEGRATION.md) for the app
+release, independently verified browser workflow, negative controls and
+remaining physical-device coverage.

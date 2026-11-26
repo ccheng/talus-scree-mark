@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="fc07ccae54ea5a85fde1c2ba">
+  <meta name="scree-release" content="ed1b640bbcafaed281a82e6c">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -168,7 +168,12 @@
             <p id="mc-fit-status" role="status"></p>
             <div id="nr-fit-controls" hidden>
               <p>Box one Alberta NR question, including its writing boxes, decimal bubbles and ten digit rows.</p>
+              <label>NR discovery <select id="nr-discovery-engine">
+                <option value="established">Established</option>
+                <option value="psa">PSA structured</option>
+              </select></label>
               <div class="controls">
+                <button id="cancel-nr-discovery" type="button" hidden>Cancel search</button>
                 <button id="fit-nr-grid" type="button">Find Alberta NR bubbles</button>
                 <button id="anchor-nr-grid" type="button">Place NR grid with four taps</button>
                 <button id="accept-nr-fit" type="button" hidden>Confirm estimated NR positions</button>

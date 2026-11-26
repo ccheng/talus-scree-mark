@@ -6,6 +6,7 @@ import { inspectBoundedAlberta } from './alberta-nr-detection.js';
 import { fitAlbertaAnchors, validateAlbertaMapping } from './alberta-nr-grid.js';
 import { discoverBoxedAlberta } from './layout-discovery.js';
 import { measureNumericalBlankInk } from './marks.js';
+import { startPsaDiscovery } from './psa-nr-discovery.js';
 import { toGrayImage } from './omr-image.js';
 
 const byId = (id) => document.getElementById(id);
@@ -122,7 +123,10 @@ export function createProfileEditor({ onSave, onClose }) {
 
   function stopDiscovery() {
     state?.discoveryWorker?.terminate();
-    if (state) state.discoveryWorker = null;
+    if (state) {
+      state.discoveryWorker = null;
+      state.psaJob = null;
+    }
   }
 
   function page() {
@@ -216,7 +220,10 @@ export function createProfileEditor({ onSave, onClose }) {
     const cells = state.grid?.alberta ? state.grid.cells : null;
     const missing = cells?.filter((cell) => cell.missing && !cell.omit).length ?? 0;
     byId('accept-nr-fit').hidden = !cells || !missing || Boolean(state.endpoints);
-    byId('nr-fit-status').textContent = !visible ? '' : state.endpoints?.alberta
+    byId('cancel-nr-discovery').hidden = !state.psaJob;
+    byId('fit-nr-grid').disabled = !!state.discoveryWorker;
+    byId('anchor-nr-grid').disabled = !!state.discoveryWorker;
+    byId('nr-fit-status').textContent = !visible ? '' : state.psaJob ? 'Searching for the printed grid…' : state.endpoints?.alberta
       ? `Tap the ${nrAnchors[state.endpoints.length]}.`
       : cells ? `${cells.length - missing} placed · ${missing} estimates. Compare all 42 overlay rings with the print.` : '';
   }
@@ -527,6 +534,7 @@ export function createProfileEditor({ onSave, onClose }) {
     if (region.x < 0 || region.y < 0 || region.x + region.width > frame.width || region.y + region.height > frame.height) {
       throw new TypeError('Keep the box within the blank sheet.');
     }
+    if (state.psaJob) stopDiscovery();
     state.region = region;
     for (const [key, field] of Object.entries(region)) write('region-' + key, field);
     paint();
@@ -627,9 +635,35 @@ export function createProfileEditor({ onSave, onClose }) {
       : 'Found 42 printed NR bubbles, including decimals in slots 2 and 3. Review the mapping and confirm this block.');
   }
 
+  async function fitPsaAlberta(region) {
+    const original = state;
+    const job = startPsaDiscovery(state.image, state.matrix, region, page());
+    state.psaJob = job;
+    state.discoveryWorker = job;
+    show();
+    try {
+      const slots = await job.result;
+      if (state !== original || state.psaJob !== job) return;
+      stopDiscovery();
+      if (slots) showAlberta(slots, region);
+      else say('PSA did not find a single reliable NR grid. Adjust the box, choose Established, or use four taps.');
+      show();
+    } catch (error) {
+      if (state !== original || state.psaJob !== job) return;
+      stopDiscovery();
+      show(`PSA search could not finish. ${error.message}. Choose Established or use four taps.`);
+    }
+  }
+
   function fitAlberta(region, { required = true } = {}) {
     if (region.width > 205 || region.height > 310) throw new Error('Narrow the box to one Alberta NR question.');
 
+    if (state.discoveryWorker) return true;
+    if (value('nr-discovery-engine') === 'psa' && !state.editing) {
+      if (state.grid || state.endpoints) throw new Error('Finish or cancel the current block edit before starting another search.');
+      void fitPsaAlberta(region);
+      return true;
+    }
     const args = [state.image, state.matrix, page(), region];
     const existing = discoverBoxedAlberta(...args);
     if (existing.count > 1) throw new Error('Found multiple NR questions. Box one at a time.');
@@ -1111,6 +1145,9 @@ export function createProfileEditor({ onSave, onClose }) {
   function handle(id, action) {
     byId(id).addEventListener('click', () => {
       if (!state) return;
+      if (state.psaJob && !['cancel-nr-discovery', 'cancel-profile-editor', 'editor-zoom-in', 'editor-zoom-out', 'editor-pan'].includes(id)) {
+        return say('Wait for the PSA search or cancel it to continue editing.');
+      }
       try { action(); }
       catch (error) {
         say(error.message);
@@ -1202,7 +1239,19 @@ export function createProfileEditor({ onSave, onClose }) {
   handle('cancel-block-renumber', closeMapping);
   handle('preview-region', () => { inputRegion(); say('Box previewed.'); });
   handle('detect-grid', detect);
-  handle('fit-nr-grid', () => fitAlberta(inputRegion()));
+  handle('fit-nr-grid', () => { if (!state.discoveryWorker) fitAlberta(inputRegion()); });
+  handle('cancel-nr-discovery', () => {
+    stopDiscovery();
+    show('PSA search canceled. The current mapping is unchanged.');
+  });
+  for (const id of ['nr-discovery-engine', 'block-kind', 'profile-orientation', 'region-x', 'region-y', 'region-width', 'region-height']) {
+    byId(id).addEventListener('change', () => {
+      if (state?.psaJob) {
+        stopDiscovery();
+        show('PSA search canceled after the editor selection changed.');
+      }
+    });
+  }
   handle('anchor-nr-grid', () => {
     inputRegion();
     state.endpoints = Object.assign([], { alberta: true });
@@ -1322,7 +1371,7 @@ export function createProfileEditor({ onSave, onClose }) {
   });
 
   canvas.addEventListener('pointerdown', (event) => {
-    if (!state || state.pan || state.drag || (event.pointerType !== 'touch' && event.button !== 0)) return;
+    if (!state || state.psaJob || state.pan || state.drag || (event.pointerType !== 'touch' && event.button !== 0)) return;
     const start = pointAt(event);
     state.drag = { start, current: start, pointerId: event.pointerId };
     if (!state.matrix) {
@@ -1395,6 +1444,7 @@ export function createProfileEditor({ onSave, onClose }) {
       drafts: new Map(), discoveryIssues: [], discoveryDiagnostics: [],
     };
     clearMcFit();
+    byId('nr-discovery-engine').value = 'established';
     byId('mc-expected-count').value = prior?.mcExpectedCount ?? '';
     byId('profile-name').value = prior?.name ?? '';
     byId('mc-completeness').value = prior?.mcCompleteness ?? '';

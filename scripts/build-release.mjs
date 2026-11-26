@@ -8,6 +8,8 @@ const staticFiles = [
   'assets/icon-180.png',
   'assets/icon-192.png',
   'assets/icon-512.png',
+  'assets/psa-nr/svm-meta.json',
+  'assets/psa-nr/svm.f64',
   ...['interleaved', 'mc-only', 'mixed'].flatMap((variant) =>
     ['blank.png', 'filled.png', 'blank.pdf', 'filled.pdf', 'key.json'].map((file) => `fixtures/m3/${variant}-${file}`)),
   'index.html',
@@ -44,6 +46,9 @@ const staticFiles = [
   'src/profile-omr.js',
   'src/profile-store.js',
   'src/profile-workspace.js',
+  'src/psa-nr-discovery.js',
+  ...['geometry', 'pixels', 'hog', 'verifier', 'svm', 'worker', 'worker-client']
+    .map((module) => `src/psa-nr/${module}.js`),
   'src/projective.js',
   'src/recognition-view.js',
   'src/reference-contract.js',
