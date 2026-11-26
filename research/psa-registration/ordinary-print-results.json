@@ -1,0 +1,629 @@
+[
+  {
+    "case": "ordinary-print-auto",
+    "valid": true,
+    "baseline": "registered",
+    "baselineReasons": [],
+    "baseMs": 3382,
+    "matched": 16,
+    "perBlock": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "model": 1,
+    "heldout": 0.19834213914253818,
+    "rawP95": 0.39793414020213697,
+    "refinedP95": 0.1874349943476256,
+    "candidate": "registered",
+    "reason": "verified",
+    "details": [
+      {
+        "order": 1,
+        "rms": 0.19834213914253818,
+        "max": 0.2912604002444402
+      },
+      {
+        "order": 3,
+        "rms": 0.1364353750928158,
+        "max": 0.17928323700944637
+      },
+      {
+        "order": 2,
+        "rms": 0.12239312473397133,
+        "max": 0.1516873469235269
+      }
+    ],
+    "shifts": [
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 192.0322628317197,
+        "origin": 192.0322628317197
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 191.04216108268076,
+        "origin": 191.04216108268076
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 191.85756472104683,
+        "origin": 191.85756472104683
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 192.59255859581765,
+        "origin": 192.59255859581765
+      }
+    ],
+    "extras": []
+  },
+  {
+    "case": "ordinary-bias",
+    "valid": true,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ],
+    "baseMs": 139,
+    "matched": 16,
+    "perBlock": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "model": 3,
+    "heldout": 0.2725958869912834,
+    "rawP95": 6.293902053825115,
+    "refinedP95": 0.2983939395031635,
+    "candidate": "registered",
+    "reason": "verified",
+    "details": [
+      {
+        "order": 1,
+        "rms": 1.222685902930831,
+        "max": 1.8943673426561076
+      },
+      {
+        "order": 3,
+        "rms": 0.2725958869912834,
+        "max": 0.35288174334023387
+      },
+      {
+        "order": 2,
+        "rms": 0.26784083791141594,
+        "max": 0.3426748157477049
+      }
+    ],
+    "shifts": [
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 192.13549845021507,
+        "origin": 192.13549845021507
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 188.63744112815962,
+        "origin": 188.63744112815962
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 189.88813595911628,
+        "origin": 189.88813595911628
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 191.09332640293366,
+        "origin": 191.09332640293366
+      }
+    ],
+    "extras": []
+  },
+  {
+    "case": "ordinary-bend-4",
+    "valid": true,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ],
+    "baseMs": 136,
+    "matched": 16,
+    "perBlock": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "model": 2,
+    "heldout": 0.4723008349602172,
+    "rawP95": 2.990302092430452,
+    "refinedP95": 0.38835880273104895,
+    "candidate": "registered",
+    "reason": "verified",
+    "details": [
+      {
+        "order": 1,
+        "rms": 1.2359100638418061,
+        "max": 1.4798202912181977
+      },
+      {
+        "order": 3,
+        "rms": 0.7519915445552883,
+        "max": 1.038934915464154
+      },
+      {
+        "order": 2,
+        "rms": 0.4723008349602172,
+        "max": 0.7706514014919716
+      }
+    ],
+    "shifts": [
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 190.2371243296468,
+        "origin": 190.2371243296468
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 189.06056309268746,
+        "origin": 189.06056309268746
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 185.48001750644428,
+        "origin": 185.48001750644428
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 189.75353783144578,
+        "origin": 189.75353783144578
+      }
+    ],
+    "extras": []
+  },
+  {
+    "case": "ordinary-bend-8",
+    "valid": true,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ],
+    "baseMs": 131,
+    "matched": 16,
+    "perBlock": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "model": 2,
+    "heldout": 0.3223020028255636,
+    "rawP95": 5.981106628580286,
+    "refinedP95": 0.3660573482564832,
+    "candidate": "registered",
+    "reason": "verified",
+    "details": [
+      {
+        "order": 1,
+        "rms": 2.0940791512511465,
+        "max": 2.491988946683465
+      },
+      {
+        "order": 3,
+        "rms": 1.0909010080147143,
+        "max": 1.246830689723498
+      },
+      {
+        "order": 2,
+        "rms": 0.3223020028255636,
+        "max": 0.3882786687548314
+      }
+    ],
+    "shifts": [
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 132.32485870168594,
+        "origin": 132.32485870168594
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 161.66352509844884,
+        "origin": 161.66352509844884
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 130.79213139468771,
+        "origin": 130.79213139468771
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 161.3002734620282,
+        "origin": 161.3002734620282
+      }
+    ],
+    "extras": []
+  },
+  {
+    "case": "ordinary-occlusion",
+    "valid": true,
+    "baseline": "registered",
+    "baselineReasons": [],
+    "baseMs": 3215,
+    "matched": 14,
+    "perBlock": [
+      2,
+      4,
+      4,
+      4
+    ],
+    "model": 1,
+    "heldout": 0,
+    "rawP95": 0,
+    "refinedP95": 0,
+    "candidate": "review",
+    "reason": "insufficient-per-block-landmarks",
+    "details": [
+      {
+        "order": 1,
+        "rms": 0,
+        "max": 0
+      },
+      {
+        "order": 3,
+        "rms": 1.2868476258827026e-13,
+        "max": 2.0495186137532014e-13
+      },
+      {
+        "order": 2,
+        "rms": 0,
+        "max": 0
+      }
+    ],
+    "shifts": null,
+    "extras": null
+  },
+  {
+    "case": "ordinary-incidental-label-change",
+    "valid": true,
+    "baseline": "registered",
+    "baselineReasons": [],
+    "baseMs": 3330,
+    "matched": 16,
+    "perBlock": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "model": 1,
+    "heldout": 0,
+    "rawP95": 0,
+    "refinedP95": 0,
+    "candidate": "registered",
+    "reason": "verified",
+    "details": [
+      {
+        "order": 1,
+        "rms": 0,
+        "max": 0
+      },
+      {
+        "order": 3,
+        "rms": 6.665481691674458e-14,
+        "max": 1.0247593068766007e-13
+      },
+      {
+        "order": 2,
+        "rms": 0,
+        "max": 0
+      }
+    ],
+    "shifts": [
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 192.14336650121572,
+        "origin": 192.14336650121572
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 191.27377303123657,
+        "origin": 191.27377303123657
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 193.59782115054537,
+        "origin": 193.59782115054537
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 193.35709419828595,
+        "origin": 193.35709419828595
+      }
+    ],
+    "extras": []
+  },
+  {
+    "case": "relocated-mc",
+    "valid": false,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ],
+    "baseMs": 158,
+    "matched": 16,
+    "perBlock": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "model": 1,
+    "heldout": 0,
+    "rawP95": 13.122776524744037,
+    "refinedP95": 13.122776524744037,
+    "candidate": "review",
+    "reason": "response-geometry",
+    "details": [
+      {
+        "order": 1,
+        "rms": 0,
+        "max": 0
+      },
+      {
+        "order": 3,
+        "rms": 6.665481691674458e-14,
+        "max": 1.0247593068766007e-13
+      },
+      {
+        "order": 2,
+        "rms": 0,
+        "max": 0
+      }
+    ],
+    "shifts": [
+      {
+        "dx": 9,
+        "dy": 0,
+        "score": 191.28056286943095,
+        "origin": 0.8219738504627723
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 191.27377303123657,
+        "origin": 191.27377303123657
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 193.59782115054537,
+        "origin": 193.59782115054537
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 193.35709419828595,
+        "origin": 193.35709419828595
+      }
+    ],
+    "extras": []
+  },
+  {
+    "case": "relocated-whole-mc-block",
+    "valid": false,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ],
+    "baseMs": 155,
+    "matched": 16,
+    "perBlock": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "model": 3,
+    "heldout": 3.549531311769818,
+    "rawP95": 13.122776524744037,
+    "refinedP95": 5.324237758987018,
+    "candidate": "review",
+    "reason": "heldout-disagreement",
+    "details": [
+      {
+        "order": 1,
+        "rms": 3.832415757812895,
+        "max": 5.941888585323003
+      },
+      {
+        "order": 3,
+        "rms": 3.549531311769818,
+        "max": 6.057739071981978
+      },
+      {
+        "order": 2,
+        "rms": 3.4725892762728363,
+        "max": 6.735157530025903
+      }
+    ],
+    "shifts": null,
+    "extras": null
+  },
+  {
+    "case": "relocated-whole-nr-block",
+    "valid": false,
+    "baseline": "retake",
+    "baselineReasons": [
+      "response-geometry"
+    ],
+    "baseMs": 154,
+    "matched": 16,
+    "perBlock": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "model": 1,
+    "heldout": 2.3041787609862796,
+    "rawP95": 12.92897989204907,
+    "refinedP95": 5.731638068038036,
+    "candidate": "review",
+    "reason": "heldout-disagreement",
+    "details": [
+      {
+        "order": 1,
+        "rms": 2.3041787609862796,
+        "max": 3.0689547721204846
+      },
+      {
+        "order": 3,
+        "rms": 2.3169610574483226,
+        "max": 3.0922489113422236
+      },
+      {
+        "order": 2,
+        "rms": 3.085661913523437,
+        "max": 4.049629840758263
+      }
+    ],
+    "shifts": null,
+    "extras": null
+  },
+  {
+    "case": "adjacent-extra-row",
+    "valid": false,
+    "baseline": "registered",
+    "baselineReasons": [],
+    "baseMs": 3291,
+    "matched": 16,
+    "perBlock": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "model": 1,
+    "heldout": 0,
+    "rawP95": 0,
+    "refinedP95": 0,
+    "candidate": "review",
+    "reason": "adjacent-extra-row",
+    "details": [
+      {
+        "order": 1,
+        "rms": 0,
+        "max": 0
+      },
+      {
+        "order": 3,
+        "rms": 6.665481691674458e-14,
+        "max": 1.0247593068766007e-13
+      },
+      {
+        "order": 2,
+        "rms": 0,
+        "max": 0
+      }
+    ],
+    "shifts": [
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 189.21058187052128,
+        "origin": 189.21058187052128
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 189.04921758562142,
+        "origin": 189.04921758562142
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 190.99664349725597,
+        "origin": 190.99664349725597
+      },
+      {
+        "dx": 0,
+        "dy": 0,
+        "score": 190.82939268782462,
+        "origin": 190.82939268782462
+      }
+    ],
+    "extras": [
+      {
+        "block": "B0",
+        "y": 292,
+        "scores": [
+          101.60375141906655,
+          97.43965943771538,
+          108.28743282516723,
+          99.54288150251303
+        ]
+      }
+    ]
+  },
+  {
+    "case": "changed-identity-labels",
+    "valid": false,
+    "baseline": "registered",
+    "baselineReasons": [],
+    "baseMs": 3309,
+    "matched": 14,
+    "perBlock": [
+      2,
+      4,
+      4,
+      4
+    ],
+    "model": 1,
+    "heldout": 0,
+    "rawP95": 0,
+    "refinedP95": 0,
+    "candidate": "review",
+    "reason": "insufficient-per-block-landmarks",
+    "details": [
+      {
+        "order": 1,
+        "rms": 0,
+        "max": 0
+      },
+      {
+        "order": 3,
+        "rms": 4.9227844771419234e-14,
+        "max": 5.684341886080802e-14
+      },
+      {
+        "order": 2,
+        "rms": 0,
+        "max": 0
+      }
+    ],
+    "shifts": null,
+    "extras": null
+  }
+]
