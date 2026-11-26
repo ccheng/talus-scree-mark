@@ -5,6 +5,7 @@ const messages = {
   'multiple-sheets': 'More than one complete sheet fits the selected template. Retake with one sheet in the photo.',
   'ambiguous-orientation': 'More than one page orientation fits. Set scan corners to identify the correct orientation.',
   'batch-not-confirmed': 'Confirm a batch with the selected profile revision.',
+  'printed-landmark-conflict': 'The answer blocks do not align with the nearby printed layout. Check the selected template or retake the photo.',
   'response-geometry': 'The bubble blocks or rows do not match the selected layout, or part of a block is obscured.',
   'missing-anchor': 'Could not find all four corner markers.',
   'ambiguous-anchor': 'Found conflicting corner markers.',
@@ -28,7 +29,8 @@ function drawOverlay(canvas, image, registration, items) {
   canvas.height = image.height;
   const context = canvas.getContext('2d');
   const width = Math.max(2, Math.min(image.width, image.height) / 260);
-  const matrix = registration.pageToSource;
+  const refined = new Map((registration.refinedBlocks ?? [])
+    .flatMap(({ itemIds, matrix }) => itemIds.map((id) => [id, matrix])));
   context.lineWidth = width;
   const pose = registration.diagnostics?.pagePose;
   if (pose?.virtual && pose.corners.length === 4) {
@@ -42,7 +44,7 @@ function drawOverlay(canvas, image, registration, items) {
   for (const item of items) {
     const { x, y, width: regionWidth, height } = item.bounds;
     const corners = [[x, y], [x + regionWidth, y], [x + regionWidth, y + height], [x, y + height]]
-      .map(([u, v]) => project(matrix, u, v));
+      .map(([u, v]) => project(refined.get(item.id) ?? registration.pageToSource, u, v));
     if (corners.some((point) => !point)) continue;
     context.strokeStyle = item.review ? '#b43818' : '#225c8a';
     context.setLineDash(item.review ? [width * 2, width * 1.4] : []);
@@ -103,7 +105,7 @@ function addItems(table, items) {
   table.replaceChildren(fragment);
 }
 
-export function createRecognitionView({ button, status, results, table, overlay, diagnostics, onRegistration }) {
+export function createRecognitionView({ button, status, results, table, overlay, diagnostics, onRegistration, onRead }) {
   let active;
   let available = false;
   let jobId = 0;
@@ -145,6 +147,7 @@ export function createRecognitionView({ button, status, results, table, overlay,
     const pose = stages.pagePose;
     const poseText = pose.status === 'recovered' ? (pose.virtual
       ? 'recovered from bubble outlines; estimated corners extend beyond the photo'
+      : pose.path?.endsWith('block-refinement') ? 'checked from page corners and verified bubble blocks'
       : 'recovered from fitted bubble centers')
       : pose.status === 'verified' ? (pose.path === 'manual-corners' ? 'checked using your corner positions' : 'located from the page edges')
       : pose.status === 'unchecked' ? 'not checked'
@@ -183,6 +186,16 @@ export function createRecognitionView({ button, status, results, table, overlay,
       }
       row.append(list);
     }
+    const landmarks = stages.printedLandmarks;
+    const landmarkRow = diagnostics.querySelector('[data-stage="printed-landmarks"]');
+    landmarkRow.hidden = !landmarks;
+    if (landmarks) stage('printed-landmarks', landmarks.status, 'Printed layout — ' + ({
+      unavailable: 'no landmarks saved for this template',
+      'not-needed': 'the expected blocks aligned without local corrections',
+      insufficient: 'limited landmark evidence; the response geometry checks passed',
+      corroborated: 'printed landmarks support the local alignment',
+      incompatible: 'nearby printed landmarks disagree with the answer block positions',
+    }[landmarks.status] ?? landmarks.status));
     diagnostics.hidden = false;
   }
 
@@ -235,6 +248,7 @@ export function createRecognitionView({ button, status, results, table, overlay,
       const summary = reviewCount === 1 ? '1 response needs review.' : `${reviewCount} responses need review.`;
       const path = request ? ' Read against the confirmed batch profile.' : '';
       setStatus('read', (reviewCount ? summary : 'All responses read.') + path);
+      onRead?.(result, request?.profile, image);
     }
     worker.addEventListener('message', ({ data }) => complete(data));
     worker.addEventListener('error', () => complete());
