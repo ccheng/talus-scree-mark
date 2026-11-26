@@ -1038,17 +1038,18 @@ try {
     await page.reload();
     await page.waitForFunction(() => /^Offline ready\b/.test(document.querySelector('#offline-status').textContent));
     await selector.locator('option').filter({ hasText: 'QA mixed' }).first().waitFor({ state: 'attached' });
-    const offlineStart = server.requests.length;
-    const updateFiles = new Set(['sw.js', 'precache.generated.js'].map((path) => new URL(path, target).pathname));
-    assert.deepEqual(server.requests.slice(beforeReload, offlineStart).filter(({ method, url }) =>
-      method !== 'GET' || !updateFiles.has(url)), [], 'Only browser service-worker update probes may reach the server during reload');
     assert.equal(await rows.count(), 0);
     await selector.selectOption(active);
     await assertNotReading();
     await start();
     await choose(family.fixtures[0]);
     await assertReadRows(page, family.fixtures[0].truth);
-    assert.deepEqual(server.requests.slice(offlineStart), [], 'Offline scan must not reach the server');
+    // Chromium can check service-worker update files outside the page's offline emulation.
+    const updateFiles = new Set(['sw.js', 'precache.generated.js'].map((path) => new URL(path, target).pathname));
+    const offlineRequests = server.requests.slice(beforeReload);
+    assert.deepEqual(offlineRequests.filter(({ method, url, bytes }) =>
+      method !== 'GET' || bytes || !updateFiles.has(url)), [], 'Only bodyless service-worker update probes may reach the server');
+    assert.equal(new Set(offlineRequests.map(({ url }) => url)).size, offlineRequests.length, 'Unexpected repeated offline requests');
   });
 
   await group('M3 profile-only persistence, revision immutability and offline reload', async (page, context) => {
