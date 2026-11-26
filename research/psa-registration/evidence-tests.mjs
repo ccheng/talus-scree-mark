@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {scopeRowDisposition,localAffine,enrollSemanticSites} from './registration-evidence.mjs';
+const row=[0,1,2,3].map(i=>({x:20+i*10,y:50}));
+const partial={scope:'mc-only',mcCompleteness:'partial'};
+assert.equal(scopeRowDisposition({},row,4),'review-extra-row');
+assert.equal(scopeRowDisposition(partial,row,4),'enrolled-print-outside-scope');
+assert.equal(scopeRowDisposition(partial,row,0),'review-scope-uncertain');
+assert.equal(scopeRowDisposition({exclusions:[{x:10,y:40,width:60,height:20}]},row,0),'excluded');
+assert.equal(scopeRowDisposition({exclusions:[{x:10,y:40,width:15,height:20}]},row,0),'review-extra-row');
+assert.equal(scopeRowDisposition(partial,row,2),'review-scope-uncertain');
+const project=(m,x,y)=>({x:m[0]*x+m[1]*y+m[2],y:m[3]*x+m[4]*y+m[5]});
+assert.deepEqual(localAffine(project,[2,0,10,0,3,20],()=>[1,2],{},50,70),[2,0,12,0,3,26,0,0,1]);
+assert.equal(localAffine(project,[-2,0,10,0,3,20],()=>[0,0],{},50,70),null);
+const blank={page:{width:100,height:100},components:[{id:'B',kind:'mc',items:[{id:'Q1',kind:'mc',choices:[{x:35,y:40,radius:4,symbol:'A'},{x:55,y:40,radius:4,symbol:'B'}]}]}]};
+assert.deepEqual(enrollSemanticSites(blank,()=>245),[]);
+console.log('9 scope, affine, and absent-print checks passed');

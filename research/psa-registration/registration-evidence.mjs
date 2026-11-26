@@ -32,7 +32,7 @@ export function enrollSemanticSites(profile,sample){
 }
 export function scopeRowDisposition(profile,positions,blankSupports){
  if(positions.every(p=>(profile.exclusions??[]).some(r=>inside(p,r))))return 'excluded';
- if(blankSupports>=Math.ceil(.75*positions.length))return 'enrolled-print-outside-scope';
+ if(profile.scope==='mc-only'&&profile.mcCompleteness==='partial'&&blankSupports>=Math.ceil(.75*positions.length))return 'enrolled-print-outside-scope';
  if(profile.scope==='mc-only'&&profile.mcCompleteness==='partial')return 'review-scope-uncertain';
  return 'review-extra-row';
 }
