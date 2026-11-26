@@ -1001,7 +1001,23 @@ try {
     assert.deepEqual(afterScopes.profiles, [profile]);
     assert.deepEqual(afterScopes.local, []);
     assert.deepEqual(afterScopes.session, []);
-    assert.deepEqual(afterScopes.dbs, ['talus-scree-mark-profiles']);
+    assert.deepEqual(afterScopes.dbs.sort(), ['talus-scree-mark-classroom', 'talus-scree-mark-profiles']);
+    const classroom = await page.evaluate(async () => {
+      const { loadGrading, loadPendingCaptures } = await import('./src/grading-store.js');
+      const { keys, scans } = await loadGrading();
+      const captures = await loadPendingCaptures(location.pathname);
+      return {
+        keys,
+        scans: scans.map(({ id, photo, observation }) => ({ id, photoBytes: photo.size, status: observation.status })),
+        captures: captures.map(({ id, photo }) => ({ id, photoBytes: photo.size })),
+      };
+    });
+    assert.deepEqual(classroom.keys, []);
+    assert.equal(classroom.scans.length, 3);
+    assert(classroom.scans.every(({ status, photoBytes }) => status === 'read' && photoBytes > 0));
+    assert.equal(classroom.captures.length, 2);
+    assert(classroom.captures.every(({ id, photoBytes }) => photoBytes > 0 && !classroom.scans.some((scan) => scan.id === id)),
+      'An interrupted or rejected capture should remain local without creating a result');
     const durableKeys = await page.evaluate(async () => {
       const database = await new Promise((resolve, reject) => {
         const request = indexedDB.open('talus-scree-mark-profiles', 1);
