@@ -1,0 +1,7 @@
+__pycache__/
+*.pkl
+*.f64
+svm-meta.json
+svm-fixtures.json
+features.json
+*-results.json
