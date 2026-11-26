@@ -26,7 +26,7 @@ export function enrollSemanticSites(profile,sample){
    // Conventional left labels and top headers only; enrollment does not certify OCR.
    for(const {item,choices} of rows){const c=choices[0],p=inkCentroid(sample,c.x-spacing,c.y,Math.min(8,spacing*.45),7);add('number',b.id,item.id,item.id,p,6,4,b.id);}
    for(const c of first){const p=inkCentroid(sample,c.x,c.y-spacing*.9,Math.min(7,spacing*.4),7);add('header',b.id,null,c.symbol,p,3.5,4,b.id);}
-  }else for(const i of b.items)for(const s of i.slots)for(const c of s.choices){const p=patch(sample,c.x,c.y,2.3,2.3,.46);if(!p||p.reduce((a,v)=>a+v,0)/p.length<.025)continue;add(c.symbol==='.'?'decimal':'digit',b.id,i.id,c.symbol,c,2.3,2.3,s.id);}
+  }else for(const i of b.items)for(const s of i.slots)for(const c of s.choices){const p=patch(sample,c.x,c.y,2.3,2.3,.46);if(!p||p.reduce((a,v)=>a+v,0)/p.length<(c.symbol==='.'?.005:.015)||Math.max(...p)<.25)continue;add(c.symbol==='.'?'decimal':'digit',b.id,i.id,c.symbol,c,2.3,2.3,s.id);}
  }
  return result;
 }
