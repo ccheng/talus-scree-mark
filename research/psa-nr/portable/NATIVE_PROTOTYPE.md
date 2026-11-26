@@ -1,26 +1,32 @@
-# R15–R16 native raster prototype (follow-up to README)
+# R15–R16 native raster prototype and bounded worker
 
-Research-only experimental authoring discovery. The earlier README describes component equivalence before this follow-up. `pixels.mjs`, `hog.mjs`, and `verifier.mjs` now provide a native JavaScript grayscale-raster-to-proposal path without OpenCV.js. `geometry.mjs` and `svm.mjs` remain the shared geometric and classification components. Input: bounded uint8 grayscale working raster (32–2400 pixels per side), plus verified numeric SVM weights. Image decoding, resizing to the working raster, browser asset loading, worker scheduling, cancellation, privacy review and authoring UI integration are not provided. No app code or grading changed.
+Research-only authoring discovery. Earlier README describes component equivalence before this follow-up. `pixels.mjs`, `hog.mjs`, and `verifier.mjs` now provide a native JavaScript grayscale-raster-to-proposal pipeline, without Python, OpenCV.js, or external inference at runtime. `geometry.mjs` and `svm.mjs` provide geometry and semantic evidence. No app code, deployment, PR #8, or grading changes. Input is a bounded grayscale uint8 working raster (32–2400 px per side, <=4 million pixels). Accept means a research authoring proposal, never authorization to grade.
 
 ## Reproduce
 
-First run the training/export steps in README. Then from this directory:
+From this directory, follow README to regenerate the exact synthetic model and export its numeric weights. Then:
 
 ```
 python hog_fixtures.py
 node hog_check.mjs
 python native_fixtures.py regenerated-svm.pkl
-node native_check.mjs
+node native_check.mjs native-fixtures/manifest.json
+node node_worker_check.mjs native-fixtures/manifest.json
 ```
 
-`native_fixtures.py` generates four new public development pages and executes the Python reference on identical pixels. `--photo` optionally adds a local user-provided photo, resized to a common working raster; use a private output directory and never publish raw images, manifest or coordinates. Tests produce local metrics, not independent release evidence. Synthetic fixture data/model binaries are intentionally regenerated, not committed. No real assessment imagery or sealed holdout data in source.
+`native_fixtures.py` generates four public development pages and runs the frozen Python reference on identical pixels. Optional `--photo` is for private local diagnostics only; do not publish the generated raster, manifest or coordinates. `stress_prep.py PHOTO OUTDIR` and `node stress_check.mjs OUTDIR/manifest.json` test correlated image transformations privately. Generated models, images and numeric results remain local. No sealed holdout or real student data committed.
+
+`worker.mjs` and `worker-client.mjs` demonstrate single-flight model loading, pinned binary SHA-256 and metadata verification, transferable image buffers, cancellation by terminating the worker, timeout and recovery by reinitialization. Image decoding, resizing, worker asset packaging, browser/PWA caching, application UI and review/confirmation integration remain external responsibilities. `node-worker-adapter.mjs` is only a Node test shim. `worker_check.py` is a Chromium smoke test (requires Playwright and Chromium); local HTTP navigation was blocked by administrator policy, so the browser test was **not completed**. Node worker tests do not establish browser compatibility.
 
 ## Observed results
 
-- HOG: 200 synthetic glyphs, native JS versus OpenCV descriptors; maximum absolute feature difference 0.000397, mean absolute difference 0.0000151; maximum predicted-probability difference 0.000338; all 200 argmax predictions agree.
-- Shared raster comparison: seven valid regions and five incompatible regions across four synthetic pages. Each implementation mapped all seven valid regions within one-quarter grid pitch at all 42 positions. Python confirms five and reviews two; native JS confirms six and reviews one. Neither confirms an incompatible region. MC-only page has zero proposals in both. Native JS omitted one incompatible proposal that Python rejected. Maximum normalized localization error over valid mappings: Python 0.0481, JS 0.0495. These are development fixtures, not independent holdouts.
-- Known previously examined Physics photograph: four writing-box groups, four native proposals, four confirmed; Python also confirms four. No private coordinates in source, no claim of generalization to unseen forms or completed sheets. Native raster scan on desktop Node took about 1.69–2.85 s on synthetic pages, 4.59 s on common resized photo, excluding loading. Not an iPhone timing.
+- Native HOG: 200 synthetic glyphs, maximum absolute feature difference 0.000397 versus OpenCV; mean absolute difference 0.0000151; maximum predicted probability difference 0.000338; all 200 argmax predictions agree.
+- Identical synthetic rasters: 7 valid, 5 incompatible regions across 4 pages. Both Python and JS map 7/7 valid regions (all 42 positions within quarter-min-pitch). Python confirms 5 and reviews 2; native JS confirms 6 and reviews 1. Neither confirms an incompatible region. MC-only page yields no proposals in both. Native JS omits one incompatible proposal rejected by Python. Max normalized valid localization error Python 0.0481, JS 0.0495. Replayed after resource safeguards with same results.
+- Known private Physics blank photo: both implementations confirm 4/4. Native JS also confirms 4/4 at half resolution, 4/4 under 5-degree rotation, 4/4 under a mild synthetic perspective warp, 1/4 under a stronger perspective warp. Correlated resampling, not independent captures or annotated physical localization. No tuning to the last stress failure. Blank raster zero proposals.
+- Desktop Node replay: ~1.55–2.91 seconds per synthetic page, 4.70 s on resized private photo, excluding model load. Previous six-page stress run observed process RSS as high as 304 MiB; later run with reused connected-component workspace saw end-of-page RSS up to 263 MiB. These measurements are not controlled peak-memory comparisons and not Safari measurements.
+- Resource safeguards: raw/retained candidate caps, raster size bounds, shape plausibility, unique outline association, deterministic nearest-distance evaluation budget (180M checks default; known private cases up to 146M). Budget exhaustion returns review with an explicit reason and no partial proposal. This is not a hard wall-clock guarantee. Worker client terminates timed-out or cancelled scans.
+- Node worker tests: corrupt model bytes, inconsistent model metadata, cancellation, timeout, invalid raster and forced search-budget exhaustion pass. All 4 synthetic worker outputs are deeply equal to direct Node results. No browser/iPhone test passed or claimed.
 
-## Limitations / next gate
+## Remaining gates
 
-Native contour, interpolation, morphology, crop normalization and HOG approximate OpenCV operations; final decisions and intermediate coordinates are not identical. Native JS does not reproduce every Python diagnostic (notably template diagnostics). It is a feasible port, not a fully equivalent release candidate. Need independent mock-form/physical capture validation, compare against actual app detector, investigate decision disagreement, stronger perspective and unboxed forms, enforce review for uncertainty and resource bounds, and test on Safari before integration. Preserve Python reference and existing app detector. No release or merge approval implied.
+Native image extraction and glyph normalization approximate OpenCV, so this is functional rather than strict equivalence. One valid decision differs; no independent validation shows that either decision is preferable. Needs independently prepared forms and captures, stronger perspective handling (prefer existing page rectification plus local verification), existing app comparison on those forms, Safari memory/timing and offline worker asset validation. The ~8 MiB float64 weights and search cost warrant further engineering evaluation. Preserve teacher review, inferred positions and existing app detector. No app integration or merge authorized by these research results.

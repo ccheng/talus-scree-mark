@@ -2,7 +2,15 @@
 // No image extraction, digit classification, grading or production acceptance.
 const norm=v=>Math.hypot(...v), sub=(a,b)=>[a[0]-b[0],a[1]-b[1]], add=(a,b)=>[a[0]+b[0],a[1]+b[1]], mul=(v,f)=>[v[0]*f,v[1]*f], dot=(a,b)=>a[0]*b[0]+a[1]*b[1];
 const rc=Array.from({length:40},(_,i)=>[i%4,Math.floor(i/4)]), lattice=(o,u,v)=>rc.map(([c,r])=>add(o,add(mul(u,c),mul(v,r))));
-export function nearest(p,points){let j=-1,d=Infinity;for(let i=0;i<points.length;i++){let x=p[0]-points[i][0],y=p[1]-points[i][1],q=x*x+y*y;if(q<d){d=q;j=i;}}return [Math.sqrt(d),j];}
+// Bound the expensive nearest-neighbour search across a single synchronous scan.
+export class SearchLimitError extends Error { constructor(reason){super(reason);this.name='SearchLimitError';} }
+let budget=null;
+export function withSearchBudget(fn,maxChecks=180000000){
+ if(budget)throw new Error('Nested search budget');
+ if(!Number.isSafeInteger(maxChecks)||maxChecks<1)throw new Error('Invalid search budget');
+ budget={remaining:maxChecks,used:0};try{const result=fn();return {...result,distanceChecks:budget.used};}finally{budget=null;}
+}
+export function nearest(p,points){if(budget){budget.used+=points.length;budget.remaining-=points.length;if(budget.remaining<0)throw new SearchLimitError('distance-check-limit');}let j=-1,d=Infinity;for(let i=0;i<points.length;i++){let x=p[0]-points[i][0],y=p[1]-points[i][1],q=x*x+y*y;if(q<d){d=q;j=i;}}return [Math.sqrt(d),j];}
 const median=a=>{a=[...a].sort((x,y)=>x-y);return (a[(a.length-1)>>1]+a[a.length>>1])/2;};
 export function fit(points,indices){ // least-squares affine, normal equations, pivoted 3x3 solve
  const m=Array.from({length:3},()=>Array(5).fill(0));for(let k=0;k<indices.length;k++){const [c,r]=rc[indices[k]],a=[1,c,r];for(let i=0;i<3;i++){for(let j=0;j<3;j++)m[i][j]+=a[i]*a[j];m[i][3]+=a[i]*points[k][0];m[i][4]+=a[i]*points[k][1];}}
