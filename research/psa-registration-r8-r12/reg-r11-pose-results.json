@@ -1,0 +1,184 @@
+[
+  {
+    "name": "upright",
+    "valid": true,
+    "auto": {
+      "status": "read",
+      "reasons": [],
+      "path": "page-boundary",
+      "error": 0.9160274338401085,
+      "items": 9
+    },
+    "manual": {
+      "status": "read",
+      "reasons": [],
+      "path": "manual-corners",
+      "error": 1.1368683772161603e-13,
+      "items": 9
+    },
+    "diagnostic": {
+      "attempted": false
+    }
+  },
+  {
+    "name": "projective",
+    "valid": true,
+    "auto": {
+      "status": "read",
+      "reasons": [],
+      "path": "page-boundary",
+      "error": 0.5169591109430889,
+      "items": 9
+    },
+    "manual": {
+      "status": "read",
+      "reasons": [],
+      "path": "manual-corners",
+      "error": 1.7053025658242404e-13,
+      "items": 9
+    },
+    "diagnostic": {
+      "attempted": false
+    }
+  },
+  {
+    "name": "quarter-turn",
+    "valid": true,
+    "auto": {
+      "status": "read",
+      "reasons": [],
+      "path": "page-boundary",
+      "error": 0.9160274338400668,
+      "items": 9
+    },
+    "manual": {
+      "status": "read",
+      "reasons": [],
+      "path": "manual-corners",
+      "error": 1.1368683772161603e-13,
+      "items": 9
+    },
+    "diagnostic": {
+      "attempted": false
+    }
+  },
+  {
+    "name": "cropped-border",
+    "valid": true,
+    "auto": {
+      "status": "read",
+      "reasons": [],
+      "path": "virtual-corners",
+      "error": 0.16703370460496333,
+      "items": 9
+    },
+    "manual": {
+      "status": "retake",
+      "reasons": [
+        "page-corners"
+      ],
+      "path": "manual-corners",
+      "error": null,
+      "items": 0
+    },
+    "diagnostic": {
+      "attempted": false
+    }
+  },
+  {
+    "name": "low-resolution",
+    "valid": true,
+    "auto": {
+      "status": "read",
+      "reasons": [],
+      "path": "page-boundary",
+      "error": 1.0119346974960772,
+      "items": 9
+    },
+    "manual": {
+      "status": "read",
+      "reasons": [],
+      "path": "manual-corners",
+      "error": 6.355287432313019e-14,
+      "items": 9
+    },
+    "diagnostic": {
+      "attempted": false
+    }
+  },
+  {
+    "name": "missing-row",
+    "valid": false,
+    "auto": {
+      "status": "retake",
+      "reasons": [
+        "response-geometry"
+      ],
+      "path": "page-boundary",
+      "error": null,
+      "items": 0
+    },
+    "manual": {
+      "status": "retake",
+      "reasons": [
+        "response-geometry"
+      ],
+      "path": "manual-corners",
+      "error": null,
+      "items": 0
+    },
+    "diagnostic": {
+      "attempted": false
+    }
+  },
+  {
+    "name": "mirror",
+    "valid": false,
+    "auto": {
+      "status": "retake",
+      "reasons": [
+        "mirrored-registration"
+      ],
+      "path": "page-boundary",
+      "error": null,
+      "items": 0
+    },
+    "manual": {
+      "status": "retake",
+      "reasons": [
+        "mirrored-registration"
+      ],
+      "path": "manual-corners",
+      "error": null,
+      "items": 0
+    },
+    "diagnostic": {
+      "attempted": false
+    }
+  },
+  {
+    "name": "wrong-batch",
+    "valid": false,
+    "auto": {
+      "status": "retake",
+      "reasons": [
+        "batch-not-confirmed"
+      ],
+      "path": null,
+      "error": null,
+      "items": 0
+    },
+    "manual": {
+      "status": "retake",
+      "reasons": [
+        "batch-not-confirmed"
+      ],
+      "path": null,
+      "error": null,
+      "items": 0
+    },
+    "diagnostic": {
+      "attempted": false
+    }
+  }
+]
