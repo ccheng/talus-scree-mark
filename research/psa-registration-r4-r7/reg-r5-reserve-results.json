@@ -1,0 +1,2530 @@
+{
+  "note": "PSA synthetic vector glyphs rendered into page rasters; not original ISTE cases. Pinned LSDE enrollMcPrint and compareMcPrint executed; number threshold remains exploratory. Same-print score not identity certificate.",
+  "count": 45,
+  "enrollments": [
+    {
+      "layout": "reserve-high-header",
+      "baseline": {
+        "header": 0,
+        "number": 4
+      },
+      "oracle": {
+        "header": 4,
+        "number": 4
+      },
+      "fixed": {
+        "header": 0,
+        "number": 4
+      },
+      "alternate": {
+        "header": 4,
+        "number": 4
+      },
+      "numberLocations": [
+        {
+          "symbol": "10",
+          "x": 80.375,
+          "y": 95
+        },
+        {
+          "symbol": "11",
+          "x": 80.25,
+          "y": 117
+        },
+        {
+          "symbol": "12",
+          "x": 80.5,
+          "y": 139
+        },
+        {
+          "symbol": "13",
+          "x": 80.375,
+          "y": 161
+        }
+      ]
+    },
+    {
+      "layout": "reserve-near-header",
+      "baseline": {
+        "header": 0,
+        "number": 0
+      },
+      "oracle": {
+        "header": 4,
+        "number": 4
+      },
+      "fixed": {
+        "header": 0,
+        "number": 4
+      },
+      "alternate": {
+        "header": 4,
+        "number": 4
+      },
+      "numberLocations": [
+        {
+          "symbol": "17",
+          "x": 180.25,
+          "y": 95
+        },
+        {
+          "symbol": "18",
+          "x": 180.25,
+          "y": 117
+        },
+        {
+          "symbol": "19",
+          "x": 180.25,
+          "y": 139
+        },
+        {
+          "symbol": "20",
+          "x": 180,
+          "y": 161
+        }
+      ]
+    },
+    {
+      "layout": "reserve-center-header",
+      "baseline": {
+        "header": 4,
+        "number": 0
+      },
+      "oracle": {
+        "header": 4,
+        "number": 4
+      },
+      "fixed": {
+        "header": 4,
+        "number": 4
+      },
+      "alternate": {
+        "header": 4,
+        "number": 4
+      },
+      "numberLocations": [
+        {
+          "symbol": "1",
+          "x": 180,
+          "y": 95
+        },
+        {
+          "symbol": "2",
+          "x": 180,
+          "y": 117
+        },
+        {
+          "symbol": "3",
+          "x": 180,
+          "y": 139
+        },
+        {
+          "symbol": "4",
+          "x": 180,
+          "y": 161
+        }
+      ]
+    },
+    {
+      "layout": "absent-header",
+      "baseline": {
+        "header": 0,
+        "number": 4
+      },
+      "oracle": {
+        "header": 4,
+        "number": 4
+      },
+      "fixed": {
+        "header": 0,
+        "number": 4
+      },
+      "alternate": {
+        "header": 0,
+        "number": 4
+      },
+      "numberLocations": [
+        {
+          "symbol": "1",
+          "x": 80,
+          "y": 95
+        },
+        {
+          "symbol": "2",
+          "x": 80,
+          "y": 117
+        },
+        {
+          "symbol": "3",
+          "x": 80,
+          "y": 139
+        },
+        {
+          "symbol": "4",
+          "x": 80,
+          "y": 161
+        }
+      ]
+    },
+    {
+      "layout": "competing-header",
+      "baseline": {
+        "header": 0,
+        "number": 4
+      },
+      "oracle": {
+        "header": 4,
+        "number": 4
+      },
+      "fixed": {
+        "header": 0,
+        "number": 4
+      },
+      "alternate": {
+        "header": 0,
+        "number": 4
+      },
+      "numberLocations": [
+        {
+          "symbol": "1",
+          "x": 80,
+          "y": 95
+        },
+        {
+          "symbol": "2",
+          "x": 80,
+          "y": 117
+        },
+        {
+          "symbol": "3",
+          "x": 80,
+          "y": 139
+        },
+        {
+          "symbol": "4",
+          "x": 80,
+          "y": 161
+        }
+      ]
+    },
+    {
+      "layout": "two-sided-labels",
+      "baseline": {
+        "header": 4,
+        "number": 4
+      },
+      "oracle": {
+        "header": 4,
+        "number": 4
+      },
+      "fixed": {
+        "header": 4,
+        "number": 0
+      },
+      "alternate": {
+        "header": 4,
+        "number": 0
+      },
+      "numberLocations": []
+    }
+  ],
+  "summaries": {
+    "baseline": {
+      "unchanged": {
+        "total": 9,
+        "mismatch": 1,
+        "agreement": 2,
+        "unavailable": 6,
+        "otherMismatch": 7
+      },
+      "B-to-K": {
+        "total": 9,
+        "mismatch": 3,
+        "agreement": 0,
+        "unavailable": 6,
+        "otherMismatch": 7
+      },
+      "number-change": {
+        "total": 9,
+        "mismatch": 3,
+        "agreement": 0,
+        "unavailable": 6,
+        "otherMismatch": 7
+      },
+      "scribble": {
+        "total": 9,
+        "mismatch": 1,
+        "agreement": 2,
+        "unavailable": 6,
+        "otherMismatch": 7
+      },
+      "erase": {
+        "total": 9,
+        "mismatch": 3,
+        "agreement": 0,
+        "unavailable": 6,
+        "otherMismatch": 7
+      }
+    },
+    "oracleWindow": {
+      "unchanged": {
+        "total": 9,
+        "mismatch": 3,
+        "agreement": 6,
+        "unavailable": 0,
+        "otherMismatch": 21
+      },
+      "B-to-K": {
+        "total": 9,
+        "mismatch": 9,
+        "agreement": 0,
+        "unavailable": 0,
+        "otherMismatch": 21
+      },
+      "number-change": {
+        "total": 9,
+        "mismatch": 9,
+        "agreement": 0,
+        "unavailable": 0,
+        "otherMismatch": 21
+      },
+      "scribble": {
+        "total": 9,
+        "mismatch": 3,
+        "agreement": 6,
+        "unavailable": 0,
+        "otherMismatch": 21
+      },
+      "erase": {
+        "total": 9,
+        "mismatch": 7,
+        "agreement": 2,
+        "unavailable": 0,
+        "otherMismatch": 21
+      }
+    },
+    "oracleWindowPose": {
+      "unchanged": {
+        "total": 9,
+        "mismatch": 0,
+        "agreement": 9,
+        "unavailable": 0,
+        "otherMismatch": 0
+      },
+      "B-to-K": {
+        "total": 9,
+        "mismatch": 9,
+        "agreement": 0,
+        "unavailable": 0,
+        "otherMismatch": 0
+      },
+      "number-change": {
+        "total": 9,
+        "mismatch": 9,
+        "agreement": 0,
+        "unavailable": 0,
+        "otherMismatch": 0
+      },
+      "scribble": {
+        "total": 9,
+        "mismatch": 0,
+        "agreement": 9,
+        "unavailable": 0,
+        "otherMismatch": 0
+      },
+      "erase": {
+        "total": 9,
+        "mismatch": 6,
+        "agreement": 3,
+        "unavailable": 0,
+        "otherMismatch": 0
+      }
+    },
+    "fixedIndependentPose": {
+      "unchanged": {
+        "total": 9,
+        "mismatch": 0,
+        "agreement": 3,
+        "unavailable": 6,
+        "otherMismatch": 0
+      },
+      "B-to-K": {
+        "total": 9,
+        "mismatch": 3,
+        "agreement": 0,
+        "unavailable": 6,
+        "otherMismatch": 0
+      },
+      "number-change": {
+        "total": 9,
+        "mismatch": 9,
+        "agreement": 0,
+        "unavailable": 0,
+        "otherMismatch": 0
+      },
+      "scribble": {
+        "total": 9,
+        "mismatch": 0,
+        "agreement": 3,
+        "unavailable": 6,
+        "otherMismatch": 0
+      },
+      "erase": {
+        "total": 9,
+        "mismatch": 3,
+        "agreement": 0,
+        "unavailable": 6,
+        "otherMismatch": 0
+      }
+    },
+    "alternateWindow": {
+      "unchanged": {
+        "total": 9,
+        "mismatch": 3,
+        "agreement": 6,
+        "unavailable": 0,
+        "otherMismatch": 21
+      },
+      "B-to-K": {
+        "total": 9,
+        "mismatch": 9,
+        "agreement": 0,
+        "unavailable": 0,
+        "otherMismatch": 21
+      },
+      "number-change": {
+        "total": 9,
+        "mismatch": 9,
+        "agreement": 0,
+        "unavailable": 0,
+        "otherMismatch": 21
+      },
+      "scribble": {
+        "total": 9,
+        "mismatch": 3,
+        "agreement": 6,
+        "unavailable": 0,
+        "otherMismatch": 21
+      },
+      "erase": {
+        "total": 9,
+        "mismatch": 7,
+        "agreement": 2,
+        "unavailable": 0,
+        "otherMismatch": 21
+      }
+    },
+    "alternateIndependentPose": {
+      "unchanged": {
+        "total": 9,
+        "mismatch": 0,
+        "agreement": 9,
+        "unavailable": 0,
+        "otherMismatch": 0
+      },
+      "B-to-K": {
+        "total": 9,
+        "mismatch": 9,
+        "agreement": 0,
+        "unavailable": 0,
+        "otherMismatch": 0
+      },
+      "number-change": {
+        "total": 9,
+        "mismatch": 9,
+        "agreement": 0,
+        "unavailable": 0,
+        "otherMismatch": 0
+      },
+      "scribble": {
+        "total": 9,
+        "mismatch": 0,
+        "agreement": 9,
+        "unavailable": 0,
+        "otherMismatch": 0
+      },
+      "erase": {
+        "total": 9,
+        "mismatch": 7,
+        "agreement": 2,
+        "unavailable": 0,
+        "otherMismatch": 0
+      }
+    }
+  },
+  "poseCounts": {
+    "corrected": 45
+  },
+  "results": [
+    {
+      "layout": "reserve-high-header",
+      "mode": "normal",
+      "condition": "unchanged",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.02070867422321132,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.02070867422321132,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.020214387266833,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.018948062111661,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "normal",
+      "condition": "B-to-K",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.6556883588862068,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.6556883588862068,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6578855795594285,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6625058814723457,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "normal",
+      "condition": "number-change",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.33615660153947124,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.336255755059238,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.336255755059238,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.3322788751663326,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.33615660153947124,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.3322788751663326,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "normal",
+      "condition": "scribble",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.07558686963510197,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.07558686963510197,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.0753170963248807,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.07040421861263835,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "normal",
+      "condition": "erase",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.20827683256716423,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.20827683256716423,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.20614635841689544,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.20564108909444356,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "oblique-local-error",
+      "condition": "unchanged",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 4,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.46275741685185323,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.02710437655128528,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.4602828974560178,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.07588924752593851,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "oblique-local-error",
+      "condition": "B-to-K",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 4,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.6693093677367863,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.6492856139862195,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6709513940605455,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.638715254717758,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "oblique-local-error",
+      "condition": "number-change",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.7868647239791267,
+        "otherMismatch": 3,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.7865630525032065,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.37407247443282887,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.39252892080373236,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.7868647239791267,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.39252892080373236,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "oblique-local-error",
+      "condition": "scribble",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 4,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.4766497153272723,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.09999124400221882,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.47314506355827035,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.16139074650643448,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "oblique-local-error",
+      "condition": "erase",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 4,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.5160046486576384,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.21400758991395552,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.5163066024194283,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.26039072179136646,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "quarter-turn",
+      "condition": "unchanged",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.070686307000152,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.025510062789856458,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.06964762874983788,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.0760027577531468,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "quarter-turn",
+      "condition": "B-to-K",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.6240147830391459,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.646523585539384,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6257579796902382,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6489400022171796,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "quarter-turn",
+      "condition": "number-change",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.36753463278334597,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.367744711214378,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.3507684143112467,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.37101516276745794,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.36753463278334597,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.37101516276745794,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "quarter-turn",
+      "condition": "scribble",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.15479217791986033,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.09393146925600626,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.15556643944035742,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.1327413771224577,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-high-header",
+      "mode": "quarter-turn",
+      "condition": "erase",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.2553496698761015,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.2202557436144179,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.2563313567562503,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.24710217519076527,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "normal",
+      "condition": "unchanged",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.02750403996619255,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.02750403996619255,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.026911149998416373,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.028725901192850456,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "normal",
+      "condition": "B-to-K",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.6547265911513469,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.6547265911513469,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6557360105595978,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6558571581780797,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "normal",
+      "condition": "number-change",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.3721061707063764,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.3721061707063764,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.37080806213030737,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.3720275388627583,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.37080806213030737,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "normal",
+      "condition": "scribble",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.12429410932788343,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.12429410932788343,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.12389209342362917,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.12316749952081452,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "normal",
+      "condition": "erase",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.20726431216498253,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.20726431216498253,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.20574567202970018,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.20794020089354015,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "oblique-local-error",
+      "condition": "unchanged",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.6854056462242388,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.03852979012386959,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6850932451636955,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.06742822000701809,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "oblique-local-error",
+      "condition": "B-to-K",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.8498679648736551,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.6346366403394562,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.8500334823062783,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6267920136546503,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "oblique-local-error",
+      "condition": "number-change",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.9024300161120181,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.3832723951541752,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.43861334837780597,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.9164361889762351,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.43861334837780597,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "oblique-local-error",
+      "condition": "scribble",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.656187808960328,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.14909591291229896,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6561289418546103,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.19055219070451934,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "oblique-local-error",
+      "condition": "erase",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.6901052523590098,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.24322381720430586,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6893315678727303,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.2668524016851398,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "quarter-turn",
+      "condition": "unchanged",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.09334163217667224,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.04272147643670299,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.09351573725303497,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.08212517215029957,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "quarter-turn",
+      "condition": "B-to-K",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.641850587435921,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.6560506206371061,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6420376050407834,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6769797612898641,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "quarter-turn",
+      "condition": "number-change",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.3872158321861776,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.36267943644165423,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.3621975565794232,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.387168156652288,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.3621975565794232,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "quarter-turn",
+      "condition": "scribble",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.2111346222423166,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.14771171741675893,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.2106968066975312,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.17021787367881924,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-near-header",
+      "mode": "quarter-turn",
+      "condition": "erase",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 0
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.28798991263277207,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.2461037673322527,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.28593684337564984,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.2722567751027768,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "normal",
+      "condition": "unchanged",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "agreement",
+        "distance": 0.03664302651035478,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.03347903462900004,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.03347903462900004,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "agreement",
+        "distance": 0.04266749860868635,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.03653518048551041,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.04266749860868635,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "normal",
+      "condition": "B-to-K",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.6261256789213634,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.6204692456051695,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.6204692456051695,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6279648349452491,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6264803713327755,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6279648349452491,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "normal",
+      "condition": "number-change",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.33727285017612096,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.33727285017612096,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.33456667951996577,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.33727285017612096,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.33456667951996577,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "normal",
+      "condition": "scribble",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "agreement",
+        "distance": 0.12549429875806362,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.12150496267486033,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.12150496267486033,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "agreement",
+        "distance": 0.126303986463704,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.125658890337094,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.126303986463704,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "normal",
+      "condition": "erase",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.13048368053322998
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.2265444163214856,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.22195156950911532,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.22195156950911532,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.23457177403709073,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.22702081311677458,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.23457177403709073,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "oblique-local-error",
+      "condition": "unchanged",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.6035073893779141,
+        "otherMismatch": 3,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.6047756906286414,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.04052132000262332,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "agreement",
+        "distance": 0.06602559278975206,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6054280431523454,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.06602559278975206,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "oblique-local-error",
+      "condition": "B-to-K",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.7897820196314238,
+        "otherMismatch": 3,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.7920274190822228,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.6170602987809988,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6108143030895938,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.7918160448643261,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6108143030895938,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "oblique-local-error",
+      "condition": "number-change",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 4,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.865775294177286,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.32002528413941544,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.34999693690001077,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.865775294177286,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.34999693690001077,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "oblique-local-error",
+      "condition": "scribble",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.5668920945082558,
+        "otherMismatch": 3,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.5801785293611493,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.12941439452245118,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "agreement",
+        "distance": 0.17066807037977516,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.5803020008121997,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.17066807037977516,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "oblique-local-error",
+      "condition": "erase",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.3354095893108554
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.6233800065621249,
+        "otherMismatch": 3,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.6226317746616407,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.2413065443774738,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.2649792104516565,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.6243145420092232,
+        "otherMismatch": 7,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.2649792104516565,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "quarter-turn",
+      "condition": "unchanged",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "agreement",
+        "distance": 0.09587157990506023,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.09631340139680511,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.04019669748294452,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "agreement",
+        "distance": 0.06811115787753996,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.0957962626049409,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.06811115787753996,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "quarter-turn",
+      "condition": "B-to-K",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.5914770324225054,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.5911394367664196,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.6137468181827137,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6077688528766528,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.5920897677630466,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.6077688528766528,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "quarter-turn",
+      "condition": "number-change",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "unavailable",
+        "distance": null,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.34840172512598777,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.33563001626991684,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.33175027235117327,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.34840172512598777,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.33175027235117327,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "quarter-turn",
+      "condition": "scribble",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "agreement",
+        "distance": 0.16291870003815967,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "agreement",
+        "distance": 0.16364546261390134,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "agreement",
+        "distance": 0.11498558583637208,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "agreement",
+        "distance": 0.12717164859424634,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "agreement",
+        "distance": 0.16338021259841362,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "agreement",
+        "distance": 0.12717164859424634,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    },
+    {
+      "layout": "reserve-center-header",
+      "mode": "quarter-turn",
+      "condition": "erase",
+      "pose": {
+        "status": "corrected",
+        "matched": 16,
+        "maxError": 0.1652652368680131
+      },
+      "baseline": {
+        "status": "mismatch",
+        "distance": 0.28571831682180704,
+        "otherMismatch": 0,
+        "available": 4
+      },
+      "oracleWindow": {
+        "status": "mismatch",
+        "distance": 0.28602240883284535,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "oracleWindowPose": {
+        "status": "mismatch",
+        "distance": 0.23702120576501362,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "fixedIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.2353231086886589,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateWindow": {
+        "status": "mismatch",
+        "distance": 0.2860289244081081,
+        "otherMismatch": 0,
+        "available": 8
+      },
+      "alternateIndependentPose": {
+        "status": "mismatch",
+        "distance": 0.2353231086886589,
+        "otherMismatch": 0,
+        "available": 8
+      }
+    }
+  ]
+}
