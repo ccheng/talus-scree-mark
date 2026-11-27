@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { capturePrintedFeatures, pageTransform } from '../app/src/markerless-registration.js';
 import { createMarkerlessProfile, manualGrid, proposeGrid } from '../app/src/profile-authoring.js';
 import { readProfileSheet } from '../app/src/profile-omr.js';
+import { enrollRegistrationEvidence, readStructuredRegistration, validateRegistrationEvidence } from '../app/src/psa-registration/engine.js';
 
 const page = { width: 612, height: 792, units: 'pt', origin: 'top-left', orientation: 'portrait' };
 const region = { x: 168, y: 225, width: 180, height: 93 };
@@ -221,4 +222,43 @@ test('an adjacent row in a different confirmed response block is not an extra ro
   const result = readProfileSheet(syntheticImage({ continuation: true }), profile, { corners, batch: authorized(profile) });
   assert.equal(result.status, 'read');
   assert.deepEqual(result.items.map(({ id, status }) => [id, status]), [['Q1', 'blank'], ['Q2', 'blank'], ['Q3', 'blank'], ['Q4', 'blank']]);
+});
+
+test('standalone registration preserves legacy reads and refuses to override Established safety vetoes', () => {
+  const profile = create();
+  const image = syntheticImage({ filled: true });
+  const options = { corners, batch: authorized(profile) };
+  const legacy = readProfileSheet(image, profile, options);
+  assert.equal(legacy.status, 'read');
+  assert.deepEqual(readStructuredRegistration(image, profile, options), legacy);
+
+  const invalid = readStructuredRegistration(image, profile, { ...options, evidence: {} });
+  assert.deepEqual(invalid.registration.reasons, ['invalid-registration-evidence']);
+  assert.deepEqual(invalid.items, []);
+  for (const set of [{ corners }, { ...options, corners: [corners[1], corners[0], corners[3], corners[2]] }]) {
+    const veto = readProfileSheet(image, profile, set);
+    assert.equal(veto.status, 'retake');
+    assert.deepEqual(readStructuredRegistration(image, profile, { ...set, evidence: {} }), veto);
+  }
+});
+
+test('registration enrollment survives serialization, reports missing print, and binds to its mapping', () => {
+  const profile = create({ scope: 'mc-only', mcCompleteness: 'partial' });
+  const blank = syntheticImage();
+  const enrolled = enrollRegistrationEvidence(blank, profile, matrix);
+  const evidence = JSON.parse(JSON.stringify(enrolled));
+  const { coverage, missing } = validateRegistrationEvidence(evidence, profile);
+  assert.deepEqual(coverage.number, { expected: 3, enrolled: 0 });
+  assert.deepEqual(coverage.header, { expected: 4, enrolled: 0 });
+  assert.equal(missing.length, 7);
+  assert.throws(() => validateRegistrationEvidence(evidence, { ...profile, revision: 2 }), /different profile/);
+  const changed = structuredClone(profile);
+  changed.components[0].items[0].choices[0].symbol = 'Z';
+  assert.throws(() => validateRegistrationEvidence(evidence, changed), /different profile/);
+
+  const options = { batch: authorized(profile), corners, evidence, assessPose: true };
+  const result = readStructuredRegistration(syntheticImage({ continuation: true }), profile, options);
+  assert.equal(result.status, 'retake');
+  assert.deepEqual(result.items, []);
+  assert.equal(result.registration.diagnostics.psaRegistration.status, 'established-withheld');
 });
