@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="17240ea326d6d2fe470c5270">
+  <meta name="scree-release" content="37b6a54b3d8914435255fd1f">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -60,6 +60,17 @@
           <button id="apply-scan-corners" type="button" disabled>Use these corners</button>
           <button id="cancel-scan-corners" type="button">Cancel</button>
         </div>
+      </section>
+      <section id="cpas-preview" class="profile-card" hidden>
+        <h3>CPAS recognition preview</h3>
+        <p>Established supplies the responses used for grading. Use a blank copy of the active profile to compare spatial completion against its printed bubbles.</p>
+        <label for="cpas-blank">Blank reference image</label>
+        <input id="cpas-blank" type="file" accept="image/png,image/jpeg">
+        <label for="cpas-handwriting">Optional profile-matched handwriting box map (JSON)</label>
+        <input id="cpas-handwriting" type="file" accept=".json,application/json">
+        <p id="cpas-handwriting-status" role="status"></p>
+        <p id="cpas-preview-status" role="status"></p>
+        <button id="cpas-download" type="button" hidden>Download CPAS diagnostics</button>
       </section>
       <p id="recognition-status" class="capture-status" role="status" data-status="idle"></p>
       <ol id="scan-diagnostics" aria-label="Scan checks" hidden>

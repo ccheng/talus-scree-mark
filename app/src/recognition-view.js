@@ -1,3 +1,4 @@
+import { importWorkingImage } from './image.js';
 import { project } from './projective.js';
 
 const messages = {
@@ -109,6 +110,66 @@ export function createRecognitionView({ button, status, results, table, overlay,
   let active;
   let available = false;
   let jobId = 0;
+  const preview = new URLSearchParams(location.search).get('cpas') === 'preview'
+    ? document.getElementById('cpas-preview') : null;
+  const blankInput = preview?.querySelector('#cpas-blank');
+  const previewStatus = preview?.querySelector('#cpas-preview-status');
+  const download = preview?.querySelector('#cpas-download');
+  let blank;
+  let blankImport;
+  let blankProfile;
+  let comparison;
+  let handwritingConfig;
+  if (preview) {
+    preview.hidden = false;
+    blankInput.addEventListener('change', async () => {
+      blankImport?.abort();
+      const controller = new AbortController();
+      blankImport = controller;
+      blank = undefined;
+      blankProfile = undefined;
+      const file = blankInput.files[0];
+      previewStatus.textContent = file ? 'Opening blank reference…' : '';
+      if (!file) return;
+      try {
+        const image = await importWorkingImage(file, controller.signal);
+        if (controller.signal.aborted) return;
+        blank = { id: image.id, width: image.width, height: image.height, pixels: image.pixels.data };
+        previewStatus.textContent = 'Blank reference ready for the next scan.';
+      } catch {
+        if (!controller.signal.aborted) previewStatus.textContent = 'Could not open the blank reference. Choose a JPEG or PNG.';
+      }
+    });
+    const boxInput = preview.querySelector('#cpas-handwriting');
+    const boxStatus = preview.querySelector('#cpas-handwriting-status');
+    let boxRequest = 0;
+    boxInput.addEventListener('change', async () => {
+      const operation = ++boxRequest;
+      handwritingConfig = undefined;
+      const file = boxInput.files[0];
+      if (!file) { boxStatus.textContent = ''; return; }
+      try {
+        if (file.size > 100_000) throw new Error('Box map too large.');
+        const config = JSON.parse(await file.text());
+        if (operation !== boxRequest) return;
+        if (typeof config?.profileId !== 'string' || !Number.isInteger(config.revision) ||
+            !config.boxes || typeof config.boxes !== 'object' || Array.isArray(config.boxes)) throw new Error('Invalid box map.');
+        handwritingConfig = config;
+        boxStatus.textContent = 'Handwriting box map loaded for its matching profile revision.';
+      } catch {
+        if (operation === boxRequest) boxStatus.textContent = 'Could not read the handwriting box map.';
+      }
+    });
+    download.addEventListener('click', () => {
+      if (!comparison) return;
+      const url = URL.createObjectURL(new Blob([JSON.stringify(comparison, null, 2)], { type: 'application/json' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'cpas-scan-diagnostics.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  }
 
   function setStatus(state, message = '') {
     status.dataset.status = state;
@@ -121,6 +182,8 @@ export function createRecognitionView({ button, status, results, table, overlay,
     active?.worker.terminate();
     active = undefined;
     setStatus('idle');
+    comparison = undefined;
+    if (download) download.hidden = true;
     for (const field of ['strategy', 'authorization', 'cornerPath', 'profileId', 'revision']) delete status.dataset[field];
     table.replaceChildren();
     results.hidden = true;
@@ -223,6 +286,16 @@ export function createRecognitionView({ button, status, results, table, overlay,
         setStatus('error', 'Recognition did not finish. Try reading the bubbles again.');
         return;
       }
+      if (result.cpas && preview) {
+        comparison = { profile: result.profile, established: result.items, cpas: result.cpas };
+        download.hidden = false;
+        const mc = result.cpas.items.filter(item => item.kind === 'mc');
+        const nr = result.cpas.items.filter(item => item.kind === 'nr');
+        const accepted = mc.filter(item => item.disposition === 'would-accept').length;
+        previewStatus.textContent = result.cpas.status === 'evaluated'
+          ? `CPAS ${result.cpas.reference}. MC would accept ${accepted} of ${mc.length}. NR experimental observations ${nr.length}. Handwriting boxes evaluated ${result.cpas.handwriting.modelAvailable ? result.cpas.handwriting.eligibleBoxes : 0}.`
+          : `CPAS comparison unavailable. ${result.cpas.status.replaceAll('-', ' ')}.`;
+      }
       onRegistration(result.registration);
       showDiagnostics(result.registration, request?.profile);
       if (result.registration.strategy) status.dataset.strategy = result.registration.strategy;
@@ -254,9 +327,20 @@ export function createRecognitionView({ button, status, results, table, overlay,
     worker.addEventListener('error', () => complete());
     worker.addEventListener('messageerror', () => complete());
     try {
+      const profileKey = request?.profile && JSON.stringify([request.profile.id, request.profile.revision]);
+      if (preview && profileKey && blank) {
+        blankProfile ??= profileKey;
+        if (blankProfile !== profileKey) {
+          blank = undefined;
+          blankInput.value = '';
+        }
+      }
+      const cpasHandwritingBoxes = handwritingConfig && request?.profile?.id === handwritingConfig.profileId &&
+        request.profile.revision === handwritingConfig.revision ? handwritingConfig.boxes : undefined;
       worker.postMessage({
         type: request ? 'read-profile' : 'read-reference', jobId: job.id,
         ...request,
+        ...(preview && request ? { options: { ...request.options, cpasPreview: true, cpasReference: blank, cpasHandwritingBoxes } } : {}),
         image: { id: image.id, width: image.width, height: image.height, pixels: image.pixels.data },
       });
     } catch {

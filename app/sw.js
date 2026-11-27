@@ -81,6 +81,7 @@ async function serveKnown(url) {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   let url = event.request.url;
-  if (event.request.mode === 'navigate' && url === base.href) url = entry;
+  if (event.request.mode === 'navigate' &&
+      [base.href, base.href + '?cpas=preview', entry + '?cpas=preview'].includes(url)) url = entry;
   if (expected.has(url)) event.respondWith(serveKnown(url));
 });

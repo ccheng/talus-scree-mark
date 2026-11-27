@@ -6,6 +6,10 @@ const index = new URL('index.html', app);
 const precache = new URL('precache.generated.js', app);
 const staticFiles = [
   'assets/icon-180.png',
+  ...['completion-native.json', 'completion.bin', 'adapted.f32', 'handwriting-gate.json']
+    .map(file => `assets/cpas/${file}`),
+  ...['completion', 'spatial', 'preview', 'forest', 'digit-cnn', 'handwriting']
+    .map(module => `src/cpas-recognition/${module}.js`),
   'assets/icon-192.png',
   'assets/icon-512.png',
   'assets/psa-mc/glyph-bank.f32',
