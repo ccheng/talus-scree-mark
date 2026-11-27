@@ -1,0 +1,302 @@
+{
+  "tests": 25,
+  "passed": 25,
+  "stress": {
+    "valid": 100,
+    "unknownReview": 100,
+    "requiredMissingWithheld": 100,
+    "totalPerClass": 100
+  },
+  "results": [
+    {
+      "name": "ordinary complete evidence",
+      "expected": "geometry-consistent",
+      "status": "geometry-consistent",
+      "reason": "all-observed-rows-accounted-for",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [],
+      "semanticAssurance": false
+    },
+    {
+      "name": "confirmed known excluded row",
+      "expected": "geometry-consistent",
+      "status": "geometry-consistent",
+      "reason": "all-observed-rows-accounted-for",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [
+        {
+          "observed": "EX4",
+          "enrolled": "EX4"
+        }
+      ],
+      "unknown": [],
+      "semanticAssurance": false
+    },
+    {
+      "name": "known row with bounded noise",
+      "expected": "geometry-consistent",
+      "status": "geometry-consistent",
+      "reason": "all-observed-rows-accounted-for",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [
+        {
+          "observed": "EX4",
+          "enrolled": "EX4"
+        }
+      ],
+      "unknown": [],
+      "semanticAssurance": false
+    },
+    {
+      "name": "known row moved",
+      "expected": "review",
+      "status": "review",
+      "reason": "unexpected-structure",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [
+        "EX4"
+      ]
+    },
+    {
+      "name": "unknown row outside exclusions",
+      "expected": "review",
+      "status": "review",
+      "reason": "unexpected-structure",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [
+        "NEW"
+      ]
+    },
+    {
+      "name": "unknown row inside exclusion",
+      "expected": "review",
+      "status": "review",
+      "reason": "unexpected-structure",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [
+        "EX4"
+      ]
+    },
+    {
+      "name": "unknown row even with known exclusion evidence",
+      "expected": "review",
+      "status": "review",
+      "reason": "unexpected-structure",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [
+        "NEW"
+      ]
+    },
+    {
+      "name": "known row not teacher-confirmed",
+      "expected": "review",
+      "status": "review",
+      "reason": "unexpected-structure",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [
+        "EX4"
+      ]
+    },
+    {
+      "name": "known row without explicit exclusion",
+      "expected": "review",
+      "status": "review",
+      "reason": "unexpected-structure",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [
+        "EX4"
+      ]
+    },
+    {
+      "name": "known row partially outside exclusion",
+      "expected": "review",
+      "status": "review",
+      "reason": "unexpected-structure",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [
+        "EX4"
+      ]
+    },
+    {
+      "name": "complete profile with extra",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "unexpected-structure",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [
+        "EX4"
+      ]
+    },
+    {
+      "name": "complete profile with no extra",
+      "expected": "geometry-consistent",
+      "status": "geometry-consistent",
+      "reason": "all-observed-rows-accounted-for",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [],
+      "semanticAssurance": false
+    },
+    {
+      "name": "missing required row despite exclusion",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "required-row-unverified",
+      "row": "MC3"
+    },
+    {
+      "name": "moved required row",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "required-row-unverified",
+      "row": "MC3"
+    },
+    {
+      "name": "extra choice in required row",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "required-row-unverified",
+      "row": "MC3"
+    },
+    {
+      "name": "exclusion crosses required bubbles",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "exclusion-overlaps-required"
+    },
+    {
+      "name": "known row overlaps required",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "exclusion-overlaps-required"
+    },
+    {
+      "name": "duplicate detection",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "duplicate-observation"
+    },
+    {
+      "name": "wrong enrollment revision",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "stale-or-missing-enrollment"
+    },
+    {
+      "name": "mirror veto",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "mirrored-registration"
+    },
+    {
+      "name": "multiple sheet veto",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "multiple-sheets"
+    },
+    {
+      "name": "clipping veto",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "clipped-content"
+    },
+    {
+      "name": "invalid radius",
+      "expected": "withhold",
+      "status": "withhold",
+      "reason": "invalid-evidence"
+    },
+    {
+      "name": "wrong layout at identical geometric locations",
+      "expected": "geometry-consistent",
+      "status": "geometry-consistent",
+      "reason": "all-observed-rows-accounted-for",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [
+        {
+          "observed": "EX4",
+          "enrolled": "EX4"
+        }
+      ],
+      "unknown": [],
+      "semanticAssurance": false
+    },
+    {
+      "name": "partial flag alone never exempts",
+      "expected": "review",
+      "status": "review",
+      "reason": "unexpected-structure",
+      "requiredMatched": [
+        "MC1",
+        "MC2",
+        "MC3"
+      ],
+      "ignored": [],
+      "unknown": [
+        "EX4"
+      ]
+    }
+  ],
+  "limitation": "coordinate-level synthetic contract test; no actual image detector, semantic proof or scan authorization"
+}
