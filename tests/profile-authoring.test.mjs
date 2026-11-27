@@ -37,7 +37,7 @@ const inkCodes = [
 
 function syntheticImage({
   filled = false, incidentalPrint = false, shift = 0, missingRow, extraRow = false, hiddenCell = false,
-  continuation = false, columnShift = 0, pinch = 0,
+  continuation = false, continuationChoices = 4, columnShift = 0, pinch = 0,
 } = {}) {
   const width = 1225, height = 1585;
   const pixels = new Uint8ClampedArray(width * height * 4).fill(255);
@@ -52,7 +52,7 @@ function syntheticImage({
   }
   const added = extraRow ? grid.cells.filter(({ row }) => row === 0)
     .map((cell) => ({ ...cell, y: cell.y + grid.rowSpacing / 2, row: -1 })) : [];
-  if (continuation) added.push(...grid.cells.filter(({ row }) => row === 2)
+  if (continuation) added.push(...grid.cells.filter(({ row, column }) => row === 2 && column < continuationChoices)
     .map((cell) => ({ ...cell, y: cell.y + grid.rowSpacing, row: 3 })));
   for (const cell of [...grid.cells, ...added]) {
     if (cell.row === missingRow || (hiddenCell && cell.row === 0 && cell.column === 3)) continue;
@@ -261,4 +261,52 @@ test('registration enrollment survives serialization, reports missing print, and
   assert.equal(result.status, 'retake');
   assert.deepEqual(result.items, []);
   assert.equal(result.registration.diagnostics.psaRegistration.status, 'established-withheld');
+});
+
+test('localized shadow leaves Established outputs intact and reports evidence separately', async () => {
+  const { enrollLocalizedShadow, evaluateLocalizedShadow } = await import('../app/src/psa-registration/localized-shadow.js');
+  const profile = create({ scope: 'mc-only', mcCompleteness: 'partial' });
+  const evidence = JSON.parse(JSON.stringify(enrollLocalizedShadow(syntheticImage(), profile, matrix)));
+  const options = { corners, batch: authorized(profile), evidence };
+  const blank = syntheticImage();
+  const ordinary = evaluateLocalizedShadow(blank, profile, options);
+  assert.deepEqual(ordinary.established, readProfileSheet(blank, profile, options));
+  assert.equal(ordinary.shadow.structure.status, 'geometry-consistent');
+  assert.equal(ordinary.shadow.structure.rows.length, 3);
+
+  const sparse = syntheticImage({ continuation: true, continuationChoices: 2 });
+  const sparseOutcome = evaluateLocalizedShadow(sparse, profile, options);
+  assert.equal(sparseOutcome.shadow.structure.rows.length, 3);
+
+  const scan = syntheticImage({ continuation: true });
+  const baseline = readProfileSheet(scan, profile, options);
+  assert.equal(baseline.status, 'retake');
+  const observed = evaluateLocalizedShadow(scan, profile, options);
+  assert.deepEqual(observed.established, baseline);
+  assert.equal(observed.shadow.structure.status, 'review');
+  assert.equal(observed.shadow.structure.unknown.length, 1);
+  assert.equal(observed.shadow.structure.semanticAssurance, false);
+
+  const stale = evaluateLocalizedShadow(blank, profile, { ...options, evidence: { ...evidence, binding: 'stale' } });
+  assert.equal(stale.shadow.status, 'unavailable');
+  assert.deepEqual(stale.established, ordinary.established);
+  const veto = evaluateLocalizedShadow(blank, profile, { corners, evidence });
+  assert.equal(veto.shadow.status, 'established-veto');
+  assert.deepEqual(veto.established, readProfileSheet(blank, profile, { corners }));
+});
+
+test('localized scope requires affirmative blank evidence and never overrides a retake', async () => {
+  const { enrollLocalizedShadow, evaluateLocalizedShadow } = await import('../app/src/psa-registration/localized-shadow.js');
+  const profile = create({ scope: 'mc-only', mcCompleteness: 'partial',
+    exclusions: [{ x: 180, y: 307, width: 154, height: 16 }] });
+  const choices = grid.cells.filter(cell => cell.row === 2).map(({ x, y, radius }) => ({ x, y: y + grid.rowSpacing, radius }));
+  const setup = { confirmedExcludedRows: [{ id: 'known-extra-row', choices }] };
+  assert.throws(() => enrollLocalizedShadow(syntheticImage(), profile, matrix, setup), /not independently localized/);
+  const blank = syntheticImage({ continuation: true });
+  const evidence = enrollLocalizedShadow(blank, profile, matrix, setup);
+  const result = evaluateLocalizedShadow(blank, profile, { corners, batch: authorized(profile), evidence });
+  assert.equal(result.established.status, 'retake');
+  assert.equal(result.shadow.structure.status, 'geometry-consistent');
+  assert.equal(result.shadow.structure.ignored[0].enrolled, 'known-extra-row');
+  assert.equal(result.shadow.structure.semanticAssurance, false);
 });

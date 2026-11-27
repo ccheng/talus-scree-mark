@@ -50,7 +50,7 @@ function inkCenter(sample, x, y, rx) {
   return { x: x + (left + right) / 2, y: y + (top + bottom) / 2 };
 }
 
-function possibleSites(profile) {
+export function possibleSites(profile) {
   return profile.components.flatMap(block => {
     if (block.kind === 'nr') return block.items.flatMap(item => item.slots.flatMap(slot =>
       slot.choices.filter(({ symbol }) => /^[0-9.]$/.test(symbol)).map(choice => ({
