@@ -15,7 +15,7 @@ const mcRows = profile => profile.components.filter(block => block.kind === 'mc'
 const nrBubbles = profile => profile.components.filter(block => block.kind === 'nr')
   .flatMap(block => block.items.flatMap(item => item.slots.flatMap(slot => slot.choices)));
 
-function matches(enrolled, observed) {
+export function matches(enrolled, observed) {
   if (enrolled.choices.length !== observed.choices.length) return false;
   const pairs = enrolled.choices.map(choice => observed.choices.filter(actual =>
     distance(choice, actual) <= tolerance && Math.abs(choice.radius - actual.radius) <= .25 * choice.radius));
@@ -56,7 +56,7 @@ function shapeOf(row) {
 const directions = Array.from({ length: 12 }, (_, index) =>
   [Math.cos(index * Math.PI / 6), Math.sin(index * Math.PI / 6)]);
 
-function circularWitness(gray, matrix, { x, y, radius }) {
+export function circularWitness(gray, matrix, { x, y, radius }) {
   return directions.filter(([dx, dy]) => {
     const sample = scale => {
       const point = project(matrix, x + dx * radius * scale, y + dy * radius * scale);
@@ -66,7 +66,7 @@ function circularWitness(gray, matrix, { x, y, radius }) {
   }).length >= 10;
 }
 
-export function observeScopeRows(gray, matrix, profile, known = []) {
+export function observeScopeRows(gray, matrix, profile, known = [], { includeRings = false } = {}) {
   const required = mcRows(profile);
   if (!required.length) return { status: 'unavailable', reason: 'no-mc-rows' };
   const prototypes = [...required, ...known].map(shapeOf);
@@ -116,7 +116,7 @@ export function observeScopeRows(gray, matrix, profile, known = []) {
     a.indexes.every(index => b.indexes.includes(index)))).map(({ choices }, index) => ({ id: 'observed-' + (index + 1), choices }));
 
   return { status: 'observed', rows, outlineCount: outlines.length,
-    coverage: 'MC-aligned lanes' };
+    coverage: 'MC-aligned lanes', ...(includeRings ? { rings: candidates } : {}) };
 }
 
 export function classifyScopeEvidence(profile, known, rows) {

@@ -37,7 +37,7 @@ const inkCodes = [
 
 function syntheticImage({
   filled = false, incidentalPrint = false, shift = 0, missingRow, extraRow = false, hiddenCell = false,
-  continuation = false, continuationChoices = 4, columnShift = 0, pinch = 0,
+  continuation = false, continuationChoices = 4, columnShift = 0, pinch = 0, distantChoices = 0,
 } = {}) {
   const width = 1225, height = 1585;
   const pixels = new Uint8ClampedArray(width * height * 4).fill(255);
@@ -54,6 +54,9 @@ function syntheticImage({
     .map((cell) => ({ ...cell, y: cell.y + grid.rowSpacing / 2, row: -1 })) : [];
   if (continuation) added.push(...grid.cells.filter(({ row, column }) => row === 2 && column < continuationChoices)
     .map((cell) => ({ ...cell, y: cell.y + grid.rowSpacing, row: 3 })));
+  for (let i = 0; i < distantChoices; i++) {
+    added.push({ x: 410 + i * 20, y: 371, radius: 4, row: -2, column: i });
+  }
   for (const cell of [...grid.cells, ...added]) {
     if (cell.row === missingRow || (hiddenCell && cell.row === 0 && cell.column === 3)) continue;
     const xCenter = cell.x + shift + (cell.column === 3 ? columnShift : 0) +
@@ -309,4 +312,42 @@ test('localized scope requires affirmative blank evidence and never overrides a 
   assert.equal(result.shadow.structure.status, 'geometry-consistent');
   assert.equal(result.shadow.structure.ignored[0].enrolled, 'known-extra-row');
   assert.equal(result.shadow.structure.semanticAssurance, false);
+});
+
+test('shadow distinguishes novel and enrolled unclassified footprints without authorizing reads', async () => {
+  const { enrollLocalizedShadow, evaluateLocalizedShadow } = await import('../app/src/psa-registration/localized-shadow.js');
+  const profile = create({ scope: 'mc-only', mcCompleteness: 'partial' });
+  const blank = syntheticImage();
+  const scan = syntheticImage({ distantChoices: 4 });
+  const batch = authorized(profile);
+  const novel = evaluateLocalizedShadow(scan, profile, {
+    corners, batch, evidence: JSON.parse(JSON.stringify(enrollLocalizedShadow(blank, profile, matrix))),
+  });
+  assert.equal(novel.shadow.structure.inventory.novel.length, 1);
+  assert.equal(novel.shadow.structure.status, 'review');
+  assert.equal(novel.shadow.structure.wholeSheetCompatible, null);
+  assert.deepEqual(novel.established, readProfileSheet(scan, profile, { corners, batch }));
+
+  const evidence = enrollLocalizedShadow(scan, profile, matrix);
+  const existing = evaluateLocalizedShadow(scan, profile, { corners, batch, evidence });
+  assert.equal(existing.shadow.structure.inventory.previouslyObserved.length, 1);
+  assert.equal(existing.shadow.structure.inventory.novel.length, 0);
+  assert.equal(existing.shadow.structure.ignored.length, 0);
+  assert.equal(existing.shadow.structure.status, 'review');
+  const missing = evaluateLocalizedShadow(blank, profile, { corners, batch, evidence });
+  assert.equal(missing.shadow.structure.inventory.missing.length, 1);
+  assert.equal(missing.shadow.structure.status, 'review');
+});
+
+test('independent sampling uses held-out rings and leaves distant glyphs on the Established pose', async () => {
+  const { shadowSampling } = await import('../app/src/psa-registration/independent-sampling.js');
+  const profile = create();
+  const local = { kind: 'number', block: 'block-1', symbol: 'Q1', x: 165, y: 247 };
+  const distant = { kind: 'header', block: 'block-1', symbol: 'A', x: 190, y: 30 };
+  const rings = grid.cells.map(({ x, y, radius }) => ({ x: x + 1.5, y: y - .5, radius }));
+  const sampling = shadowSampling(profile, { pageToSource: matrix }, rings, [local, distant]);
+  assert.equal(sampling.blocks[0].status, 'corrected');
+  assert.equal(sampling.blocks[0].held, 3);
+  assert.ok(Math.abs(sampling.matrixForSite(local)[2] - 3) < 1e-8);
+  assert.equal(sampling.matrixForSite(distant), undefined);
 });

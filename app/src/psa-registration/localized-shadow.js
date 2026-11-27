@@ -2,13 +2,27 @@ import { pageTransform } from '../markerless-registration.js';
 import { toGrayImage } from '../omr-image.js';
 import { createMarkerlessProfile } from '../profile-authoring.js';
 import { readProfileSheet } from '../profile-omr.js';
-import { compareMcPrint, enrollMcPrint, validMcPrint } from './mc-same-print.js';
-import { classifyScopeEvidence, corroboratedExcludedRows, observeScopeRows, validateExcludedRows } from './scope-shadow.js';
+import { compareMcPrint, enrollAdaptiveMcPrint, validAdaptiveMcPrint, validMcPrint } from './mc-same-print.js';
+import { shadowSampling } from './independent-sampling.js';
+import { compareFootprintInventory, discoverResidualFootprints, validFootprintInventory } from './reference-footprints.js';
+import { classifyScopeEvidence, corroboratedExcludedRows, matches, observeScopeRows, validateExcludedRows } from './scope-shadow.js';
 
 const format = 'talus-localized-registration-shadow';
-const version = 1;
+const version = 2;
 const binding = profile => JSON.stringify([profile.id, profile.revision, profile.page, profile.components,
   profile.scope, profile.mcCompleteness, profile.exclusions]);
+
+function unclassifiedRows(profile, knownRows, rows) {
+  const classified = [...profile.components.filter(block => block.kind === 'mc').flatMap(block => block.items), ...knownRows];
+  return rows.filter(row => !classified.some(other => matches(other, row))).map(({ id, choices }) => ({ id, choices }));
+}
+
+function footprintObservation(gray, matrix, profile, knownRows) {
+  const { rings = [], ...lanes } = observeScopeRows(gray, matrix, profile, knownRows, { includeRings: true });
+  const residual = discoverResidualFootprints(gray, matrix, { ...lanes, rings });
+  const rows = [...(lanes.rows ?? []), ...residual.rows];
+  return { lanes, rings, residual, rows };
+}
 
 export function enrollLocalizedShadow(blankImage, profile, pageToSource, { confirmedExcludedRows = [] } = {}) {
   const validated = createMarkerlessProfile(profile);
@@ -18,13 +32,16 @@ export function enrollLocalizedShadow(blankImage, profile, pageToSource, { confi
   }
   const gray = toGrayImage(blankImage);
   const knownRows = confirmedExcludedRows.map(({ id, choices }) => ({ id, choices: choices.map(({ x, y, radius }) => ({ x, y, radius })) }));
-  if (knownRows.length) {
-    const blank = observeScopeRows(gray, pageToSource, validated, knownRows);
-    if (blank.status !== 'observed' || !corroboratedExcludedRows(validated, knownRows, blank.rows)) {
-      throw new TypeError('The confirmed rows were not independently localized inside the supplied exclusions on the blank.');
-    }
+  const blank = footprintObservation(gray, pageToSource, validated, knownRows);
+  if (knownRows.length && (blank.lanes.status !== 'observed' ||
+      !corroboratedExcludedRows(validated, knownRows, blank.rows))) {
+    throw new TypeError('The confirmed rows were not independently localized inside the supplied exclusions on the blank.');
   }
-  return { format, version, binding: binding(validated), mcSites: enrollMcPrint(gray, pageToSource, validated), knownRows };
+  return { format, version, binding: binding(validated), mcSites: enrollAdaptiveMcPrint(gray, pageToSource, validated),
+    knownRows, footprintInventory: {
+      status: blank.residual.status === 'observed' && !blank.residual.ambiguous.length ? 'observed' : 'unavailable',
+      rows: unclassifiedRows(validated, knownRows, blank.rows),
+    } };
 }
 
 function coverage(profile, sites) {
@@ -45,21 +62,52 @@ export function evaluateLocalizedShadow(image, profile, { evidence, ...options }
     }
     if (evidence === undefined) return { established, shadow: { status: 'unavailable', reason: 'no-enrollment' } };
     const validated = createMarkerlessProfile(profile);
-    if (evidence?.format !== format || evidence.version !== version || evidence.binding !== binding(validated) ||
-        !validMcPrint(evidence.mcSites, validated)) throw new TypeError('Invalid or stale shadow enrollment.');
+    const legacy = evidence?.version === 1;
+    if (evidence?.format !== format || (!legacy && evidence.version !== version) || evidence.binding !== binding(validated) ||
+        !(legacy ? validMcPrint(evidence.mcSites, validated) : validAdaptiveMcPrint(evidence.mcSites, validated)) ||
+        (!legacy && !validFootprintInventory(evidence.footprintInventory, validated.page))) {
+      throw new TypeError('Invalid or stale shadow enrollment.');
+    }
     validateExcludedRows(evidence.knownRows, validated);
 
     const registration = established.registration;
     const matrix = registration.pageToSource ?? (options.corners ? pageTransform(validated.page, options.corners) : null);
     if (!matrix) return { established, shadow: { status: 'unavailable', reason: 'no-trusted-pose' } };
     const gray = toGrayImage(image);
-    const observed = observeScopeRows(gray, matrix, validated, evidence.knownRows);
-    const structure = observed.status === 'observed'
-      ? { ...observed, ...classifyScopeEvidence(validated, evidence.knownRows, observed.rows) } : observed;
-    const sites = established.status === 'read' ? compareMcPrint(gray, registration, evidence.mcSites) : [];
+    const observed = legacy ? observeScopeRows(gray, matrix, validated, evidence.knownRows) : null;
+    const footprints = legacy ? null : footprintObservation(gray, matrix, validated, evidence.knownRows);
+    const lanes = observed ?? footprints.lanes;
+    const rows = observed?.rows ?? footprints?.rows;
+    const structure = lanes.status === 'observed'
+      ? { ...lanes, rows, ...classifyScopeEvidence(validated, evidence.knownRows, rows) } : lanes;
+    if (footprints && lanes.status === 'observed') {
+      const inventory = evidence.footprintInventory;
+      const compared = compareFootprintInventory(inventory.rows, unclassifiedRows(validated, evidence.knownRows, rows));
+      Object.assign(structure, {
+        coverage: 'bounded MC lanes and residual 3–8-choice sequences',
+        wholeSheetCompatible: null,
+        unsupported: ['unassociated-two-choice-rows', 'overlapping-or-closely-spaced-rows', 'cropped-or-unresolved-outlines'],
+        ambiguous: footprints.residual.ambiguous,
+        residual: { status: footprints.residual.status, reason: footprints.residual.reason, rows: footprints.residual.rows.length },
+        inventory: { status: inventory.status === 'observed' && footprints.residual.status === 'observed'
+          ? 'compared' : 'incomplete', ...compared },
+      });
+      if (structure.status === 'geometry-consistent' &&
+          (structure.ambiguous.length || compared.ambiguous.length || compared.missing.length ||
+            structure.inventory.status === 'incomplete')) {
+        structure.status = 'review';
+        structure.reason = 'incomplete-or-ambiguous-structural-evidence';
+      }
+    }
+    const uncorrectedSites = established.status === 'read' ? compareMcPrint(gray, registration, evidence.mcSites) : [];
+    const sampling = !legacy && established.status === 'read'
+      ? shadowSampling(validated, registration, footprints.rings, evidence.mcSites) : null;
+    const sites = sampling?.blocks.some(block => block.correctedSites)
+      ? compareMcPrint(gray, registration, evidence.mcSites, sampling.matrixForSite) : uncorrectedSites;
     return { established, shadow: { status: 'evaluated', structure, mc: {
       status: established.status === 'read' ? 'sampled' : 'established-withheld',
-      coverage: coverage(validated, evidence.mcSites), sites, semanticAssurance: false,
+      coverage: coverage(validated, evidence.mcSites), sites, uncorrectedSites,
+      sampling: sampling ? sampling.blocks : [], semanticAssurance: false,
     } } };
   } catch {
     return { established, shadow: { status: 'unavailable', reason: 'invalid-evidence-or-shadow-failure' } };

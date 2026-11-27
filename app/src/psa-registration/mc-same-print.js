@@ -1,6 +1,7 @@
 import { grayAt } from '../omr-image.js';
 import { project } from '../projective.js';
 import { enrollSemanticEvidence, possibleSites } from './semantic.js';
+import { locateAdaptiveMcSites, plausibleAdaptiveMcSites } from './adaptive-mc-sites.js';
 
 // Frozen REG-R1 MC header operating point. Number results use the same
 // exploratory point and are reported separately from the header validation.
@@ -68,14 +69,46 @@ function correlation(a, b) {
   return aa && bb ? Math.max(-1, Math.min(1, ab / Math.sqrt(aa * bb))) : 0;
 }
 
+export function createMcPrintReference(gray, matrix, site) {
+  if (!site || !Object.hasOwn(shape, site.kind)) return null;
+  const reference = patch(sampler(gray, matrix), site);
+  const pixelsPerPoint = resolution(matrix, site);
+  return reference && Math.max(...reference) > 31 && pixelsPerPoint * 6.7 >= 5
+    ? { ...site, pixelsPerPoint, reference } : null;
+}
+
 export function enrollMcPrint(gray, matrix, profile) {
-  const sample = sampler(gray, matrix);
   const mcProfile = { ...profile, components: profile.components.filter(block => block.kind === 'mc') };
-  return enrollSemanticEvidence(mcProfile, sample).flatMap(({ variants, ...site }) => {
-    const reference = patch(sample, site);
-    const pixelsPerPoint = resolution(matrix, site);
-    return reference && Math.max(...reference) > 31 && pixelsPerPoint * 6.7 >= 5
-      ? [{ ...site, pixelsPerPoint, reference }] : [];
+  return enrollSemanticEvidence(mcProfile, sampler(gray, matrix)).flatMap(({ variants, ...site }) => {
+    const reference = createMcPrintReference(gray, matrix, site);
+    return reference ? [reference] : [];
+  });
+}
+
+export function enrollAdaptiveMcPrint(gray, matrix, profile) {
+  const adaptive = locateAdaptiveMcSites(gray, matrix, profile).map(site => createMcPrintReference(gray, matrix, site)).filter(Boolean);
+  const blocksWithHeaders = new Set(adaptive.filter(site => site.kind === 'header').map(site => site.block));
+  // Keep the previously observable header group if the wider locator cannot
+  // establish a coherent group. Never assemble one header from both methods.
+  const fallback = enrollMcPrint(gray, matrix, profile).filter(site =>
+    site.kind === 'header' && !blocksWithHeaders.has(site.block))
+    .map(site => ({ ...site, locator: 'established-shadow-window' }));
+  return [...adaptive, ...fallback];
+}
+
+export function validAdaptiveMcPrint(sites, profile) {
+  if (!Array.isArray(sites)) return false;
+  const fallback = sites.filter(site => site?.locator === 'established-shadow-window');
+  const adaptive = sites.filter(site => site?.locator === undefined);
+  const adaptiveHeaders = new Set(adaptive.filter(site => site?.kind === 'header').map(site => site.block));
+  if (fallback.length + adaptive.length !== sites.length ||
+      fallback.some(site => site.kind !== 'header' || adaptiveHeaders.has(site.block)) ||
+      !validMcPrint(fallback, profile) || !plausibleAdaptiveMcSites(adaptive, profile)) return false;
+  return adaptive.every(site => {
+    const window = shape[site.kind];
+    return window && Number.isFinite(site.pixelsPerPoint) && site.pixelsPerPoint >= 5 / 6.7 &&
+      Array.isArray(site.reference) && site.reference.length === window.rows * window.columns &&
+      site.reference.every(value => Number.isInteger(value) && value >= 0 && value <= 255);
   });
 }
 
@@ -98,9 +131,9 @@ export function validMcPrint(sites, profile) {
   });
 }
 
-export function compareMcPrint(gray, registration, sites) {
+export function compareMcPrint(gray, registration, sites, matrixForSite) {
   return sites.map(({ reference, pixelsPerPoint, ...site }) => {
-    const matrix = registration.refinedBlocks?.find(block => block.id === site.block)?.matrix ?? registration.pageToSource;
+    const matrix = matrixForSite?.(site) ?? registration.refinedBlocks?.find(block => block.id === site.block)?.matrix ?? registration.pageToSource;
     const sample = sampler(gray, matrix);
     const effectivePixels = resolution(matrix, site) * 6.7;
     const observed = patch(sample, site);
