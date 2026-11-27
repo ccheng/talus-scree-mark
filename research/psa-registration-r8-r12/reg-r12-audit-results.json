@@ -1,0 +1,95 @@
+{
+  "scope": "Audit of saved result records only; not a fresh execution of research harnesses, Node suite, independent fixture validation or product regression",
+  "checks": 20,
+  "passed": 20,
+  "tests": [
+    {
+      "name": "R8/R9 case count",
+      "pass": true
+    },
+    {
+      "name": "R8/R9 calibration split",
+      "pass": true
+    },
+    {
+      "name": "R8B case count",
+      "pass": true
+    },
+    {
+      "name": "R8B calibration split",
+      "pass": true
+    },
+    {
+      "name": "R9B case count",
+      "pass": true
+    },
+    {
+      "name": "R9B calibration split",
+      "pass": true
+    },
+    {
+      "name": "R8 fixed-window baseline",
+      "pass": true
+    },
+    {
+      "name": "R8B bank alphabet restriction",
+      "pass": true
+    },
+    {
+      "name": "R8B unchanged identity flags",
+      "pass": true
+    },
+    {
+      "name": "R9B equal-pixel controls",
+      "pass": true
+    },
+    {
+      "name": "R10 counts",
+      "pass": true
+    },
+    {
+      "name": "R10B counts",
+      "pass": true
+    },
+    {
+      "name": "R10B measured ring coverage",
+      "pass": true
+    },
+    {
+      "name": "R10C context does not certify identity",
+      "pass": true
+    },
+    {
+      "name": "R11 enrollment counts",
+      "pass": true
+    },
+    {
+      "name": "R11 conservative enrollment",
+      "pass": true
+    },
+    {
+      "name": "R11 pose first pilot",
+      "pass": true
+    },
+    {
+      "name": "R11B valid auto coverage",
+      "pass": true
+    },
+    {
+      "name": "R11B all structural/hard-veto negatives withheld",
+      "pass": true
+    },
+    {
+      "name": "R11B no ambiguous proposal promoted",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "glyphComparisons": 1620,
+    "idealizedEquivalencePairs": 9,
+    "structuralScenarios": 92,
+    "enrollmentScenarios": 24,
+    "poseScenarioRuns": 19,
+    "distinctPoseCases": 11
+  }
+}
