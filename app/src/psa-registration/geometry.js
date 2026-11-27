@@ -99,7 +99,7 @@ function match(anchor, sample) {
     let sum = 0, square = 0, dot = 0, index = 0;
     for (let row = 0; row < patchWidth; row++) for (let column = 0; column < patchWidth; column++) {
       const value = scan[(row + dy + searchRadius) * side + column + dx + searchRadius];
-      sum += value; square += value ** 2; dot += centered[index++];
+      sum += value; square += value ** 2; dot += centered[index++] * value;
     }
     const variance = square - sum ** 2 / patchArea;
     scores.push({ dx, dy, score: variance > 0 ? dot / Math.sqrt(variance * energy) : -1 });
