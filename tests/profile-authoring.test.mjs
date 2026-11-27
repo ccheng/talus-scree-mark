@@ -351,3 +351,51 @@ test('independent sampling uses held-out rings and leaves distant glyphs on the 
   assert.ok(Math.abs(sampling.matrixForSite(local)[2] - 3) < 1e-8);
   assert.equal(sampling.matrixForSite(distant), undefined);
 });
+
+test('off-lane pairs remain tentative and a stable inventory pair adds no inspection region', async () => {
+  const { enrollLocalizedShadow, evaluateLocalizedShadow } = await import('../app/src/psa-registration/localized-shadow.js');
+  const profile = create({ scope: 'mc-only', mcCompleteness: 'partial' });
+  const blank = syntheticImage();
+  const scan = syntheticImage({ distantChoices: 2 });
+  const batch = authorized(profile);
+  const before = enrollLocalizedShadow(blank, profile, matrix);
+  const novel = evaluateLocalizedShadow(scan, profile, { corners, batch, evidence: before });
+  assert.deepEqual(novel.established, readProfileSheet(scan, profile, { corners, batch }));
+  assert.equal(novel.shadow.structure.wholeSheetCompatible, null);
+  assert.equal(novel.shadow.structure.rows.length, 3);
+  assert.equal(novel.shadow.structure.tentativePairs.length, 1);
+  assert.equal(novel.shadow.structure.pairInventory.novel.length, 1);
+  assert.equal(novel.shadow.intervention.action, 'inspect-if-needed');
+  assert.deepEqual(novel.shadow.intervention.regions.map(region => region.category), ['possible-row']);
+
+  const enrolled = JSON.parse(JSON.stringify(enrollLocalizedShadow(scan, profile, matrix)));
+  const stable = evaluateLocalizedShadow(scan, profile, { corners, batch, evidence: enrolled });
+  assert.equal(stable.shadow.structure.pairInventory.previouslyObserved.length, 1);
+  assert.deepEqual(stable.shadow.structure.ignored, []);
+  assert.equal(stable.shadow.intervention.action, 'follow-established');
+  assert.equal(stable.shadow.structure.wholeSheetCompatible, null);
+});
+
+test('competing same-score footprints keep the association unresolved', async () => {
+  const { arbitrateFootprints } = await import('../app/src/psa-registration/footprint-arbitration.js');
+  const points = [0, 1, 2, 3].map(i => ({ x: 20 * i, y: 60, radius: 4 }));
+  const result = arbitrateFootprints([[0, 1, 2], [1, 2, 3]], points);
+  assert.deepEqual(result.rows, []);
+  assert.deepEqual(result.tentative, []);
+  assert.equal(result.unresolved[0].reason, 'near-tie');
+});
+
+test('repeat ambiguous print stays visible in evidence but cannot bury a novel pair prompt', async () => {
+  const { teacherIntervention } = await import('../app/src/psa-registration/teacher-intervention.js');
+  const footprint = (id, y) => ({ id, choices: [100, 120].map(x => ({ x, y, radius: 4 })) });
+  const shadow = { structure: {
+    ambiguous: [footprint('stable-footer', 720)],
+    ambiguityInventory: { previouslyObserved: [{ observed: 'stable-footer', reference: 'blank-footer' }] },
+    tentativePairs: [footprint('new-pair', 350)],
+    pairInventory: { status: 'incomplete', novel: ['new-pair'] },
+  } };
+  const hint = teacherIntervention({ status: 'read', items: [] }, shadow, create());
+  assert.deepEqual(hint.regions.map(region => region.category), ['possible-row']);
+  assert.equal(hint.pairReferenceIncomplete, true);
+  assert.equal(hint.diagnosticOnly, true);
+});

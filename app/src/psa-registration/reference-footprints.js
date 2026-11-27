@@ -1,4 +1,5 @@
 import { circularWitness, matches } from './scope-shadow.js';
+import { arbitrateFootprints } from './footprint-arbitration.js';
 
 const maxWitnesses = 220;
 const maxHypotheses = 1200;
@@ -7,7 +8,7 @@ const choice = ({ x, y, radius }) => ({ x, y, radius });
 const cellSize = 3;
 const key = (x, y) => Math.floor(x / cellSize) + '/' + Math.floor(y / cellSize);
 
-export function discoverResidualFootprints(gray, matrix, observed) {
+export function discoverResidualFootprints(gray, matrix, observed, { arbitrate = false } = {}) {
   if (observed.status !== 'observed') return { status: 'unavailable', reason: observed.reason, rows: [], ambiguous: [] };
   const used = observed.rows.flatMap(row => row.choices);
   const points = observed.rings.filter(point => !used.some(other => distance(point, other) <= 1.5) &&
@@ -43,7 +44,7 @@ export function discoverResidualFootprints(gray, matrix, observed) {
       if (found === null || indexes.includes(found)) break;
       indexes.push(found);
     }
-    if (indexes.length < 3) continue;
+    if (indexes.length < 3 && !arbitrate) continue;
     const identity = [...indexes].sort((a, b) => a - b).join(',');
     hypotheses.set(identity, indexes);
     if (hypotheses.size > maxHypotheses) return { status: 'unavailable', reason: 'residual-hypothesis-limit', rows: [], ambiguous: [] };
@@ -52,8 +53,17 @@ export function discoverResidualFootprints(gray, matrix, observed) {
   const maximal = all.filter(row => !all.some(other => other.length > row.length && row.every(index => other.includes(index))));
   const reference = (row, index) => ({
     id: 'residual-' + (index + 1), choices: row.map(index => choice(points[index])),
-    evidence: row.length === 3 ? 'tentative-three-ring-sequence' : 'full-ring-sequence',
+    evidence: row.length === 2 ? 'tentative-pair'
+      : row.length === 3 ? 'tentative-three-ring-sequence' : 'full-ring-sequence',
   });
+  if (arbitrate) {
+    const grouped = arbitrateFootprints(maximal, points);
+    const ids = new Map(maximal.map((row, index) => [row, index]));
+    const footprint = row => reference(row, ids.get(row));
+    return { status: 'observed', rows: grouped.rows.map(footprint), tentative: grouped.tentative.map(footprint),
+      ambiguous: grouped.unresolved.flatMap(group => group.rows.map(row => ({ ...footprint(row), reason: group.reason }))),
+      witnessCount: points.length };
+  }
   const rows = [], ambiguous = [];
   for (const [index, row] of maximal.entries()) {
     const destination = maximal.some(other => other !== row && row.some(i => other.includes(i))) ? ambiguous : rows;
