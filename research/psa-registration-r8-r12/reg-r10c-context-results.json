@@ -1,0 +1,349 @@
+{
+  "summary": {
+    "scenarios": 24,
+    "pairRows": 9,
+    "truePairObserved": 9,
+    "trueContext": 3,
+    "falseContext": 6,
+    "stableRecognized": 3,
+    "movedDetected": 3
+  },
+  "records": [
+    {
+      "case": "new-pair-with-label",
+      "mode": "clear",
+      "trueRow": true,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": false,
+          "status": "novel-pair-with-context",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-pair-without-label",
+      "mode": "clear",
+      "trueRow": true,
+      "observations": [
+        {
+          "prior": false,
+          "left": false,
+          "right": false,
+          "status": "novel-pair-unresolved",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-text-like-pair",
+      "mode": "clear",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": false,
+          "left": false,
+          "right": false,
+          "status": "novel-pair-unresolved",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-number-like-decorative-pair",
+      "mode": "clear",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": false,
+          "status": "novel-pair-with-context",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "stable-unclassified-pair",
+      "mode": "clear",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": true,
+          "left": true,
+          "right": false,
+          "status": "previously-observed-unclassified",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "moved-unclassified-pair",
+      "mode": "clear",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": false,
+          "status": "novel-pair-with-context",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 1
+    },
+    {
+      "case": "new-pair-two-sided-labels",
+      "mode": "clear",
+      "trueRow": true,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": true,
+          "status": "novel-pair-unresolved",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "empty",
+      "mode": "clear",
+      "trueRow": false,
+      "observations": [],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-pair-with-label",
+      "mode": "faint",
+      "trueRow": true,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": false,
+          "status": "novel-pair-with-context",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-pair-without-label",
+      "mode": "faint",
+      "trueRow": true,
+      "observations": [
+        {
+          "prior": false,
+          "left": false,
+          "right": false,
+          "status": "novel-pair-unresolved",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-text-like-pair",
+      "mode": "faint",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": false,
+          "left": false,
+          "right": false,
+          "status": "novel-pair-unresolved",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-number-like-decorative-pair",
+      "mode": "faint",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": false,
+          "status": "novel-pair-with-context",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "stable-unclassified-pair",
+      "mode": "faint",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": true,
+          "left": true,
+          "right": false,
+          "status": "previously-observed-unclassified",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "moved-unclassified-pair",
+      "mode": "faint",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": false,
+          "status": "novel-pair-with-context",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 1
+    },
+    {
+      "case": "new-pair-two-sided-labels",
+      "mode": "faint",
+      "trueRow": true,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": true,
+          "status": "novel-pair-unresolved",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "empty",
+      "mode": "faint",
+      "trueRow": false,
+      "observations": [],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-pair-with-label",
+      "mode": "low",
+      "trueRow": true,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": false,
+          "status": "novel-pair-with-context",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-pair-without-label",
+      "mode": "low",
+      "trueRow": true,
+      "observations": [
+        {
+          "prior": false,
+          "left": false,
+          "right": false,
+          "status": "novel-pair-unresolved",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-text-like-pair",
+      "mode": "low",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": false,
+          "left": false,
+          "right": false,
+          "status": "novel-pair-unresolved",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "new-number-like-decorative-pair",
+      "mode": "low",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": false,
+          "status": "novel-pair-with-context",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "stable-unclassified-pair",
+      "mode": "low",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": true,
+          "left": true,
+          "right": false,
+          "status": "previously-observed-unclassified",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "moved-unclassified-pair",
+      "mode": "low",
+      "trueRow": false,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": false,
+          "status": "novel-pair-with-context",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 1
+    },
+    {
+      "case": "new-pair-two-sided-labels",
+      "mode": "low",
+      "trueRow": true,
+      "observations": [
+        {
+          "prior": false,
+          "left": true,
+          "right": true,
+          "status": "novel-pair-unresolved",
+          "semanticAssurance": false
+        }
+      ],
+      "missingPrior": 0
+    },
+    {
+      "case": "empty",
+      "mode": "low",
+      "trueRow": false,
+      "observations": [],
+      "missingPrior": 0
+    }
+  ]
+}
