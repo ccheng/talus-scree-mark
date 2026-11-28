@@ -1,0 +1,83 @@
+{
+  "checks": [
+    {
+      "name": "family partitions disjoint",
+      "pass": true
+    },
+    {
+      "name": "864 observations",
+      "pass": true
+    },
+    {
+      "name": "frozen coefficients reproducible",
+      "pass": true
+    },
+    {
+      "name": "calibration-only threshold exact",
+      "pass": true
+    },
+    {
+      "name": "all saved calibration/evaluation scores exact",
+      "pass": true
+    },
+    {
+      "name": "candidate labels consistent",
+      "pass": true
+    },
+    {
+      "name": "no multiple candidates",
+      "pass": true
+    },
+    {
+      "name": "calibration accounting exact",
+      "pass": true
+    },
+    {
+      "name": "evaluation accounting exact",
+      "pass": true
+    },
+    {
+      "name": "valid matching candidate",
+      "pass": true
+    },
+    {
+      "name": "conflicting definitive symbols withheld",
+      "pass": true
+    },
+    {
+      "name": "multiple established withheld",
+      "pass": true
+    },
+    {
+      "name": "competing CPAS withheld",
+      "pass": true
+    },
+    {
+      "name": "missing reference evidence withheld",
+      "pass": true
+    },
+    {
+      "name": "unobservable Established bubble withheld",
+      "pass": true
+    },
+    {
+      "name": "malformed model withheld",
+      "pass": true
+    },
+    {
+      "name": "invalid threshold withheld",
+      "pass": true
+    }
+  ],
+  "violation": [
+    {
+      "family": 14,
+      "capture": 0,
+      "id": "MC15",
+      "mode": "ghost",
+      "candidate": "B",
+      "score": 0.8037004021381037
+    }
+  ],
+  "limits": "Audit of frozen records and isolated native guard logic; not independent or full application verification."
+}
