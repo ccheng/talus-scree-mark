@@ -1,0 +1,5382 @@
+{
+  "summaries": {
+    "clean": {
+      "n": 12,
+      "proposed": 0,
+      "before": 0,
+      "after": 0,
+      "methods": {
+        "baseline/est": {
+          "correct": 7,
+          "wrong": 0,
+          "violations": 3,
+          "withheld": 2
+        },
+        "baseline/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        },
+        "refined/est": {
+          "correct": 7,
+          "wrong": 0,
+          "violations": 3,
+          "withheld": 2
+        },
+        "refined/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        },
+        "oracle/est": {
+          "correct": 7,
+          "wrong": 0,
+          "violations": 3,
+          "withheld": 2
+        },
+        "oracle/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        }
+      }
+    },
+    "shift-small": {
+      "n": 12,
+      "proposed": 12,
+      "before": 0.6997142273814357,
+      "after": 0.08156665477122392,
+      "methods": {
+        "baseline/est": {
+          "correct": 6,
+          "wrong": 0,
+          "violations": 3,
+          "withheld": 3
+        },
+        "baseline/cpas": {
+          "correct": 4,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 8
+        },
+        "refined/est": {
+          "correct": 8,
+          "wrong": 0,
+          "violations": 2,
+          "withheld": 2
+        },
+        "refined/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        },
+        "oracle/est": {
+          "correct": 8,
+          "wrong": 0,
+          "violations": 2,
+          "withheld": 2
+        },
+        "oracle/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        }
+      }
+    },
+    "shift-large": {
+      "n": 12,
+      "proposed": 12,
+      "before": 1.3994284547628715,
+      "after": 0.1254678330445013,
+      "methods": {
+        "baseline/est": {
+          "correct": 3,
+          "wrong": 0,
+          "violations": 1,
+          "withheld": 8
+        },
+        "baseline/cpas": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "refined/est": {
+          "correct": 6,
+          "wrong": 0,
+          "violations": 3,
+          "withheld": 3
+        },
+        "refined/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        },
+        "oracle/est": {
+          "correct": 6,
+          "wrong": 0,
+          "violations": 3,
+          "withheld": 3
+        },
+        "oracle/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        }
+      }
+    },
+    "slot-drift": {
+      "n": 12,
+      "proposed": 12,
+      "before": 1.1926860441876563,
+      "after": 0.09279557471614706,
+      "methods": {
+        "baseline/est": {
+          "correct": 4,
+          "wrong": 0,
+          "violations": 3,
+          "withheld": 5
+        },
+        "baseline/cpas": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "refined/est": {
+          "correct": 5,
+          "wrong": 0,
+          "violations": 2,
+          "withheld": 5
+        },
+        "refined/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        },
+        "oracle/est": {
+          "correct": 6,
+          "wrong": 0,
+          "violations": 2,
+          "withheld": 4
+        },
+        "oracle/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        }
+      }
+    },
+    "split-shift": {
+      "n": 12,
+      "proposed": 0,
+      "before": 1,
+      "after": 1,
+      "methods": {
+        "baseline/est": {
+          "correct": 7,
+          "wrong": 1,
+          "violations": 3,
+          "withheld": 1
+        },
+        "baseline/cpas": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "refined/est": {
+          "correct": 7,
+          "wrong": 1,
+          "violations": 3,
+          "withheld": 1
+        },
+        "refined/cpas": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        }
+      }
+    },
+    "faint-outline": {
+      "n": 12,
+      "proposed": 8,
+      "before": 1,
+      "after": 0.40424884748028944,
+      "methods": {
+        "baseline/est": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "baseline/cpas": {
+          "correct": 3,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 9
+        },
+        "refined/est": {
+          "correct": 3,
+          "wrong": 0,
+          "violations": 1,
+          "withheld": 8
+        },
+        "refined/cpas": {
+          "correct": 6,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 6
+        },
+        "oracle/est": {
+          "correct": 3,
+          "wrong": 0,
+          "violations": 1,
+          "withheld": 8
+        },
+        "oracle/cpas": {
+          "correct": 6,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 6
+        }
+      }
+    },
+    "missing-rings": {
+      "n": 12,
+      "proposed": 0,
+      "before": 1,
+      "after": 1,
+      "methods": {
+        "baseline/est": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "baseline/cpas": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "refined/est": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "refined/cpas": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "oracle/est": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "oracle/cpas": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        }
+      }
+    },
+    "outside-bound": {
+      "n": 12,
+      "proposed": 0,
+      "before": 2.830194339616981,
+      "after": 2.830194339616981,
+      "methods": {
+        "baseline/est": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "baseline/cpas": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "refined/est": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "refined/cpas": {
+          "correct": 0,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 12
+        },
+        "oracle/est": {
+          "correct": 4,
+          "wrong": 0,
+          "violations": 3,
+          "withheld": 5
+        },
+        "oracle/cpas": {
+          "correct": 9,
+          "wrong": 0,
+          "violations": 0,
+          "withheld": 3
+        }
+      }
+    },
+    "rejected": {
+      "n": 12,
+      "proposed": 0,
+      "before": 1,
+      "after": 1,
+      "methods": {}
+    }
+  },
+  "rows": [
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "clean",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "clean",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "clean",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "clean",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "shift-small",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.07589466384404102,
+      "refine": "proposed",
+      "dx": 0.5760000000000001,
+      "dy": -0.28800000000000003,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "shift-small",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.07589466384404102,
+      "refine": "proposed",
+      "dx": 0.5760000000000001,
+      "dy": -0.28800000000000003,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "shift-small",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.07589466384404102,
+      "refine": "proposed",
+      "dx": 0.5760000000000001,
+      "dy": -0.28800000000000003,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "shift-small",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.07589466384404102,
+      "refine": "proposed",
+      "dx": 0.5760000000000001,
+      "dy": -0.28800000000000003,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "shift-large",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.15178932768808218,
+      "refine": "proposed",
+      "dx": 1.1520000000000001,
+      "dy": -0.864,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "shift-large",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.15178932768808204,
+      "refine": "proposed",
+      "dx": 1.1520000000000001,
+      "dy": -0.5760000000000001,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "shift-large",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.04799999999999982,
+      "refine": "proposed",
+      "dx": 1.1520000000000001,
+      "dy": -0.7200000000000001,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "shift-large",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.04799999999999982,
+      "refine": "proposed",
+      "dx": 1.1520000000000001,
+      "dy": -0.7200000000000001,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "slot-drift",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.15482893786369525,
+      "refine": "proposed",
+      "dx": -0.864,
+      "dy": -0.5760000000000001,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "slot-drift",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.15482893786369525,
+      "refine": "proposed",
+      "dx": 0.864,
+      "dy": -0.5760000000000001,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "slot-drift",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.15482893786369525,
+      "refine": "proposed",
+      "dx": -0.864,
+      "dy": 0.5760000000000001,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "slot-drift",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.07443117626371355,
+      "refine": "proposed",
+      "dx": 1.0080000000000002,
+      "dy": 0.5760000000000001,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "split-shift",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "split-shift",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "split-shift",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "split-shift",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "faint-outline",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "faint-outline",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "faint-outline",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "faint-outline",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "missing-rings",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "missing-rings",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "missing-rings",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "missing-rings",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "outside-bound",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "outside-bound",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "outside-bound",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "outside-bound",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "rejected",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "rejected",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "rejected",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 0,
+      "scale": 1.5,
+      "scenario": "rejected",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "clean",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "clean",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "clean",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "clean",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "shift-small",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.10430723848324233,
+      "refine": "proposed",
+      "dx": 0.544,
+      "dy": -0.272,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "shift-small",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.10430723848324233,
+      "refine": "proposed",
+      "dx": 0.544,
+      "dy": -0.272,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "shift-small",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.10430723848324233,
+      "refine": "proposed",
+      "dx": 0.544,
+      "dy": -0.272,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "shift-small",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.10430723848324233,
+      "refine": "proposed",
+      "dx": 0.544,
+      "dy": -0.272,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "shift-large",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.14751271131668608,
+      "refine": "proposed",
+      "dx": 1.088,
+      "dy": -0.816,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "shift-large",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.14751271131668608,
+      "refine": "proposed",
+      "dx": 1.088,
+      "dy": -0.816,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "shift-large",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.14751271131668608,
+      "refine": "proposed",
+      "dx": 1.088,
+      "dy": -0.816,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "shift-large",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.14751271131668608,
+      "refine": "proposed",
+      "dx": 1.088,
+      "dy": -0.816,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "slot-drift",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.09297311439335576,
+      "refine": "proposed",
+      "dx": -1.088,
+      "dy": -0.68,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "slot-drift",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.13776792079435624,
+      "refine": "proposed",
+      "dx": 1.088,
+      "dy": -0.544,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "slot-drift",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.13776792079435624,
+      "refine": "proposed",
+      "dx": -1.088,
+      "dy": 0.544,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "slot-drift",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.13776792079435624,
+      "refine": "proposed",
+      "dx": 1.088,
+      "dy": 0.544,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "split-shift",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "split-shift",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "split-shift",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "split-shift",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "faint-outline",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 0.05824087911424406,
+      "refine": "proposed",
+      "dx": 0.816,
+      "dy": -0.544,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "multiple"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "faint-outline",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 0.05824087911424406,
+      "refine": "proposed",
+      "dx": 0.816,
+      "dy": -0.544,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "faint-outline",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 0.05824087911424406,
+      "refine": "proposed",
+      "dx": 0.816,
+      "dy": -0.544,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "faint-outline",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 0.05824087911424406,
+      "refine": "proposed",
+      "dx": 0.816,
+      "dy": -0.544,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "multiple"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "missing-rings",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "missing-rings",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "missing-rings",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "missing-rings",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "outside-bound",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "outside-bound",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "outside-bound",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "outside-bound",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "rejected",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "rejected",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "rejected",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 1,
+      "scale": 2.4,
+      "scenario": "rejected",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "clean",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "clean",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "clean",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "clean",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 0,
+      "afterError": 0,
+      "refine": "no-supported-change",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "shift-small",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.06449806198638837,
+      "refine": "proposed",
+      "dx": 0.6559999999999999,
+      "dy": -0.32799999999999996,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "shift-small",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.06449806198638837,
+      "refine": "proposed",
+      "dx": 0.6559999999999999,
+      "dy": -0.32799999999999996,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "shift-small",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.06449806198638837,
+      "refine": "proposed",
+      "dx": 0.6559999999999999,
+      "dy": -0.32799999999999996,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "shift-small",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 0.6997142273814358,
+      "afterError": 0.06449806198638837,
+      "refine": "proposed",
+      "dx": 0.6559999999999999,
+      "dy": -0.32799999999999996,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "shift-large",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.12899612397277674,
+      "refine": "proposed",
+      "dx": 1.3119999999999998,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "shift-large",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.12899612397277674,
+      "refine": "proposed",
+      "dx": 1.3119999999999998,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "shift-large",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.12899612397277674,
+      "refine": "proposed",
+      "dx": 1.3119999999999998,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "shift-large",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1.3994284547628717,
+      "afterError": 0.12899612397277674,
+      "refine": "proposed",
+      "dx": 1.3119999999999998,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "slot-drift",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.01708800749063514,
+      "refine": "proposed",
+      "dx": -0.9839999999999999,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "slot-drift",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.01708800749063514,
+      "refine": "proposed",
+      "dx": 0.9839999999999999,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "slot-drift",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.01708800749063514,
+      "refine": "proposed",
+      "dx": -0.9839999999999999,
+      "dy": 0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "slot-drift",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1.1926860441876563,
+      "afterError": 0.01708800749063514,
+      "refine": "proposed",
+      "dx": 0.9839999999999999,
+      "dy": 0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "split-shift",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "split-shift",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "split-shift",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "split-shift",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "faint-outline",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 0.15450566332662377,
+      "refine": "proposed",
+      "dx": 0.6559999999999999,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "faint-outline",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 0.15450566332662377,
+      "refine": "proposed",
+      "dx": 0.6559999999999999,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "faint-outline",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 0.15450566332662377,
+      "refine": "proposed",
+      "dx": 0.6559999999999999,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "faint-outline",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 0.15450566332662377,
+      "refine": "proposed",
+      "dx": 0.6559999999999999,
+      "dy": -0.6559999999999999,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "missing-rings",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "competing"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "missing-rings",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "missing-rings",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "missing-rings",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "outside-bound",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "3",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "outside-bound",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "ambiguous"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": "7",
+            "status": "single"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "outside-bound",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          },
+          "cpas": {
+            "accepted": true,
+            "symbol": null,
+            "status": "blank"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "outside-bound",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 2.830194339616981,
+      "afterError": 2.830194339616981,
+      "refine": "insufficient-consensus",
+      "dx": 0,
+      "dy": 0,
+      "methods": {
+        "baseline": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "refined": {
+          "est": {
+            "accepted": false,
+            "symbol": null,
+            "status": "unreadable"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        },
+        "oracle": {
+          "est": {
+            "accepted": true,
+            "symbol": "8",
+            "status": "single"
+          },
+          "cpas": {
+            "accepted": false,
+            "symbol": null,
+            "status": "incomplete"
+          }
+        }
+      }
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "rejected",
+      "slot": 0,
+      "symbol": "3",
+      "eligible": true,
+      "mode": "dark",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "rejected",
+      "slot": 1,
+      "symbol": "7",
+      "eligible": true,
+      "mode": "light",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "rejected",
+      "slot": 2,
+      "symbol": null,
+      "eligible": true,
+      "mode": "blank",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    },
+    {
+      "family": 2,
+      "scale": 3,
+      "scenario": "rejected",
+      "slot": 3,
+      "symbol": "8",
+      "eligible": false,
+      "mode": "half",
+      "beforeError": 1,
+      "afterError": 1,
+      "refine": "registration-rejected",
+      "dx": 0,
+      "dy": 0,
+      "methods": {}
+    }
+  ],
+  "limitations": "Authored synthetic grid, known true translation, repeated glyphs and generator; no real captures, local projective or nonlinear validation, complete NR response admission, iPhone timing or independent reserve. CPAS literal advisory only. Fits use disjoint ring halves with consensus, not independent validation."
+}
