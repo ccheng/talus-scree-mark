@@ -1,3 +1,4 @@
+import { proposeHandwritingBoxes } from './cpas-recognition/handwriting-boxes.js';
 import { enrollPrintedLandmarks } from './printed-landmarks.js';
 import { pageTransform, proposePageCorners } from './markerless-registration.js';
 import { conflictingResponseIds, createMarkerlessProfile, intersects, manualGrid, proposeGrid, renumberProfileBlock, validBounds } from './profile-authoring.js';
@@ -103,6 +104,13 @@ function rectifiedOnCanvas(canvas, image, matrix, page, virtual = false) {
 
 export function createProfileEditor({ onSave, onClose }) {
   const panel = byId('profile-editor');
+  const cpas = new URLSearchParams(location.search).get('cpas') === 'preview';
+  const enrollment = byId('template-cpas-enrollment');
+  const boxList = byId('template-cpas-boxes');
+  const boxStatus = byId('template-cpas-box-status');
+  enrollment.hidden = !cpas;
+  const boxBinding = () => JSON.stringify([state.matrix, state.blocks, state.exclusions]);
+
   const canvas = byId('profile-canvas');
   const background = document.createElement('canvas');
   const status = byId('editor-status');
@@ -349,6 +357,12 @@ export function createProfileEditor({ onSave, onClose }) {
       }
       for (const writing of diagnostic?.writingBoxes ?? []) {
         box(writing, '#74528d', String(writing.slot));
+      }
+    }
+    if (state.cpasProposals?.binding === boxBinding()) {
+      for (const proposal of state.cpasProposals.items) {
+        const chosen = state.cpasConfirmed.has(proposal.id);
+        for (const [index, bounds] of proposal.boxes.entries()) box(bounds, chosen ? '#287651' : '#74528d', String(index + 1));
       }
     }
     if (state.region) box(state.region, '#245c8e');
@@ -1525,6 +1539,35 @@ export function createProfileEditor({ onSave, onClose }) {
     renderSaveStatus();
   };
   handle('cancel-profile-editor', () => { close(); onClose(); });
+  handle('template-cpas-propose', () => {
+    boxList.replaceChildren();
+    if (!state?.matrix || !state.blocks.some(block => block.kind === 'nr' && state.kept.has(block.id))) {
+      boxStatus.textContent = 'Confirm the page and at least one numerical-response block first.';
+      return;
+    }
+    const draft = { page: page(), components: state.blocks };
+    const result = proposeHandwritingBoxes(toGrayImage(state.image), draft,
+      { status: 'registered', pageToSource: state.matrix });
+    const items = result.items.filter(item => item.status === 'proposed' &&
+      state.blocks.some(block => state.kept.has(block.id) && block.items.some(candidate => candidate.id === item.id)));
+    state.cpasProposals = { binding: boxBinding(), items };
+    state.cpasConfirmed = new Set();
+    boxStatus.textContent = items.length ? 'Check the numbered outlines on the blank. Confirm only boxes that match the writing positions.' :
+      'No reliable writing-box groups found. The optical comparison remains available.';
+    for (const item of items) {
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) state.cpasConfirmed.add(item.id);
+        else state.cpasConfirmed.delete(item.id);
+        paint();
+      });
+      label.append(checkbox, ` Use handwriting boxes for ${item.id}`);
+      boxList.append(label);
+    }
+    paint();
+  });
   handle('enroll-profile', async () => {
     const blocked = saveBlocker();
     if (blocked) return say(blocked);
@@ -1541,7 +1584,14 @@ export function createProfileEditor({ onSave, onClose }) {
       const draft = state;
       draft.saving = true;
       saveTemplate.disabled = true;
-      try { await onSave(profile); }
+      const acceptedBoxes = cpas && state.cpasProposals?.binding === boxBinding()
+        ? state.cpasProposals.items.filter(item => state.cpasConfirmed.has(item.id)).flatMap(item => item.boxes) : [];
+      const evidence = cpas ? {
+        reference: byId('template-cpas-blank').checked ? { image: state.image, matrix: state.matrix } : undefined,
+        boxes: Object.fromEntries(acceptedBoxes.map(({ id, x, y, width, height }) =>
+          [id, { x: x + .35, y, width: width - .7, height }])),
+      } : undefined;
+      try { await onSave(profile, evidence); }
       finally {
         draft.saving = false;
         if (state === draft) renderSaveStatus();
@@ -1648,6 +1698,9 @@ export function createProfileEditor({ onSave, onClose }) {
       kept: new Set(prior?.components.map(({ id }) => id)),
       drafts: new Map(), discoveryIssues: [], discoveryDiagnostics: [], conflictRegions: [],
     };
+    boxList.replaceChildren();
+    boxStatus.textContent = '';
+    byId('template-cpas-blank').checked = true;
     clearMcFit();
     byId('nr-discovery-engine').value = 'established';
     byId('mc-expected-count').value = prior?.mcExpectedCount ?? '';

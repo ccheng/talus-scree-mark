@@ -1,3 +1,4 @@
+import { compactReferenceFormat } from './cpas-recognition/compact-reference.js';
 import { blankReference, referenceKey } from './cpas-recognition/reference-store.js';
 import { showComparison } from './cpas-recognition/comparison-view.js';
 import { importWorkingImage } from './image.js';
@@ -136,7 +137,8 @@ export function createRecognitionView({ button, status, results, table, overlay,
 
   function startReference(key) {
     referenceJob?.controller.abort();
-    const job = { key, controller: new AbortController(), value: undefined };
+    const job = { key, controller: new AbortController(), value: undefined,
+      boxes: referenceJob?.key === key ? referenceJob.boxes : undefined };
     referenceJob = job;
     return job;
   }
@@ -152,12 +154,14 @@ export function createRecognitionView({ button, status, results, table, overlay,
     removeBlank.disabled = true;
     referenceStatus.textContent = key ? 'Checking for a saved blank…' : 'Select a template profile first.';
     if (!key) return;
+    job.boxes = blankReference('handwriting:' + key, 'get').catch(() => undefined);
     job.value = blankReference(key, 'get').then(async file => {
       if (referenceJob !== job) return undefined;
-      const image = file ? await prepareReference(job, file) : undefined;
+      const compact = file?.format === compactReferenceFormat;
+      const image = compact ? file : file ? await prepareReference(job, file) : undefined;
       if (referenceJob !== job) return undefined;
       removeBlank.disabled = !image;
-      referenceStatus.textContent = image ? `Saved blank ready for ${profile.name}, revision ${profile.revision}.` :
+      referenceStatus.textContent = image ? `${compact ? 'Compact samples' : 'Saved blank'} ready for ${profile.name}, revision ${profile.revision}.` :
         'No blank saved for this revision. Optical observations are still available.';
       return image;
     }).catch(() => {
@@ -181,8 +185,11 @@ export function createRecognitionView({ button, status, results, table, overlay,
       const mc = cpas.items.filter(item => item.kind === 'mc');
       const accepted = mc.filter(item => item.disposition === 'would-accept').length;
       const blankStatus = cpas.referenceRejected ? 'Saved blank did not pass the reference checks. Showing observations without it.' :
-        cpas.reference === 'conditioned' ? 'Compared with the saved blank.' : 'Showing observations without a matching blank.';
+        cpas.reference === 'conditioned' ? cpas.referenceSource === 'compact' ? 'Compared with compact template samples.' : 'Compared with the saved blank.' : 'Showing observations without a matching blank.';
       previewStatus.textContent = `${blankStatus} MC completion checks passed ${accepted} of ${mc.length}.`;
+      const agreement = mc.filter(item => item.methods?.agreement.status === 'would-accept').length;
+      const stacking = mc.filter(item => item.methods?.stacking.status === 'would-accept').length;
+      if (mc.length) previewStatus.textContent += ` Optical agreement ${agreement}. Logistic stacking ${stacking}.`;
       if (cpas.handwriting.eligibleBoxes) {
         previewStatus.textContent += cpas.handwriting.modelAvailable
           ? ` Handwriting regions checked ${cpas.handwriting.eligibleBoxes}.` : ' Handwriting model unavailable.';
@@ -216,16 +223,19 @@ export function createRecognitionView({ button, status, results, table, overlay,
     try {
       refreshReference();
       const ref = referenceJob;
-      const reference = ref?.key === referenceKey(request.profile) ? await ref.value : undefined;
+      const active = ref?.key === referenceKey(request.profile);
+      const [reference, savedBoxes] = active ? await Promise.all([ref.value, ref.boxes]) : [];
       if (comparisonJob !== job) return;
       const cpasHandwritingBoxes = handwritingConfig && request.profile.id === handwritingConfig.profileId &&
-        request.profile.revision === handwritingConfig.revision ? handwritingConfig.boxes : undefined;
+        request.profile.revision === handwritingConfig.revision ? handwritingConfig.boxes : savedBoxes;
       job.worker = new Worker(new URL('./omr-worker.js', import.meta.url), { type: 'module' });
       job.worker.addEventListener('message', ({ data }) => finish(data.cpas));
       job.worker.addEventListener('error', () => finish());
       job.worker.addEventListener('messageerror', () => finish());
+      const compact = reference?.format === compactReferenceFormat;
       job.worker.postMessage({ type: 'compare-cpas', image: serialize(image), profile: request.profile, established,
-        options: { ...request.options, cpasReference: ref === referenceJob ? reference : undefined, cpasHandwritingBoxes } });
+        options: { ...request.options, cpasReference: ref === referenceJob && !compact ? reference : undefined,
+          cpasReferencePatches: ref === referenceJob && compact ? reference : undefined, cpasHandwritingBoxes } });
     } catch { finish(); }
   }
 

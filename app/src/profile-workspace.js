@@ -1,3 +1,6 @@
+import { enrollReferencePatches } from './cpas-recognition/compact-reference.js';
+import { blankReference, referenceKey as evidenceKey } from './cpas-recognition/reference-store.js';
+import { toGrayImage } from './omr-image.js';
 import { createProfileEditor, insetCorners, nearestCorner, paintCornerMarkers, sourceOnCanvas } from './profile-editor.js';
 import { proposePageCorners } from './markerless-registration.js';
 import { readActiveBatch, writeActiveBatch } from './grading-store.js';
@@ -127,11 +130,27 @@ export function createProfileWorkspace({ image, onChanged, requestBlank, read, o
   }
 
   const editor = createProfileEditor({
-    async onSave(profile) {
+    async onSave(profile, evidence) {
       const saved = await saveProfile(profile);
+      let previewNote = '';
+      if (evidence) {
+        const key = evidenceKey(saved);
+        try {
+          if (evidence.reference) {
+            const { image, matrix } = evidence.reference;
+            const envelope = enrollReferencePatches(toGrayImage(image), saved, { status: 'registered', pageToSource: matrix },
+              { confirmedBlank: true });
+            if (envelope.usable.some(Boolean)) {
+              await blankReference(key, 'save', envelope);
+              previewNote = ' Compact recognition samples saved.';
+            } else previewNote = ' The blank did not yield usable recognition samples.';
+          }
+          if (Object.keys(evidence.boxes).length) await blankReference('handwriting:' + key, 'save', evidence.boxes);
+        } catch { previewNote += ' Experimental evidence could not be saved.'; }
+      }
       editor.close();
       await refresh(key(saved));
-      profileStatus.textContent = `Saved ${saved.name}, revision ${saved.revision}. Select Scan completed sheet when you are ready.`;
+      profileStatus.textContent = `Saved ${saved.name}, revision ${saved.revision}. Select Scan completed sheet when you are ready.${previewNote}`;
       onEditorClosed(true);
     },
     onClose() { actions(); onEditorClosed(false); },

@@ -1,3 +1,5 @@
+import { openReferencePatches } from './compact-reference.js';
+import { compareMc } from './mc-comparison.js';
 import { createPredictor } from './forest.js';
 import { evaluateCompletion } from './completion.js';
 import { readProfileSheet } from '../profile-omr.js';
@@ -10,6 +12,15 @@ async function asset(file, type) {
   const response = await fetch(new URL('../../assets/cpas/' + file, import.meta.url));
   if (!response.ok) throw new Error('Recognition preview asset unavailable.');
   return response[type]();
+}
+
+let stackModel;
+function stackingAssets() {
+  stackModel ??= asset('rec-r7-stacking-model.json', 'json').catch(() => {
+    stackModel = undefined;
+    return null;
+  });
+  return stackModel;
 }
 
 let model;
@@ -37,7 +48,12 @@ function handwritingAssets() {
   return handwritingModel;
 }
 
-function validatedBoxes(boxes, profile) {
+function slotCenter(slots, id) {
+  const choices = slots.find(slot => slot.id === id).choices;
+  return choices.reduce((sum, choice) => sum + choice.x, 0) / choices.length;
+}
+
+export function validatedBoxes(boxes, profile) {
   const result = new Map();
   const bubbles = profile.components.flatMap(block => block.items.flatMap(item =>
     item.choices ?? item.slots.flatMap(slot => slot.choices)));
@@ -49,8 +65,11 @@ function validatedBoxes(boxes, profile) {
         if (!box) continue;
         const { x, y, width, height } = box;
         if (![x, y, width, height].every(Number.isFinite) || width < 5 || height < 5 ||
-            x < bounds.x || y < bounds.y || x + width > bounds.x + bounds.width ||
+            x < Math.max(0, bounds.x - 8) || y < Math.max(0, bounds.y - 43) ||
+            x + width > Math.min(profile.page.width, bounds.x + bounds.width + 8) ||
             y + height > bounds.y + bounds.height) continue;
+        const center = slotCenter(slots, id);
+        if (Math.abs(x + width / 2 - center) > Math.min(8, width * .45)) continue;
         if (bubbles.some(b => Math.hypot(b.x - Math.max(x, Math.min(b.x, x + width)),
           b.y - Math.max(y, Math.min(b.y, y + height))) <= b.radius)) continue;
         result.set(id, box);
@@ -77,14 +96,22 @@ export async function compareProfileSheet(image, profile, established, options =
     const validated = createMarkerlessProfile(profile);
     let reference;
     let referenceRejected = false;
-    if (options.cpasReference) {
+    if (options.cpasReferencePatches) {
+      try {
+        const compact = openReferencePatches(options.cpasReferencePatches, validated);
+        if (compact.usableCount) reference = compact;
+        else referenceRejected = true;
+      } catch { referenceRejected = true; }
+    } else if (options.cpasReference) {
       const alignment = registerMarkerless(options.cpasReference, validated, {
         batch: options.batch, corners: options.cpasReferenceCorners,
       });
       if (alignment.status === 'registered') reference = { ...alignment, gray: toGrayImage(options.cpasReference) };
       else referenceRejected = true;
     }
-    const predict = options.cpasPredict ?? await predictor();
+    const [predict, stacking] = await Promise.all([
+      options.cpasPredict ?? predictor(), options.cpasStackModel ?? stackingAssets(),
+    ]);
     const gray = toGrayImage(image);
     const boxes = validatedBoxes(options.cpasHandwritingBoxes, validated);
     const hwr = boxes.size ? (options.cpasHandwritingModel ?? await handwritingAssets()) : null;
@@ -95,6 +122,11 @@ export async function compareProfileSheet(image, profile, established, options =
     const cpas = evaluateCompletion(gray, validated, established.registration, {
       reference, predict, established: established.items, handwriting,
     });
+    const byId = new Map(established.items.map(item => [item.id, item]));
+    for (const item of cpas.items) {
+      if (item.kind === 'mc') item.methods = compareMc(byId.get(item.id), item, stacking);
+    }
+    cpas.referenceSource = reference?.patchFor ? 'compact' : reference ? 'image' : null;
     cpas.handwriting = { eligibleBoxes: boxes.size, modelAvailable: Boolean(hwr) };
     return { ...cpas, referenceRejected, elapsedMs: performance.now() - start };
   } catch {
