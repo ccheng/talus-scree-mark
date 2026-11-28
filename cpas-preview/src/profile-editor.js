@@ -1,3 +1,4 @@
+import { planDiscoveryIds } from './discovery-numbering.js';
 import { proposeHandwritingBoxes } from './cpas-recognition/handwriting-boxes.js';
 import { enrollPrintedLandmarks } from './printed-landmarks.js';
 import { pageTransform, proposePageCorners } from './markerless-registration.js';
@@ -168,7 +169,7 @@ export function createProfileEditor({ onSave, onClose }) {
     'psa-conflicting-grids': 'Some PSA NR candidates conflicted with another block or its printed symbols. Check those regions and use a bounded fit if needed.',
     'psa-mc-review': 'Check the new orange MC rows and any estimated bubbles before keeping them.',
     'psa-type-review': 'Some MC and NR interpretations compete. Check the print, remove the incorrect block, and fit that region if needed.',
-    'psa-provisional-grids': 'Check the orange PSA NR grids against the print before keeping them.',
+    'psa-provisional-grids': 'Check the orange PSA NR grids against the print, then choose Confirm NR grid on each correct proposal.',
     'too-many-candidates': 'There are too many printed outlines to separate reliably.',
   };
   const describeIssues = (issues) => issues.map((issue) => issueText[issue] ?? issue).join(' ');
@@ -206,6 +207,15 @@ export function createProfileEditor({ onSave, onClose }) {
     if (state.grid || state.editing || state.rowTarget || state.mappingBlock || state.renumberBlock ||
         state.exclusionEdit !== undefined || state.endpoints) {
       return 'Confirm or cancel the open grid, numbering, or exclusion edit.';
+    }
+    if (state.blocks.some(block => state.provisionalNr.has(block.id))) {
+      return 'Confirm or remove each provisional NR grid before saving.';
+    }
+    if (state.blocks.some(block => state.numberingReview.has(block.id))) {
+      return 'Check the printed MC question numbers and resolve any conflicts before saving.';
+    }
+    if (state.conflictRegions.some(region => region.requiresResolution)) {
+      return 'Resolve or explicitly omit each unresolved discovery region before saving.';
     }
     if (!state.blocks.length) return 'Confirm at least one response block before saving.';
     if (state.scope && state.blocks.some(({ kind }) => kind !== 'mc')) {
@@ -344,7 +354,7 @@ export function createProfileEditor({ onSave, onClose }) {
     ctx.setLineDash([]);
     for (const block of state.blocks) {
       const diagnostic = state.discoveryDiagnostics.find(({ id }) => id === block.id);
-      const color = diagnostic?.psaReview ? '#a94e17' : '#287651';
+      const color = diagnostic?.psaReview || state.provisionalNr.has(block.id) ? '#a94e17' : '#287651';
       box(block.bounds, color, itemLabel(block));
       for (const item of block.items) {
         if (item.kind === 'mc') {
@@ -522,23 +532,28 @@ export function createProfileEditor({ onSave, onClose }) {
       state.editing = null;
       const ids = new Set(kept.flatMap(({ id, items }) => [id, ...items.flatMap((item) => [item.id,
         ...(item.slots ?? []).map(({ id: slot }) => slot)])]));
-      const counters = { mc: 1, nr: 1 };
-      const proposalItemIds = new Map();
-      const added = result.components.map((block) => {
+      const blockIds = result.components.map((block) => {
         let id = block.id;
         while (ids.has(id)) id += '-new';
         ids.add(id);
+        return id;
+      });
+      const plan = planDiscoveryIds(kept, result.components, result.psa ? result.diagnostics ?? [] : [], ids);
+      // Keep explicit review requirements when a draft block is preserved on rediscovery.
+      state.provisionalNr = new Set([...state.provisionalNr].filter(id => state.kept.has(id)));
+      state.numberingReview = new Map([...state.numberingReview].filter(([id]) => state.kept.has(id)));
+      const added = result.components.map((block, index) => {
+        const id = blockIds[index];
+        if (result.diagnostics?.some(entry => entry.id === block.id && entry.provisionalNr)) state.provisionalNr.add(id);
+        const unresolved = [];
         const items = block.items.map((item) => {
-          let itemId, slots;
-          do {
-            itemId = item.kind.toUpperCase() + counters[item.kind]++;
-            slots = item.slots?.map((slot, i) => ({ ...slot, id: `${itemId}.${i + 1}` }));
-          } while (ids.has(itemId) || slots?.some((slot) => ids.has(slot.id)));
-          ids.add(itemId);
-          slots?.forEach((slot) => ids.add(slot.id));
-          proposalItemIds.set(item.id, itemId);
+          const allocated = plan.get(block.id).get(item.id);
+          if (result.psa && allocated.reason) unresolved.push(allocated);
+          const itemId = allocated.id;
+          const slots = item.slots?.map((slot, i) => ({ ...slot, id: `${itemId}.${i + 1}` }));
           return { ...item, id: itemId, ...(slots ? { slots } : {}) };
         });
+        if (unresolved.length) state.numberingReview.set(id, unresolved);
         return { ...block, id, items };
       });
       for (const id of state.drafts.keys()) if (!state.kept.has(id)) state.drafts.delete(id);
@@ -549,11 +564,12 @@ export function createProfileEditor({ onSave, onClose }) {
         ...(state.discoveryDiagnostics ?? []).filter(({ id }) => state.kept.has(id)),
         ...(result.diagnostics ?? []).map((data) => ({
           ...data, id: added[result.components.findIndex(({ id }) => id === data.id)]?.id ?? data.id,
-          ...(data.row ? { row: proposalItemIds.get(data.row) ?? data.row } : {}),
+          ...(data.row ? { row: plan.get(data.id)?.get(data.row)?.id ?? data.row } : {}),
         })),
       ];
       state.discoveryIssues = kept.length && result.issues.length === 1 && result.issues[0] === 'no-grid' ? [] : result.issues;
-      state.conflictRegions = result.conflictRegions ?? [];
+      state.conflictRegions = [...state.conflictRegions.filter(region => region.requiresResolution &&
+        kept.some(block => intersects(block.bounds, region.bounds))), ...(result.conflictRegions ?? [])];
       if (state.discoveryIssues.length) recheckCoverage();
       discoveryStatus.dataset.pose = result.pagePose ?? 'page-boundary';
       canvas.dataset.pose = discoveryStatus.dataset.pose;
@@ -960,6 +976,7 @@ export function createProfileEditor({ onSave, onClose }) {
       id: 'draft', revision: 1, name: 'Draft', page: page(), components: next,
     });
     state.blocks = next;
+    if (kind === 'nr') state.provisionalNr.delete(block.id);
     for (const id of replaced) state.drafts.delete(id);
     clearMcFit();
     state.kept.add(block.id);
@@ -1253,6 +1270,8 @@ export function createProfileEditor({ onSave, onClose }) {
     const components = state.blocks.map((entry) => entry === block ? { ...block, items } : entry);
     createMarkerlessProfile({ id: 'draft', revision: 1, name: 'Draft', page: page(), components });
     state.blocks = components;
+    state.provisionalNr.delete(block.id);
+    state.numberingReview.delete(block.id);
     state.kept.add(block.id);
     state.drafts.delete(block.id);
     closeMapping();
@@ -1267,13 +1286,23 @@ export function createProfileEditor({ onSave, onClose }) {
     renderSaveStatus();
     const conflictsList = byId('profile-discovery-conflicts');
     conflictsList.replaceChildren();
-    state.conflictRegions.forEach(({ bounds, reason }) => {
+    state.conflictRegions.forEach(({ bounds, reason, requiresResolution }, index) => {
       listEntry(conflictsList, reason, [['Show region', () => {
         requireIdleRowEdit();
         setRegion(bounds);
         show('Check the printed response in this region. Remove any incorrect proposal, then draw a box and fit the correct block if needed.');
         canvas.scrollIntoView({ block: 'nearest' });
-      }]]);
+      }], ...(requiresResolution ? [['Resolve region after inspection', () => {
+        requireIdleRowEdit();
+        const overlaps = state.blocks.filter(block => intersects(block.bounds, bounds));
+        if (overlaps.some(block => !state.kept.has(block.id) || state.provisionalNr.has(block.id) ||
+            state.numberingReview.has(block.id))) {
+          return say('Confirm the intended overlapping block mapping or remove it before resolving this region.');
+        }
+        state.conflictRegions.splice(index, 1);
+        lists();
+        show(overlaps.length ? 'Using the confirmed mapping for this region.' : 'Unresolved region explicitly omitted from the template.');
+      }]] : [])]);
     });
     const zones = byId('profile-exclusions');
     zones.replaceChildren();
@@ -1305,7 +1334,12 @@ export function createProfileEditor({ onSave, onClose }) {
         [state.blocks[index], state.blocks[target]] = [state.blocks[target], state.blocks[index]];
         lists(); paint();
       };
-      const caption = itemLabel(block) + (block.kind === 'nr' ? ' · Numerical response' : ' · Multiple choice') +
+      const provisionalNr = state.provisionalNr.has(block.id);
+      const hasEstimates = provisionalNr && block.items.some(item =>
+        item.slots.some(slot => slot.choices.some(cell => cell.provenance === 'inferred')));
+      const pendingNumbers = state.numberingReview.get(block.id) ?? [];
+      const disputed = pendingNumbers.some(item => item.reason === 'conflict');
+      const caption = (provisionalNr ? 'Provisional · ' : '') + itemLabel(block) + (block.kind === 'nr' ? ' · Numerical response' : ' · Multiple choice') +
         (state.kept.has(block.id) ? ' · Kept' : ' · Replaceable on rediscovery');
       const row = listEntry(blocksList, caption, [
         [state.kept.has(block.id) ? 'Release block for rediscovery' : 'Keep block on rediscovery', () => {
@@ -1316,6 +1350,25 @@ export function createProfileEditor({ onSave, onClose }) {
           say(releasing ? `${itemLabel(block)} stays on the sheet. The next discovery may replace or remove it.` :
             `${itemLabel(block)} will be preserved during discovery.`);
         }, 'keep-block'],
+        ...(provisionalNr ? [['Confirm NR grid', () => {
+          requireIdleRowEdit();
+          for (const item of block.items) validateAlbertaMapping(item.slots, item.bounds);
+          state.provisionalNr.delete(block.id);
+          for (const entry of state.discoveryDiagnostics) {
+            if (entry.id === block.id) entry.psaReview = false;
+          }
+          if (!state.provisionalNr.size) state.discoveryIssues = state.discoveryIssues.filter(issue => issue !== 'psa-provisional-grids');
+          state.kept.add(block.id);
+          lists();
+          show('NR grid and symbol order confirmed.');
+        }]] : []),
+        ...(pendingNumbers.length && !disputed ? [['Confirm displayed numbers', () => {
+          requireIdleRowEdit();
+          state.numberingReview.delete(block.id);
+          state.kept.add(block.id);
+          lists();
+          show('Displayed MC question numbers confirmed.');
+        }]] : []),
         ['Renumber block', () => startRenumber(block), 'renumber-block'],
         ['Edit numbering and symbols', () => editMapping(block)],
         ['Edit block', () => chooseDraft(block)],
@@ -1323,6 +1376,8 @@ export function createProfileEditor({ onSave, onClose }) {
         ...(index + 1 < state.blocks.length ? [['Move down', () => move(1)]] : []),
         ['Remove', () => {
           state.kept.delete(block.id);
+          state.provisionalNr.delete(block.id);
+          state.numberingReview.delete(block.id);
           state.drafts.delete(block.id);
           state.blocks.splice(index, 1);
           if (state.blocks.every(({ id }) => state.kept.has(id))) state.discoveryStale = false;
@@ -1335,6 +1390,18 @@ export function createProfileEditor({ onSave, onClose }) {
       ]);
       row.dataset.profileBlock = block.id;
       row.dataset.blockKind = block.kind;
+      row.dataset.provisionalNr = String(provisionalNr);
+      row.dataset.numberingReview = disputed ? 'conflict' : pendingNumbers.length ? 'unverified' : '';
+      if (provisionalNr || pendingNumbers.length) {
+        const note = document.createElement('p');
+        note.textContent = provisionalNr ? hasEstimates
+          ? 'Compare the full inferred grid and printed symbols before confirming.'
+          : 'Check the printed symbols and grid order before confirming.' :
+          disputed ? `Conflicting printed numbers (${pendingNumbers.filter(item => item.reason === 'conflict')
+            .flatMap(item => item.claims).join(', ')}). Edit numbering and symbols to resolve.` :
+            'Check the rows whose printed numbers could not be verified.';
+        row.append(note);
+      }
       if (block.kind === 'mc') addMcRowControls(row, block);
       row.dataset.numberingConflict = String(conflicts.has(block.id) || block.items.some(({ id, slots }) =>
         conflicts.has(id) || slots?.some((slot) => conflicts.has(slot.id))));
@@ -1433,7 +1500,8 @@ export function createProfileEditor({ onSave, onClose }) {
     state.editing = null;
     state.endpoints = null;
     state.discoveryIssues = [];
-    state.conflictRegions = [];
+    state.conflictRegions = state.conflictRegions.filter(region => region.requiresResolution &&
+      state.blocks.some(block => intersects(block.bounds, region.bounds)));
     state.structuredDiagnostics = undefined;
     state.discoveryDiagnostics = state.discoveryDiagnostics.filter(({ id }) => state.kept.has(id));
     closeMapping();
@@ -1696,6 +1764,7 @@ export function createProfileEditor({ onSave, onClose }) {
       image, prior, matrix: null, zoom: 1, pan: false, blocks: structuredClone(prior?.components ?? []),
       scope: prior?.scope, coverageReview: prior?.mcCompleteness === 'partial', exclusions: structuredClone(prior?.exclusions ?? []),
       kept: new Set(prior?.components.map(({ id }) => id)),
+      provisionalNr: new Set(), numberingReview: new Map(),
       drafts: new Map(), discoveryIssues: [], discoveryDiagnostics: [], conflictRegions: [],
     };
     boxList.replaceChildren();

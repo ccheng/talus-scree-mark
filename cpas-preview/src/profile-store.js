@@ -87,8 +87,9 @@ export function loadProfile(id, revision) {
 }
 
 const copyBounds = ({ x, y, width, height }) => ({ x, y, width, height });
-const copyChoices = (choices, preserveInk = false) => choices.map(({ symbol, x, y, radius, blankInk }) =>
-  ({ symbol, x, y, radius, ...(preserveInk && blankInk !== undefined ? { blankInk } : {}) }));
+const copyChoices = (choices, preserveInk = false) => choices.map(({ symbol, x, y, radius, blankInk, provenance }) =>
+  ({ symbol, x, y, radius, ...(preserveInk && blankInk !== undefined ? { blankInk } : {}),
+    ...(provenance === undefined ? {} : { provenance }) }));
 
 export function profileRecord(profile) {
   const { width, height, units, origin, orientation } = profile.page;

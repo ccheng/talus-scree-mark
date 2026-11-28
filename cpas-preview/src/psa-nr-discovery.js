@@ -36,6 +36,13 @@ function verifiedStructure({ completeOutlines, evidence }) {
   return completeOutlines === true && Number.isFinite(evidence?.svm_margin) && evidence.svm_margin >= 0;
 }
 
+function provisionalStructure({ path, decision, completeOutlines, evidence }) {
+  return path === 'header' && decision === 'accept' && completeOutlines === false &&
+    evidence?.status === 'mapped' && evidence.support === 40 &&
+    Number.isFinite(evidence.svm_margin) && evidence.svm_margin >= 0 &&
+    Number.isInteger(evidence.svm_wins) && evidence.svm_wins >= 8;
+}
+
 function gridSlots({ centers, decimals, rasterShape, decision }, region, scale) {
   const radius = Math.min(...(rasterShape ?? [])) / scale;
   return Array.from({ length: 4 }, (_, column) => {
@@ -54,7 +61,23 @@ const hasGrid = ({ centers, decimals, rasterShape }) =>
   centers?.length === 40 && decimals?.length === 2 && rasterShape?.length === 2;
 
 export function pagePsaProposals({ proposals }, page) {
-  return proposals.filter(hasGrid).flatMap((proposal, index) => {
+  return proposals.flatMap((proposal, index) => {
+    const credible = ['accept', 'review'].includes(proposal.decision);
+    const source = Array.isArray(proposal.centers) ? proposal.centers : [];
+    const points = source.filter(point => Array.isArray(point) && point.length === 2 &&
+      point.every(Number.isFinite) && point[0] >= 0 && point[1] >= 0 &&
+      point[0] <= page.width * pageScale && point[1] <= page.height * pageScale);
+    const invalid = () => {
+      if (!credible) return [];
+      const left = points.length ? Math.max(0, Math.min(...points.map(point => point[0])) / pageScale - 4) : 0;
+      const top = points.length ? Math.max(0, Math.min(...points.map(point => point[1])) / pageScale - 4) : 0;
+      const right = points.length ? Math.min(page.width, Math.max(...points.map(point => point[0])) / pageScale + 4) : page.width;
+      const bottom = points.length ? Math.min(page.height, Math.max(...points.map(point => point[1])) / pageScale + 4) : page.height;
+      return [{ invalidBounds: { x: left, y: top, width: right - left, height: bottom - top }, unlocalized: !points.length }];
+    };
+    if (!hasGrid(proposal) || points.length !== 40 || !Array.from(proposal.decimals).every(point =>
+        Array.isArray(point) && point.length === 2 && point.every(Number.isFinite)) ||
+        !Array.from(proposal.rasterShape).every(radius => Number.isFinite(radius) && radius > 0)) return invalid();
     const slots = gridSlots(proposal, { x: 0, y: 0 }, pageScale);
     const choices = slots.flatMap((slot) => slot.choices);
     const x = Math.max(0, Math.min(...choices.map((cell) => cell.x - cell.radius)) - 1);
@@ -63,7 +86,7 @@ export function pagePsaProposals({ proposals }, page) {
     const bottom = Math.min(page.height, Math.max(...choices.map((cell) => cell.y + cell.radius)) + 1);
     const bounds = { x, y, width: right - x, height: bottom - y };
     try { validateAlbertaMapping(slots, bounds); }
-    catch { return []; }
+    catch { return invalid(); }
     const id = `psa-nr-${index + 1}`;
     const item = { id: `NR${index + 1}`, kind: 'nr', bounds,
       slots: slots.map(({ choices }, i) => ({
@@ -72,10 +95,12 @@ export function pagePsaProposals({ proposals }, page) {
         })),
       })),
     };
+    const provisional = provisionalStructure(proposal);
     return [{
       block: { id, kind: 'nr', bounds, items: [item] },
-      usable: ['accept', 'review'].includes(proposal.decision) && verifiedStructure(proposal),
-      needsReview: proposal.decision === 'review',
+      usable: credible && verifiedStructure(proposal) || provisional,
+      needsReview: proposal.decision === 'review' || provisional,
+      incomplete: credible && proposal.completeOutlines !== true,
     }];
   });
 }
@@ -89,14 +114,18 @@ function sameGrid(a, b) {
 }
 
 export function reconcilePsaPage(result, psa, exclusions) {
-  const candidates = psa.filter(({ block }) => !exclusions.some((zone) => intersects(zone, block.bounds)));
+  const candidates = psa.filter(({ block }) => block && !exclusions.some((zone) => intersects(zone, block.bounds)));
   const matched = new Set();
   const added = [];
   const diagnostics = [...(result.diagnostics ?? [])];
-  const conflictRegions = [];
+  const conflictRegions = psa.flatMap(({ invalidBounds, unlocalized }) =>
+    invalidBounds && (unlocalized || !exclusions.some(zone => intersects(zone, invalidBounds))) ? [{
+      bounds: invalidBounds, reason: 'A numerical response proposal could not be mapped. Inspect this area.',
+      requiresResolution: true, unlocalized,
+    }] : []);
   let reviewCount = 0;
 
-  for (const { block, usable, needsReview } of candidates) {
+  for (const { block, usable, needsReview, incomplete } of candidates) {
     const overlap = result.components.filter((existing) => intersects(existing.bounds, block.bounds));
     const equivalents = overlap.filter((existing) => existing.kind === 'nr' && sameGrid(block, existing));
     const competing = candidates.some((other) => other.block !== block && intersects(other.block.bounds, block.bounds));
@@ -104,19 +133,21 @@ export function reconcilePsaPage(result, psa, exclusions) {
       // A localized PSA disagreement requires review instead of silently falling back to the same NR grid.
       if (equivalents.length) {
         equivalents.forEach((existing) => matched.add(existing));
-        conflictRegions.push({ bounds: block.bounds, reason: 'PSA and Established disagree on the printed NR symbols' });
+        conflictRegions.push({ bounds: block.bounds, reason: 'PSA and Established disagree on the printed NR symbols', requiresResolution: true });
+      } else if (incomplete) {
+        conflictRegions.push({ bounds: block.bounds, reason: 'An incomplete NR candidate needs bounded review', requiresResolution: true });
       }
       continue;
     }
     if (competing || overlap.length !== equivalents.length || equivalents.length > 1) {
-      conflictRegions.push({ bounds: block.bounds, reason: 'The PSA NR grid overlaps another interpretation' });
+      conflictRegions.push({ bounds: block.bounds, reason: 'The PSA NR grid overlaps another interpretation', requiresResolution: true });
       continue;
     }
     equivalents.forEach((existing) => matched.add(existing));
     added.push(block);
     if (needsReview) reviewCount++;
     const previous = diagnostics.find(({ id }) => id === equivalents[0]?.id);
-    diagnostics.push({ ...previous, id: block.id, bounds: block.bounds, kind: 'nr', mappingReview: needsReview, psaReview: needsReview });
+    diagnostics.push({ ...previous, id: block.id, bounds: block.bounds, kind: 'nr', mappingReview: needsReview, psaReview: needsReview, ...(needsReview ? { provisionalNr: true } : {}) });
   }
 
   const components = orderBlocks([...result.components.filter((block) => !matched.has(block)), ...added]);
