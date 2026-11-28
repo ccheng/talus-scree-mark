@@ -4,7 +4,7 @@ export function audit(){
  const b=(s,c)=>({symbol:s,completion:c,probabilities:c==='complete'?[.01,.01,.98]:[.98,.01,.01],conditioned:true,rawCoreInk:.4});
  const e={id:'g',kind:'mc',status:'single',symbol:'A',review:false,choices:[{symbol:'A',score:.8,quality:{usable:true}},{symbol:'B',score:.02,quality:{usable:true}}]};
  const c={id:'g',kind:'mc',optical:'single',symbol:'A',evidenceComplete:true,bubbles:[b('A','complete'),b('B','no-added-mark')]};
- const valid={kind:'mc',registration:'registered',geometry:'supported-original',reference:'verified',choices:['A','B'],est:e,cpas:c};
+ const valid={groupId:'g',kind:'mc',registration:'registered',geometry:'supported-original',reference:'verified',choices:['A','B'],est:e,cpas:c};
  const checks=[];
  const test=(name,input,expected)=>{const d=decideGroup(input);checks.push({name,pass:d.status===expected,actual:d.status,reason:d.reason??null})};
  test('valid-agreement',valid,'would-accept');
@@ -31,8 +31,8 @@ export function audit(){
  test('hwr-cannot-rescue',{...nr,hwr:{confident:true,symbol:'1',confidence:.9},cpas:{...nr.cpas,optical:'uncertain'}},'review');
  test('hwr-invalid',{...nr,hwr:{confident:true,symbol:'9',confidence:.9}},'review');
  test('unverified-hwr-not-vote',{...nr,hwr:{confident:false,symbol:'2',confidence:.2}},'would-accept');
- const slots=t=>[...t].map(s=>({status:'would-accept',symbol:s===' '?null:s}));
- for(const [t,expected] of [['1.25','would-accept'],['    ','would-accept'],['03  ','review'],['1 2 ','review'],['1.  ','review'],['.25 ','review']])checks.push({name:'nr-format-'+t,pass:decideNumerical(slots(t)).status===expected});
- checks.push({name:'nr-unresolved',pass:decideNumerical([{status:'review'},...slots('123')]).status==='review'});
- return checks;
+ const ids=['S0','S1','S2','S3'];const slots=t=>[...t].map((s,i)=>({groupId:ids[i],status:'would-accept',symbol:s===' '?null:s}));
+ for(const [t,expected] of [['1.25','would-accept'],['    ','would-accept'],['03  ','review'],['1 2 ','review'],['1.  ','review'],['.25 ','review']])checks.push({name:'nr-format-'+t,pass:decideNumerical(slots(t),ids).status===expected});
+ checks.push({name:'nr-unresolved',pass:decideNumerical([{status:'review'},...slots('123')],ids).status==='review'});
+ test('null-input',null,'review');test('null-entry',{...valid,cpas:{...c,bubbles:[null,b('B','no-added-mark')]}},'review');test('sparse-entry',{...valid,est:{...e,choices:new Array(2)}},'review');test('wrong-group',{...valid,groupId:'wrong'},'review');test('stale-group',{...valid,cpas:{...c,id:'other'}},'review');test('bad-review-flag',{...valid,est:{...e,review:0}},'review');test('bad-evidence-flag',{...valid,cpas:{...c,evidenceComplete:1}},'review');test('invalid-literal',{...valid,est:{...e,status:'blank',symbol:'A'}},'review');test('invalid-hwr',{...nr,hwr:{}},'review');test('unreadable-cannot-rescue',{...nr,policy:'cpas-literal',est:{...nr.est,status:'unreadable'}},'review');checks.push({name:'nr-order',pass:decideNumerical(slots('1.25').reverse(),ids).status==='review'},{name:'nr-duplicate',pass:decideNumerical([slots('1.25')[0],...slots('1.25').slice(0,3)],ids).status==='review'},{name:'nr-missing-expected-ids',pass:decideNumerical(slots('1.25')).status==='review'});return checks;
 }

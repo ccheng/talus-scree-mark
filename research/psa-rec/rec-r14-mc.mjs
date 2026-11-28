@@ -1,7 +1,7 @@
 // MC-only development experiment. Family split is fixed before rendering.
 // Independent ISTE reserve is not used. No claim of physical classroom accuracy.
 import {quantizeBlocks as _unused} from './photo-proxy.js';
-export function runMC({predict,evaluateCompletion,readBubbleRegions,candidateFeatures,fitLogistic,score,stackDecision,model,decideGroup,quantizeBlocks,enrollReferencePatches,openReferencePatches,evaluateCached}){
+export function runMC({predict,evaluateCompletion,readBubbleRegions,candidateFeatures,fitLogistic,score,stackDecision,model,decideGroup,quantizeBlocks,enrollVerifiedReference,openVerifiedReference,evaluateCached}){
  const modes=['dark','light','texture','offset','medium','blank','half','cross','ghost','double','plusghost','scribble','light','blank','patchy','edge'];
  const eligibleModes=new Set(['dark','light','texture','offset','medium','blank']);
  const groups={evaluation:[21,22,23,24,25,26]};
@@ -53,12 +53,12 @@ export function runMC({predict,evaluateCompletion,readBubbleRegions,candidateFea
    if(!blank){const displacement=[0,.25,.65,.95][(f+capture)%4];matrix[2]+=displacement*scale;matrix[5]-=.6*displacement*scale;}
    const gray={width,height,values};return {gray:blank?gray:quantizeBlocks(gray,45+capture*12),status:'registered',pageToSource:matrix,truth};
   }
-  const blank=render(0,true),records=[]; const envelope=enrollReferencePatches(blank.gray,profile,blank,{confirmedBlank:true}); const cache=openReferencePatches(envelope,profile);
+  const blank=render(0,true),records=[]; const identity={referenceId:'reference-'+f,referenceRevision:1};const envelope=enrollVerifiedReference(blank.gray,profile,blank,{...identity,confirmedBlank:true}); const cache=openVerifiedReference(envelope,profile,identity);
   for(let capture=0;capture<3;capture++){
    const scan=render(capture),est=readBubbleRegions(scan.gray,scan.pageToSource,items),cp=evaluateCompletion(scan.gray,profile,scan,{reference:blank,predict,established:est});
    const cached=evaluateCached(scan.gray,profile,scan,{reference:cache,predict,established:est});const parity=JSON.stringify(cp.items)===JSON.stringify(cached.items);for(const e of est){
     const c=cp.items.find(i=>i.id===e.id),t=scan.truth[e.id],E=!e.review&&['single','blank'].includes(e.status),C=c.disposition==='would-accept',same=E&&['single','blank'].includes(c.optical)&&e.symbol===c.symbol&&c.evidenceComplete;
-    const cand=candidateFeatures(e,c);const args={kind:'mc',registration:'registered',geometry:'supported-original',reference:'verified',choices:e.choices.map(b=>b.symbol),est:e,cpas:c,model,threshold:.7862137339932567}; const ag=decideGroup(args),st=decideGroup({...args,policy:'stack'});
+    const cand=candidateFeatures(e,c);const args={groupId:e.id,kind:'mc',registration:'registered',geometry:'supported-original',reference:'verified',choices:e.choices.map(b=>b.symbol),est:e,cpas:c,model,threshold:.7862137339932567}; const ag=decideGroup(args),st=decideGroup({...args,policy:'stack'});
     records.push({family:f,capture,id:e.id,...t,parity,cacheUsable:cache.usableCount,cacheCount:cache.count,unifiedAgreement:{accept:ag.status==='would-accept',symbol:ag.symbol,reason:ag.reason},unifiedStack:{accept:st.status==='would-accept',symbol:st.symbol,reason:st.reason},established:{accept:E,symbol:e.symbol},cpas:{accept:C,symbol:c.symbol},agreement:{accept:E&&C&&e.symbol===c.symbol,symbol:e.symbol},sameOptical:{accept:same,symbol:e.symbol},candidates:cand.map(x=>({...x,y:Number(t.eligible&&x.symbol===t.expected)}))});
    }
   }

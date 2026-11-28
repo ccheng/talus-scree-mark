@@ -80,13 +80,13 @@ for(const [family,scale,radius,pitch,expected] of [[4,1.65,3.9,9.8,'6.28'],[5,2.
     for(const [name,m] of Object.entries({baseline:reg.pageToSource,r9:r9.matrix??reg.pageToSource,r10:blankSupported?q.matrix:null})){
      if(!m){row.methods[name]={est:{accepted:false,symbol:null},cpas:{accepted:false,symbol:null}};if(name==='r10'){united.agreement.push({status:'review'});united.literal.push({status:'review'})}continue}
      const est=readBubbleRegions(scan.gray,m,[one]),e=est[0].slots[0],c=evaluateCompletion(scan.gray,profile,{status:'registered',pageToSource:m},{reference:ref,predict,established:est}).items[0].slots[0];
-     if(name==='r10'){const args={kind:'nr',registration:reg.status,geometry:q.state,reference:blankSupported?'verified':'unverified',choices:slot.choices.map(b=>b.symbol),est:e,cpas:c};united.agreement.push(decideGroup(args));united.literal.push(decideGroup({...args,policy:'cpas-literal'}));}row.methods[name]={est:{accepted:!e.review&&['single','blank'].includes(e.status),symbol:e.symbol},cpas:{accepted:['single','blank'].includes(c.optical)&&c.evidenceComplete,symbol:c.symbol}};
+     if(name==='r10'){const args={groupId:slot.id,kind:'nr',registration:reg.status,geometry:q.state,reference:blankSupported?'verified':'unverified',choices:slot.choices.map(b=>b.symbol),est:e,cpas:c};united.agreement.push(decideGroup(args));united.literal.push(decideGroup({...args,policy:'cpas-literal'}));}row.methods[name]={est:{accepted:!e.review&&['single','blank'].includes(e.status),symbol:e.symbol},cpas:{accepted:['single','blank'].includes(c.optical)&&c.evidenceComplete,symbol:c.symbol}};
     }
     for(const name of Object.keys(byPose))byPose[name].push(row.methods[name]);
    }
    rows.push(row);
   }
-  for(const [policy,obs] of Object.entries(united)){if(!obs.length)continue;const d=decideNumerical(obs);items.push({family,scenario:s,pose:'unified',engine:policy,eligible:truth.every(t=>t.eligible)&&s!=='decoy-grid',accepted:d.status==='would-accept',text:d.rawText,expected,reason:d.reason??null});}for(const [pose,obs] of Object.entries(byPose)){
+  for(const [policy,obs] of Object.entries(united)){if(!obs.length)continue;const d=decideNumerical(obs,item.slots.map(slot=>slot.id));items.push({family,scenario:s,pose:'unified',engine:policy,eligible:truth.every(t=>t.eligible)&&s!=='decoy-grid',accepted:d.status==='would-accept',text:d.rawText,expected,reason:d.reason??null});}for(const [pose,obs] of Object.entries(byPose)){
    if(!obs.length)continue;
    for(const engine of ['est','cpas']){
     const text=obs.map(v=>v[engine].symbol??' ').join('');
