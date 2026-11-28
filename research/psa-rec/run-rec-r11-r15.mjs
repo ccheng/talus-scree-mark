@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import {runMC} from './rec-r14-mc.mjs';
+import {runNR} from './rec-r14-nr.mjs';
+import {quantizeBlocks,glyphInk} from './photo-proxy.js';
+import {audit} from './audit-convergence.mjs';
+import {decideGroup,decideNumerical} from './recognition-convergence.js';
+import {evaluateCompletion} from '../../app/src/cpas-recognition/completion.js';
+import {evaluateCompletion as evaluateCached} from './completion-with-patches.js';
+import {enrollReferencePatches,openReferencePatches} from './compact-reference.js';
+import {createPredictor} from '../../app/src/cpas-recognition/forest.js';
+import {readBubbleRegions,measureNumericalBlankInk} from '../../app/src/marks.js';
+import {candidateFeatures,fitLogistic,score,stackDecision} from './stacking.js';
+const meta=JSON.parse(fs.readFileSync(new URL('../../app/assets/cpas/completion-native.json',import.meta.url)));const bin=fs.readFileSync(new URL('../../app/assets/cpas/completion.bin',import.meta.url));const model=JSON.parse(fs.readFileSync(new URL('./rec-r7-stacking-model.json',import.meta.url)));const deps={predict:createPredictor(meta,bin),evaluateCompletion,evaluateCached,enrollReferencePatches,openReferencePatches,readBubbleRegions,measureNumericalBlankInk,candidateFeatures,fitLogistic,score,stackDecision,model,decideGroup,decideNumerical,quantizeBlocks,glyphInk};console.log(JSON.stringify({checks:audit(),mcRows:runMC(deps),nrResult:runNR(deps)},null,2));
