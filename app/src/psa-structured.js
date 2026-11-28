@@ -53,6 +53,7 @@ export function reconcileStructured(result, { mc, nr }, exclusions, page) {
   // An NR geometry remains contested when its symbols fail verification.
   // Its digit rows cannot become MC simply because the NR proposal was withheld.
   const establishedNumerical = result.components.filter(({ kind }) => kind === 'nr');
+  const unresolvedNumerical = numerical.conflictRegions.filter(region => region.requiresResolution && !region.unlocalized);
   const diagnostics = [...numerical.diagnostics];
   let added = 0;
   let refined = 0;
@@ -60,13 +61,26 @@ export function reconcileStructured(result, { mc, nr }, exclusions, page) {
   let conflicts = 0;
   const recordConflict = (bounds, reason) => {
     conflicts++;
-    if (!conflictRegions.some((entry) => intersects(entry.bounds, bounds))) conflictRegions.push({ bounds, reason });
+    if (!conflictRegions.some((entry) => intersects(entry.bounds, bounds))) conflictRegions.push({ bounds, reason, requiresResolution: true });
   };
-  const rows = mc.rows.flatMap((row, index) => mapRow(row, mc.outlines, page, index) ?? []);
+  const rows = mc.rows.flatMap((row, index) => {
+    const mapped = mapRow(row, mc.outlines, page, index);
+    if (mapped) return [mapped];
+    if (!['confirmed', 'review'].includes(row.decision)) return [];
+    const points = row.points.filter(point => point.every(Number.isFinite))
+      .map(([x, y]) => ({ x: x / pageScale, y: y / pageScale, radius: 1 }));
+    const region = points.length ? enclosure(points) : null;
+    if (region && exclusions.some(zone => intersects(zone, region))) return [];
+    conflicts++;
+    conflictRegions.push({ bounds: region ?? { x: 0, y: 0, width: page.width, height: page.height },
+      reason: 'A detected MC row could not be mapped.', requiresResolution: true });
+    return [];
+  });
   for (const row of rows) {
     const { item } = row;
     if (exclusions.some((zone) => intersects(zone, item.bounds))) continue;
     if (result.excludedNumericalRegions?.some((bounds) => intersects(bounds, item.bounds))) continue;
+    if (unresolvedNumerical.some(({ bounds }) => intersects(bounds, item.bounds))) continue;
     const numericalRegion = establishedNumerical.find(({ bounds }) => intersects(bounds, item.bounds));
     if (numericalRegion) {
       const occupied = blocks.some(({ kind, bounds }) => kind === 'nr' && intersects(bounds, item.bounds));

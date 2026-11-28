@@ -53,6 +53,7 @@ const staticFiles = [
   'src/profile-store.js',
   'src/profile-workspace.js',
   'src/psa-structured.js',
+  'src/discovery-numbering.js',
   'src/profile-diagnostics.js',
   ...['raster', 'structure', 'worker', 'worker-client'].map((module) => `src/psa-mc/${module}.js`),
   'src/psa-nr-discovery.js',
