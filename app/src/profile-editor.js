@@ -1335,6 +1335,8 @@ export function createProfileEditor({ onSave, onClose }) {
         lists(); paint();
       };
       const provisionalNr = state.provisionalNr.has(block.id);
+      const hasEstimates = provisionalNr && block.items.some(item =>
+        item.slots.some(slot => slot.choices.some(cell => cell.provenance === 'inferred')));
       const pendingNumbers = state.numberingReview.get(block.id) ?? [];
       const disputed = pendingNumbers.some(item => item.reason === 'conflict');
       const caption = (provisionalNr ? 'Provisional · ' : '') + itemLabel(block) + (block.kind === 'nr' ? ' · Numerical response' : ' · Multiple choice') +
@@ -1358,7 +1360,7 @@ export function createProfileEditor({ onSave, onClose }) {
           if (!state.provisionalNr.size) state.discoveryIssues = state.discoveryIssues.filter(issue => issue !== 'psa-provisional-grids');
           state.kept.add(block.id);
           lists();
-          show('NR grid confirmed. Its estimated bubble positions are kept in the template.');
+          show('NR grid and symbol order confirmed.');
         }]] : []),
         ...(pendingNumbers.length && !disputed ? [['Confirm displayed numbers', () => {
           requireIdleRowEdit();
@@ -1392,7 +1394,9 @@ export function createProfileEditor({ onSave, onClose }) {
       row.dataset.numberingReview = disputed ? 'conflict' : pendingNumbers.length ? 'unverified' : '';
       if (provisionalNr || pendingNumbers.length) {
         const note = document.createElement('p');
-        note.textContent = provisionalNr ? 'Compare the full inferred grid and printed symbols before confirming.' :
+        note.textContent = provisionalNr ? hasEstimates
+          ? 'Compare the full inferred grid and printed symbols before confirming.'
+          : 'Check the printed symbols and grid order before confirming.' :
           disputed ? `Conflicting printed numbers (${pendingNumbers.filter(item => item.reason === 'conflict')
             .flatMap(item => item.claims).join(', ')}). Edit numbering and symbols to resolve.` :
             'Check the rows whose printed numbers could not be verified.';
