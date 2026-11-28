@@ -1,0 +1,639 @@
+{
+  "cases": [
+    {
+      "pitch": 13,
+      "scale": 1.1,
+      "kind": "separate",
+      "expected": true,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": false
+    },
+    {
+      "pitch": 13,
+      "scale": 1.1,
+      "kind": "shared",
+      "expected": true,
+      "proposed": true,
+      "error": 0.134999999999998,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.1,
+      "kind": "absent",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.1,
+      "kind": "horizontal-only",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.1,
+      "kind": "two-rows",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.1,
+      "kind": "one-missing",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.1,
+      "kind": "shifted-decoy",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.8,
+      "kind": "separate",
+      "expected": true,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": false
+    },
+    {
+      "pitch": 13,
+      "scale": 1.8,
+      "kind": "shared",
+      "expected": true,
+      "proposed": true,
+      "error": 0.09999999999999432,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.8,
+      "kind": "absent",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.8,
+      "kind": "horizontal-only",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.8,
+      "kind": "two-rows",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.8,
+      "kind": "one-missing",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 1.8,
+      "kind": "shifted-decoy",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 2.8,
+      "kind": "separate",
+      "expected": true,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": false
+    },
+    {
+      "pitch": 13,
+      "scale": 2.8,
+      "kind": "shared",
+      "expected": true,
+      "proposed": true,
+      "error": 0.13500000000000512,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 2.8,
+      "kind": "absent",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 2.8,
+      "kind": "horizontal-only",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 2.8,
+      "kind": "two-rows",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 2.8,
+      "kind": "one-missing",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 13,
+      "scale": 2.8,
+      "kind": "shifted-decoy",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.1,
+      "kind": "separate",
+      "expected": true,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": false
+    },
+    {
+      "pitch": 22,
+      "scale": 1.1,
+      "kind": "shared",
+      "expected": true,
+      "proposed": true,
+      "error": 0.18999999999999773,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.1,
+      "kind": "absent",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.1,
+      "kind": "horizontal-only",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.1,
+      "kind": "two-rows",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.1,
+      "kind": "one-missing",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.1,
+      "kind": "shifted-decoy",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.8,
+      "kind": "separate",
+      "expected": true,
+      "proposed": true,
+      "error": 0.14000000000000057,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.8,
+      "kind": "shared",
+      "expected": true,
+      "proposed": true,
+      "error": 0.18999999999999773,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.8,
+      "kind": "absent",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.8,
+      "kind": "horizontal-only",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.8,
+      "kind": "two-rows",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "competing-box-rows",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.8,
+      "kind": "one-missing",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 1.8,
+      "kind": "shifted-decoy",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 2.8,
+      "kind": "separate",
+      "expected": true,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": false
+    },
+    {
+      "pitch": 22,
+      "scale": 2.8,
+      "kind": "shared",
+      "expected": true,
+      "proposed": true,
+      "error": 0.18999999999999773,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 2.8,
+      "kind": "absent",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 2.8,
+      "kind": "horizontal-only",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 2.8,
+      "kind": "two-rows",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 2.8,
+      "kind": "one-missing",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 22,
+      "scale": 2.8,
+      "kind": "shifted-decoy",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.1,
+      "kind": "separate",
+      "expected": true,
+      "proposed": true,
+      "error": 0.2149999999999963,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.1,
+      "kind": "shared",
+      "expected": true,
+      "proposed": true,
+      "error": 0.14000000000001478,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.1,
+      "kind": "absent",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.1,
+      "kind": "horizontal-only",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.1,
+      "kind": "two-rows",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "competing-box-rows",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.1,
+      "kind": "one-missing",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.1,
+      "kind": "shifted-decoy",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.8,
+      "kind": "separate",
+      "expected": true,
+      "proposed": true,
+      "error": 0.1600000000000037,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.8,
+      "kind": "shared",
+      "expected": true,
+      "proposed": true,
+      "error": 0.14000000000000057,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.8,
+      "kind": "absent",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.8,
+      "kind": "horizontal-only",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.8,
+      "kind": "two-rows",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "competing-box-rows",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.8,
+      "kind": "one-missing",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 1.8,
+      "kind": "shifted-decoy",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 2.8,
+      "kind": "separate",
+      "expected": true,
+      "proposed": true,
+      "error": 0.1599999999999966,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 2.8,
+      "kind": "shared",
+      "expected": true,
+      "proposed": true,
+      "error": 0.14000000000001478,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 2.8,
+      "kind": "absent",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 2.8,
+      "kind": "horizontal-only",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 2.8,
+      "kind": "two-rows",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "competing-box-rows",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 2.8,
+      "kind": "one-missing",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    },
+    {
+      "pitch": 32,
+      "scale": 2.8,
+      "kind": "shifted-decoy",
+      "expected": false,
+      "proposed": false,
+      "error": null,
+      "reason": "no-complete-frame",
+      "correct": true
+    }
+  ],
+  "positive": 18,
+  "correctPositive": 13,
+  "negative": 45,
+  "correctNegative": 45,
+  "limits": "Synthetic rectified line drawings with known pose, not physical images or independently administered data. Proposals require teacher confirmation."
+}
