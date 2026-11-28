@@ -32,7 +32,7 @@ export function samplePatch(gray, matrix, bubble, rotate = false) {
   return pixels;
 }
 
-function raw(patch) {
+export function rawCoreInk(patch) {
   const gray = { width: side, height: side, values: patch };
   const sample = (dx, dy) => grayAt(gray, 20 + 12 * dx, 20 + 12 * dy);
   const bg = angles.map(([dx, dy]) => sample(1.55 * dx, 1.55 * dy)).sort(ascending)[12];
@@ -149,7 +149,7 @@ export function completionFeatures(patch, reference, strip, nr) {
   const paper = disk.filter(i => ref[i] < .035);
   const strictPaper = disk.filter(i => wide[i] < .06);
   const mean = f => disk.reduce((sum, i) => sum + f(i), 0) / disk.length;
-  const evidence = [Number(nr), noise, raw(patch), reference ? raw(reference) : -1,
+  const evidence = [Number(nr), noise, rawCoreInk(patch), reference ? rawCoreInk(reference) : -1,
     mean(i => ink[i]), mean(i => ref[i]), mean(i => ink[i] - ref[i]),
     mean(i => Math.max(0, ink[i] - ref[i])), mean(i => Math.max(0, ink[i] - wide[i])),
     paper.length / size, strictPaper.length / size];

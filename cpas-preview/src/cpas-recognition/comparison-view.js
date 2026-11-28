@@ -28,6 +28,14 @@ function issues(item, baseline) {
   const labels = new Set();
   if (opticalText(item) !== 'Unresolved' && opticalText(item) !== baseline?.rawText?.trim() &&
       !(opticalText(item) === 'Blank' && baseline?.status === 'blank')) labels.add('Engines differ');
+  if (item.methods) {
+    const spatial = item.disposition === 'would-accept';
+    const agreement = item.methods.agreement.status === 'would-accept';
+    const stacking = item.methods.stacking.status === 'would-accept';
+    if (spatial !== agreement || (item.methods.stacking.status !== 'unavailable' && spatial !== stacking)) {
+      labels.add('Experimental decisions differ');
+    }
+  }
   if (item.kind === 'mc' && item.reason && item.reason !== 'no-reference') labels.add(states[item.reason] ?? states.uncertain);
   if (item.kind === 'nr') {
     for (const slot of item.slots) {
@@ -45,6 +53,9 @@ function detail(parent, item) {
       const text = slot.handwriting?.confident ? ` · Handwriting ${slot.handwriting.symbol}` : '';
       add(parent, 'p', `Position ${index + 1} · ${opticalText(slot)} · ${states[slot.optical]}${text}`);
       if (slot.multimodal === 'disagreement') add(parent, 'p', 'Compare the handwriting and bubbles on the sheet.');
+      if (slot.geometry?.observableBubbles < slot.bubbles.length) {
+        add(parent, 'p', `Readable outlines ${slot.geometry.observableBubbles} of ${slot.bubbles.length}`);
+      }
     }
     if (slot.confidence !== null) add(parent, 'p', `Optical confidence ${Math.round(slot.confidence * 100)}%`);
     const marks = slot.bubbles.filter(b => b.completion === 'incomplete' || b.completion === 'complete');
@@ -68,6 +79,14 @@ export function showComparison(container, cpas, established, all) {
     add(disclosure, 'p', `Established ${establishedText(prior)} · CPAS optical ${opticalText(item)}`);
     add(disclosure, 'p', item.kind === 'nr' ? 'Experimental numerical response' :
       item.disposition === 'would-accept' ? 'Passes the experimental optical check' : 'CPAS suggests inspection');
+    if (item.methods) {
+      for (const [key, name] of [['agreement', 'Optical agreement'], ['stacking', 'Logistic stacking']]) {
+        const decision = item.methods[key];
+        const label = decision.status === 'would-accept' ? `Would accept ${decision.symbol ?? 'blank'}` :
+          decision.status === 'unavailable' ? 'Unavailable' : 'Review';
+        add(disclosure, 'p', `${name} · ${label}`);
+      }
+    }
     detail(disclosure, item);
   }
   if (!shown) add(container, 'p', 'No differences or inspection suggestions on this scan.');

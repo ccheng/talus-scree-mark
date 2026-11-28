@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="scree-release" content="6c765bd6771ad94e9b0f8884">
+  <meta name="scree-release" content="1aa879e81b8db37aa1bfc7aa">
   <meta name="theme-color" content="#eff3ec">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Talus Scree Mark</title>
@@ -66,7 +66,7 @@
         <p>Established supplies the responses used for grading. Compare its reads with experimental CPAS observations below.</p>
         <details>
           <summary>Blank reference and handwriting setup</summary>
-        <p>Choose an unmarked copy of the selected template. The preview saves it on this device for this profile revision.</p>
+        <p>New templates can save compact samples during authoring. For older templates, choose an unmarked copy of the selected revision.</p>
         <label for="cpas-blank">Blank reference image</label>
         <input id="cpas-blank" type="file" accept="image/png,image/jpeg">
         <button id="cpas-remove-blank" type="button">Remove saved blank</button>
@@ -290,6 +290,13 @@
               <option value="partial">Save only the mapped MC questions</option>
             </select></label>
           </div>
+          <fieldset id="template-cpas-enrollment" hidden>
+            <legend>Experimental recognition</legend>
+            <label><input id="template-cpas-blank" type="checkbox" checked> Save recognition samples from this unmarked template</label>
+            <button id="template-cpas-propose" type="button">Find handwriting boxes</button>
+            <p id="template-cpas-box-status" role="status"></p>
+            <div id="template-cpas-boxes"></div>
+          </fieldset>
           <p id="template-save-status" role="status"></p>
           <div class="controls"><button id="enroll-profile" type="button" class="primary" aria-describedby="template-save-status">Confirm and save template</button></div>
         </div>

@@ -1,15 +1,17 @@
+import { project } from '../projective.js';
 import { backgroundStrip, completionFeatures, samplePatch } from './spatial.js';
 
 const mcConfidence = .7720062862347644;
 const stateNames = ['no-added-mark', 'incomplete', 'complete'];
 
-function observeGroup(gray, matrix, reference, referenceMatrix, choices, nr, predict, established) {
+function observeGroup(gray, matrix, reference, referenceMatrix, id, choices, nr, predict, established) {
   const first = choices[0], second = choices[1];
   const strip = backgroundStrip(second ? Math.hypot(second.x - first.x, second.y - first.y) / first.radius : 3);
   const rotate = second ? Math.abs(second.y - first.y) > Math.abs(second.x - first.x) : nr;
   const bubbles = choices.map(bubble => {
     const patch = samplePatch(gray, matrix, bubble, rotate);
-    const blank = reference && samplePatch(reference.gray, referenceMatrix, bubble, rotate);
+    const blank = reference?.patchFor ? reference.patchFor(id, bubble.symbol) :
+      reference && samplePatch(reference.gray, referenceMatrix, bubble, rotate);
     const features = patch && completionFeatures(patch, blank, strip, nr);
     if (!features) return { symbol: bubble.symbol, completion: 'unobservable' };
     const p = predict(features);
@@ -46,11 +48,11 @@ export function evaluateCompletion(gray, profile, registration, { reference, pre
   const items = profile.components.flatMap(block => {
     const matrix = registration.refinedBlocks?.find(({ id }) => id === block.id)?.matrix ?? registration.pageToSource;
     const referenceMatrix = reference?.refinedBlocks?.find(({ id }) => id === block.id)?.matrix ?? reference?.pageToSource;
-    const read = (choices, nr, observed) => observeGroup(gray, matrix, reference, referenceMatrix, choices, nr, predict, observed);
+    const read = (id, choices, nr, observed) => observeGroup(gray, matrix, reference, referenceMatrix, id, choices, nr, predict, observed);
     return block.items.map(item => {
       const observed = byId.get(item.id);
       if (item.kind === 'mc') {
-        const optical = read(item.choices, false, observed);
+        const optical = read(item.id, item.choices, false, observed);
         const admitted = optical.confidence !== null && optical.confidence + 1e-12 >= mcConfidence &&
           optical.evidenceComplete;
         return { id: item.id, kind: 'mc', ...optical, disposition: admitted ? 'would-accept' : 'review',
@@ -58,9 +60,20 @@ export function evaluateCompletion(gray, profile, registration, { reference, pre
             !reference ? 'no-reference' : !optical.evidenceComplete ? 'unobservable' : 'low-confidence' };
       }
       const slots = item.slots.map((slot, index) => {
-        const optical = read(slot.choices, true, observed?.slots?.[index]);
+        const optical = read(slot.id, slot.choices, true, observed?.slots?.[index]);
         const symbol = handwriting?.(slot.id, matrix, item.bounds);
-        return { id: slot.id, ...optical, handwriting: symbol ?? null, multimodal: compareHandwriting(optical, symbol) };
+        const offsets = slot.choices.flatMap(({ x, y, radius }) => {
+          const page = project(registration.pageToSource, x, y);
+          const local = project(matrix, x, y);
+          const edge = project(matrix, x + radius, y);
+          if (!page || !local || !edge) return [];
+          const r = Math.hypot(edge.x - local.x, edge.y - local.y);
+          return r > 0 ? [Math.hypot(page.x - local.x, page.y - local.y) / r] : [];
+        });
+        const geometry = { pose: matrix === registration.pageToSource ? 'page' : 'block',
+          maxShiftRadii: offsets.length ? Math.max(...offsets) : null,
+          observableBubbles: optical.bubbles.filter(b => b.rawCoreInk !== undefined && b.rawCoreInk !== null).length };
+        return { id: slot.id, ...optical, geometry, handwriting: symbol ?? null, multimodal: compareHandwriting(optical, symbol) };
       });
       const rawText = slots.every(slot => slot.optical === 'blank' || slot.optical === 'single')
         ? slots.map(slot => slot.symbol ?? ' ').join('') : null;
