@@ -8,7 +8,7 @@ const staticFiles = [
   'assets/icon-180.png',
   ...['completion-native.json', 'completion.bin', 'adapted.f32', 'handwriting-gate.json', 'rec-r7-stacking-model.json']
     .map(file => `assets/cpas/${file}`),
-  ...['completion', 'spatial', 'preview', 'forest', 'digit-cnn', 'handwriting', 'comparison-view', 'reference-store', 'compact-reference', 'handwriting-boxes', 'stacking', 'mc-comparison']
+  ...['completion', 'spatial', 'preview', 'forest', 'digit-cnn', 'handwriting', 'comparison-view', 'reference-store', 'compact-reference', 'handwriting-boxes', 'stacking', 'mc-comparison', 'nr-local-pose', 'nr-observability', 'recognition-convergence']
     .map(module => `src/cpas-recognition/${module}.js`),
   'assets/icon-192.png',
   'assets/icon-512.png',

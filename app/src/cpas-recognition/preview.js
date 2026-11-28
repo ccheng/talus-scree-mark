@@ -1,5 +1,6 @@
 import { openReferencePatches } from './compact-reference.js';
-import { compareMc } from './mc-comparison.js';
+import { decideGroup } from './recognition-convergence.js';
+import { stackThreshold, compareMc } from './mc-comparison.js';
 import { createPredictor } from './forest.js';
 import { evaluateCompletion } from './completion.js';
 import { readProfileSheet } from '../profile-omr.js';
@@ -120,12 +121,25 @@ export async function compareProfileSheet(image, profile, established, options =
       return box ? observeHandwriting(gray, matrix, box, hwr.gate, hwr.weights) : null;
     } : undefined;
     const cpas = evaluateCompletion(gray, validated, established.registration, {
-      reference, predict, established: established.items, handwriting,
+      reference, predict, established: established.items, handwriting, localGeometry: true,
     });
     const byId = new Map(established.items.map(item => [item.id, item]));
+    const groups = new Map(validated.components.flatMap(block =>
+      block.kind === 'mc' ? block.items.map(item => [item.id, item.choices.map(choice => choice.symbol)]) : []));
     for (const item of cpas.items) {
-      if (item.kind === 'mc') item.methods = compareMc(byId.get(item.id), item, stacking);
+      if (item.kind !== 'mc') continue;
+      const est = byId.get(item.id);
+      item.methods = compareMc(est, item, stacking);
+      const evidence = { groupId: item.id, kind: 'mc', registration: established.registration.status,
+        geometry: est?.choices?.every(choice => choice.quality.usable) ? 'supported-original' : 'unobservable',
+        reference: item.evidenceComplete ? 'verified' : 'unverified', choices: groups.get(item.id), est, cpas: item };
+      item.methods.unifiedAgreement = decideGroup(evidence);
+      item.methods.unifiedStacking = stacking ? decideGroup({
+        ...evidence, model: stacking, threshold: stackThreshold, policy: 'stack',
+      }) : { status: 'unavailable' };
     }
+    const bubbles = cpas.items.flatMap(item => item.bubbles ?? item.slots.flatMap(slot => slot.bubbles));
+    cpas.referenceCoverage = { supported: bubbles.filter(bubble => bubble.conditioned).length, total: bubbles.length };
     cpas.referenceSource = reference?.patchFor ? 'compact' : reference ? 'image' : null;
     cpas.handwriting = { eligibleBoxes: boxes.size, modelAvailable: Boolean(hwr) };
     return { ...cpas, referenceRejected, elapsedMs: performance.now() - start };

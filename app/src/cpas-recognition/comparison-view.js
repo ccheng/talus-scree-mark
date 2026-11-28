@@ -5,6 +5,13 @@ const states = {
   'no-reference': 'Matching blank needed for the completion check',
 };
 
+const geometryLabels = {
+  'supported-original': 'Original alignment supported',
+  'supported-correction': 'Local alignment correction supported',
+  unreliable: 'Local alignment unreliable',
+  unobservable: 'Local alignment unobservable',
+};
+
 function add(parent, tag, value) {
   const element = document.createElement(tag);
   element.textContent = value;
@@ -40,6 +47,9 @@ function issues(item, baseline) {
   if (item.kind === 'nr') {
     for (const slot of item.slots) {
       if (['incomplete', 'competing', 'uncertain'].includes(slot.optical)) labels.add(states[slot.optical]);
+      if (['unreliable', 'unobservable', 'supported-correction'].includes(slot.localGeometry?.state)) {
+        labels.add(geometryLabels[slot.localGeometry.state]);
+      }
       if (slot.multimodal === 'disagreement') labels.add('Handwriting and bubbles differ');
     }
     if (item.reasons.includes('nr-format')) labels.add('Number format needs review');
@@ -53,6 +63,13 @@ function detail(parent, item) {
       const text = slot.handwriting?.confident ? ` · Handwriting ${slot.handwriting.symbol}` : '';
       add(parent, 'p', `Position ${index + 1} · ${opticalText(slot)} · ${states[slot.optical]}${text}`);
       if (slot.multimodal === 'disagreement') add(parent, 'p', 'Compare the handwriting and bubbles on the sheet.');
+      if (slot.localGeometry) {
+        const audit = slot.localGeometry;
+        add(parent, 'p', `${geometryLabels[audit.state] ?? 'Alignment unavailable'} · ${audit.supported}/${audit.total} outlines supported`);
+        const unsupported = audit.sites.filter(site => !site.supported).map(site => site.symbol);
+        if (unsupported.length) add(parent, 'p', `Inspect bubble positions ${unsupported.join(', ')}`);
+        if (slot.localDecision?.reason === 'reference-unverified') add(parent, 'p', 'Blank reference evidence insufficient');
+      }
       if (slot.geometry?.observableBubbles < slot.bubbles.length) {
         add(parent, 'p', `Readable outlines ${slot.geometry.observableBubbles} of ${slot.bubbles.length}`);
       }
@@ -79,9 +96,16 @@ export function showComparison(container, cpas, established, all) {
     add(disclosure, 'p', `Established ${establishedText(prior)} · CPAS optical ${opticalText(item)}`);
     add(disclosure, 'p', item.kind === 'nr' ? 'Experimental numerical response' :
       item.disposition === 'would-accept' ? 'Passes the experimental optical check' : 'CPAS suggests inspection');
+    if (item.localRecognition) {
+      const local = item.localRecognition;
+      add(disclosure, 'p', local.status === 'would-accept'
+        ? `Local geometry candidate · ${local.rawText.trim() || 'Blank'}` : 'Local geometry candidate · Review');
+    }
     if (item.methods) {
-      for (const [key, name] of [['agreement', 'Optical agreement'], ['stacking', 'Logistic stacking']]) {
+      for (const [key, name] of [['agreement', 'Optical agreement'], ['stacking', 'Logistic stacking'],
+        ['unifiedAgreement', 'Guarded optical agreement'], ['unifiedStacking', 'Guarded logistic stacking']]) {
         const decision = item.methods[key];
+        if (!decision) continue;
         const label = decision.status === 'would-accept' ? `Would accept ${decision.symbol ?? 'blank'}` :
           decision.status === 'unavailable' ? 'Unavailable' : 'Review';
         add(disclosure, 'p', `${name} · ${label}`);

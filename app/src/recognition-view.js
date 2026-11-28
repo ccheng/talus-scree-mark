@@ -1,4 +1,4 @@
-import { compactReferenceFormat } from './cpas-recognition/compact-reference.js';
+import { isCompactReference } from './cpas-recognition/compact-reference.js';
 import { blankReference, referenceKey } from './cpas-recognition/reference-store.js';
 import { showComparison } from './cpas-recognition/comparison-view.js';
 import { importWorkingImage } from './image.js';
@@ -157,7 +157,7 @@ export function createRecognitionView({ button, status, results, table, overlay,
     job.boxes = blankReference('handwriting:' + key, 'get').catch(() => undefined);
     job.value = blankReference(key, 'get').then(async file => {
       if (referenceJob !== job) return undefined;
-      const compact = file?.format === compactReferenceFormat;
+      const compact = isCompactReference(file);
       const image = compact ? file : file ? await prepareReference(job, file) : undefined;
       if (referenceJob !== job) return undefined;
       removeBlank.disabled = !image;
@@ -187,6 +187,10 @@ export function createRecognitionView({ button, status, results, table, overlay,
       const blankStatus = cpas.referenceRejected ? 'Saved blank did not pass the reference checks. Showing observations without it.' :
         cpas.reference === 'conditioned' ? cpas.referenceSource === 'compact' ? 'Compared with compact template samples.' : 'Compared with the saved blank.' : 'Showing observations without a matching blank.';
       previewStatus.textContent = `${blankStatus} MC completion checks passed ${accepted} of ${mc.length}.`;
+      if (cpas.reference === 'conditioned' && cpas.referenceCoverage?.supported < cpas.referenceCoverage?.total) {
+        const { supported, total } = cpas.referenceCoverage;
+        previewStatus.textContent += ` Blank evidence supported ${supported} of ${total} bubbles.`;
+      }
       const agreement = mc.filter(item => item.methods?.agreement.status === 'would-accept').length;
       const stacking = mc.filter(item => item.methods?.stacking.status === 'would-accept').length;
       if (mc.length) previewStatus.textContent += ` Optical agreement ${agreement}. Logistic stacking ${stacking}.`;
@@ -232,7 +236,7 @@ export function createRecognitionView({ button, status, results, table, overlay,
       job.worker.addEventListener('message', ({ data }) => finish(data.cpas));
       job.worker.addEventListener('error', () => finish());
       job.worker.addEventListener('messageerror', () => finish());
-      const compact = reference?.format === compactReferenceFormat;
+      const compact = isCompactReference(reference);
       job.worker.postMessage({ type: 'compare-cpas', image: serialize(image), profile: request.profile, established,
         options: { ...request.options, cpasReference: ref === referenceJob && !compact ? reference : undefined,
           cpasReferencePatches: ref === referenceJob && compact ? reference : undefined, cpasHandwritingBoxes } });

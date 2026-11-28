@@ -1,10 +1,12 @@
+import { decideGroup, decideNumerical } from './recognition-convergence.js';
+import { observeSlot, auditReferenceRing } from './nr-observability.js';
 import { project } from '../projective.js';
-import { backgroundStrip, completionFeatures, samplePatch } from './spatial.js';
+import { backgroundStrip, completionFeatures, samplePatch, rawCoreInk } from './spatial.js';
 
 const mcConfidence = .7720062862347644;
 const stateNames = ['no-added-mark', 'incomplete', 'complete'];
 
-function observeGroup(gray, matrix, reference, referenceMatrix, id, choices, nr, predict, established) {
+function observeGroup(gray, matrix, reference, referenceMatrix, id, choices, nr, predict, established, guardReference) {
   const first = choices[0], second = choices[1];
   const strip = backgroundStrip(second ? Math.hypot(second.x - first.x, second.y - first.y) / first.radius : 3);
   const rotate = second ? Math.abs(second.y - first.y) > Math.abs(second.x - first.x) : nr;
@@ -12,16 +14,20 @@ function observeGroup(gray, matrix, reference, referenceMatrix, id, choices, nr,
     const patch = samplePatch(gray, matrix, bubble, rotate);
     const blank = reference?.patchFor ? reference.patchFor(id, bubble.symbol) :
       reference && samplePatch(reference.gray, referenceMatrix, bubble, rotate);
-    const features = patch && completionFeatures(patch, blank, strip, nr);
+    const auditBlank = guardReference && !reference?.audited;
+    const referenceInk = blank && auditBlank && !nr ? rawCoreInk(blank) : null;
+    const referenceSupported = Boolean(blank) && (!auditBlank ||
+      (nr ? auditReferenceRing(blank, rotate).supported : referenceInk >= 0 && referenceInk <= .105));
+    const features = patch && completionFeatures(patch, referenceSupported ? blank : null, strip, nr);
     if (!features) return { symbol: bubble.symbol, completion: 'unobservable' };
     const p = predict(features);
     return {
       symbol: bubble.symbol, completion: stateNames[p.indexOf(Math.max(...p))], probabilities: p,
-      ink: features[4], referenceInk: blank ? features[5] : null, addedInk: blank ? features[7] : null,
+      ink: features[4], referenceInk: referenceSupported ? features[5] : null, addedInk: referenceSupported ? features[7] : null,
       rawCoreInk: features[2] < 0 ? null : features[2],
       printedDigitConditionedInk: nr && bubble.blankInk !== undefined
         ? established?.choices?.find(({ symbol }) => symbol === bubble.symbol)?.score ?? null : null,
-      conditioned: Boolean(blank) && features[3] >= 0,
+      conditioned: referenceSupported && features[3] >= 0,
     };
   });
   const complete = bubbles.filter(b => b.completion === 'complete');
@@ -42,13 +48,13 @@ function compareHandwriting(optical, handwriting) {
   return 'optical-unresolved';
 }
 
-export function evaluateCompletion(gray, profile, registration, { reference, predict, handwriting, established = [] }) {
+export function evaluateCompletion(gray, profile, registration, { reference, predict, handwriting, established = [], localGeometry = false }) {
   if (registration.status !== 'registered') return { status: 'registration-rejected', items: [] };
   const byId = new Map(established.map(item => [item.id, item]));
   const items = profile.components.flatMap(block => {
     const matrix = registration.refinedBlocks?.find(({ id }) => id === block.id)?.matrix ?? registration.pageToSource;
     const referenceMatrix = reference?.refinedBlocks?.find(({ id }) => id === block.id)?.matrix ?? reference?.pageToSource;
-    const read = (id, choices, nr, observed) => observeGroup(gray, matrix, reference, referenceMatrix, id, choices, nr, predict, observed);
+    const read = (id, choices, nr, observed) => observeGroup(gray, matrix, reference, referenceMatrix, id, choices, nr, predict, observed, localGeometry);
     return block.items.map(item => {
       const observed = byId.get(item.id);
       if (item.kind === 'mc') {
@@ -73,7 +79,18 @@ export function evaluateCompletion(gray, profile, registration, { reference, pre
         const geometry = { pose: matrix === registration.pageToSource ? 'page' : 'block',
           maxShiftRadii: offsets.length ? Math.max(...offsets) : null,
           observableBubbles: optical.bubbles.filter(b => b.rawCoreInk !== undefined && b.rawCoreInk !== null).length };
-        return { id: slot.id, ...optical, geometry, handwriting: symbol ?? null, multimodal: compareHandwriting(optical, symbol) };
+        const baseline = { id: slot.id, ...optical, geometry, handwriting: symbol ?? null,
+          multimodal: compareHandwriting(optical, symbol) };
+        if (!localGeometry) return baseline;
+        const audit = observeSlot(gray, { status: registration.status, pageToSource: matrix }, slot.choices);
+        const proposal = audit.state === 'supported-correction'
+          ? observeGroup(gray, audit.matrix, reference, referenceMatrix, slot.id, slot.choices, true, predict,
+            observed?.slots?.[index], true) : optical;
+        const decision = decideGroup({ groupId: slot.id, kind: 'nr', registration: registration.status,
+          geometry: audit.state, reference: proposal.evidenceComplete ? 'verified' : 'unverified',
+          choices: slot.choices.map(choice => choice.symbol), est: observed?.slots?.[index],
+          cpas: { ...proposal, id: slot.id }, hwr: symbol, policy: 'cpas-literal' });
+        return { ...baseline, localGeometry: audit, localOptical: proposal === optical ? undefined : proposal, localDecision: decision };
       });
       const rawText = slots.every(slot => slot.optical === 'blank' || slot.optical === 'single')
         ? slots.map(slot => slot.symbol ?? ' ').join('') : null;
@@ -81,7 +98,11 @@ export function evaluateCompletion(gray, profile, registration, { reference, pre
       if (rawText === null) reasons.push('optical-unresolved');
       else if (rawText.trim() && !/^(?:0|[1-9][0-9]*)(?:\.[0-9]+)? *$/.test(rawText)) reasons.push('nr-format');
       if (slots.some(slot => slot.multimodal === 'disagreement')) reasons.push('handwriting-disagreement');
-      return { id: item.id, kind: 'nr', slots, rawText, disposition: 'review', reasons };
+      const localRecognition = localGeometry ? {
+        ...decideNumerical(slots.map(slot => slot.localDecision), item.slots.map(slot => slot.id)),
+        slots: slots.map(slot => slot.localDecision),
+      } : undefined;
+      return { id: item.id, kind: 'nr', slots, rawText, disposition: 'review', reasons, localRecognition };
     });
   });
   return { status: 'evaluated', reference: reference ? 'conditioned' : 'reference-free', items };
