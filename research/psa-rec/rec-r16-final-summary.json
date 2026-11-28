@@ -1,0 +1,132 @@
+{
+  "baseline": "be2c1ae806751cdd931c21ec2e57dbdeb5721013",
+  "hardened": "83f915047d9ece43fd2a5ae0d2e83c1924bc9963",
+  "execution": "JS isolate native modules, final replay; aggregate results only",
+  "audits": {
+    "decision": {
+      "passed": 55,
+      "total": 55
+    },
+    "reference": {
+      "passed": 12,
+      "total": 12
+    }
+  },
+  "mc": {
+    "eligible": 144,
+    "review": 144,
+    "established": [
+      122,
+      0,
+      86,
+      80
+    ],
+    "cpas": [
+      54,
+      0,
+      9,
+      225
+    ],
+    "agreement": [
+      47,
+      0,
+      7,
+      234
+    ],
+    "sameOptical": [
+      91,
+      0,
+      13,
+      184
+    ],
+    "unifiedAgreement": [
+      91,
+      0,
+      13,
+      184
+    ],
+    "unifiedStack": [
+      68,
+      0,
+      2,
+      218
+    ]
+  },
+  "nr": {
+    "eligible": 33,
+    "review": 15,
+    "rejected": 4,
+    "baselineEstablished": [
+      5,
+      0,
+      4,
+      39
+    ],
+    "baselineCpas": [
+      6,
+      0,
+      0,
+      42
+    ],
+    "r9Established": [
+      12,
+      0,
+      3,
+      33
+    ],
+    "r9Cpas": [
+      14,
+      0,
+      0,
+      34
+    ],
+    "r10Established": [
+      5,
+      0,
+      1,
+      42
+    ],
+    "r10Cpas": [
+      13,
+      0,
+      0,
+      35
+    ],
+    "unifiedAgreement": [
+      5,
+      0,
+      0,
+      43
+    ],
+    "unifiedLiteral": [
+      11,
+      0,
+      0,
+      37
+    ]
+  },
+  "tupleOrder": [
+    "correct",
+    "wrong",
+    "reviewPolicyViolations",
+    "withheld"
+  ],
+  "parity": {
+    "exact": 288,
+    "compared": 288,
+    "allUsable": true,
+    "profileCounts": [
+      51,
+      67,
+      80,
+      51,
+      67,
+      80
+    ],
+    "referencePatchesOriginal": 1188,
+    "referencePatchesEnrolled": 396,
+    "referencePatchesAvoided": 792,
+    "sampleLatticePointsAvoided": 1331352
+  },
+  "limitations": "Detailed initial records separately stored; final aggregate counts unchanged, not a claim of exact per-case parity. Full Node and independent verification outstanding."
+}
