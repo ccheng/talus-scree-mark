@@ -1,0 +1,127 @@
+{
+  "checks": [
+    {
+      "name": "all blank patches available 1.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 1.5/1.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 1.5/2.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 1.5/3",
+      "pass": true
+    },
+    {
+      "name": "all blank patches available 2",
+      "pass": true
+    },
+    {
+      "name": "exact result 2/1.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 2/2.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 2/3",
+      "pass": true
+    },
+    {
+      "name": "all blank patches available 2.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 2.5/1.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 2.5/2.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 2.5/3",
+      "pass": true
+    },
+    {
+      "name": "all blank patches available 3",
+      "pass": true
+    },
+    {
+      "name": "exact result 3/1.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 3/2.5",
+      "pass": true
+    },
+    {
+      "name": "exact result 3/3",
+      "pass": true
+    },
+    {
+      "name": "six invalid inputs rejected",
+      "pass": true
+    },
+    {
+      "name": "filled MC reference flags some suspect ink",
+      "pass": true
+    },
+    {
+      "name": "unknown identity unavailable",
+      "pass": true
+    },
+    {
+      "name": "caller mutation isolated",
+      "pass": true
+    }
+  ],
+  "cases": [
+    {
+      "scale": 1.5,
+      "referencePatches": 72,
+      "identicalItems": 27,
+      "bytes": 121104,
+      "fullGrayBytes": 185650,
+      "fullRgbaBytes": 742600
+    },
+    {
+      "scale": 2,
+      "referencePatches": 72,
+      "identicalItems": 27,
+      "bytes": 121104,
+      "fullGrayBytes": 322400,
+      "fullRgbaBytes": 1289600
+    },
+    {
+      "scale": 2.5,
+      "referencePatches": 72,
+      "identicalItems": 27,
+      "bytes": 121104,
+      "fullGrayBytes": 496650,
+      "fullRgbaBytes": 1986600
+    },
+    {
+      "scale": 3,
+      "referencePatches": 72,
+      "identicalItems": 27,
+      "bytes": 121104,
+      "fullGrayBytes": 708400,
+      "fullRgbaBytes": 2833600
+    }
+  ],
+  "modelBytes": 370112,
+  "filledReferenceReasons": {
+    "unobservable": 0,
+    "suspectMcInk": 8
+  },
+  "limitations": [
+    "Synthetic raster fixtures; no physical iPhone, JPEG, full app or independent reserve.",
+    "Suspect MC ink check does not establish a reference is blank, especially NR."
+  ]
+}
