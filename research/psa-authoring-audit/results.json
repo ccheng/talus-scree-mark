@@ -1,0 +1,82 @@
+{
+  "checks": [
+    {
+      "name": "four provisional grids",
+      "pass": true
+    },
+    {
+      "name": "all 168 inferred choices",
+      "pass": true
+    },
+    {
+      "name": "explicit review issue",
+      "pass": true
+    },
+    {
+      "name": "verified complete stays accepted",
+      "pass": true
+    },
+    {
+      "name": "negative-margin",
+      "pass": true
+    },
+    {
+      "name": "insufficient-support",
+      "pass": true
+    },
+    {
+      "name": "wrong-path",
+      "pass": true
+    },
+    {
+      "name": "missing-evidence",
+      "pass": true
+    },
+    {
+      "name": "explicit rejection not promoted",
+      "pass": true
+    },
+    {
+      "name": "exclusion respected",
+      "pass": true
+    },
+    {
+      "name": "overlapping MC not overwritten",
+      "pass": true
+    },
+    {
+      "name": "competing NR withheld",
+      "pass": true
+    },
+    {
+      "name": "bounded path remains strict",
+      "pass": true
+    },
+    {
+      "name": "printed order preserved",
+      "pass": true
+    },
+    {
+      "name": "no mutation",
+      "pass": true
+    },
+    {
+      "name": "duplicate printed claim flagged",
+      "pass": true
+    },
+    {
+      "name": "kept collision flagged",
+      "pass": true
+    },
+    {
+      "name": "unverified numbering flagged without stealing confirmed",
+      "pass": true
+    },
+    {
+      "name": "conflicting row evidence flagged",
+      "pass": true
+    }
+  ],
+  "passed": 19,
+  "execution": "JS isolate; synthetic cases; original image and diagnostics kept local"
+}
