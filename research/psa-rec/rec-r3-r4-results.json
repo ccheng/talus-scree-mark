@@ -1,0 +1,4053 @@
+{
+  "totals": {
+    "MC/Established": {
+      "eligible": 36,
+      "policyReview": 36,
+      "correct": 36,
+      "wrong": 0,
+      "violations": 19,
+      "withheld": 17
+    },
+    "MC/CPAS": {
+      "eligible": 36,
+      "policyReview": 36,
+      "correct": 36,
+      "wrong": 0,
+      "violations": 6,
+      "withheld": 30
+    },
+    "MC/strictConsensus": {
+      "eligible": 36,
+      "policyReview": 36,
+      "correct": 36,
+      "wrong": 0,
+      "violations": 0,
+      "withheld": 36
+    },
+    "MC/sameOptical": {
+      "eligible": 36,
+      "policyReview": 36,
+      "correct": 36,
+      "wrong": 0,
+      "violations": 0,
+      "withheld": 36
+    },
+    "MC/cpasWithEstablishedRescue": {
+      "eligible": 36,
+      "policyReview": 36,
+      "correct": 36,
+      "wrong": 0,
+      "violations": 6,
+      "withheld": 30
+    },
+    "NR/Established": {
+      "eligible": 15,
+      "policyReview": 3,
+      "correct": 7,
+      "wrong": 0,
+      "violations": 1,
+      "withheld": 10
+    },
+    "NR/CPASLiteral": {
+      "eligible": 15,
+      "policyReview": 3,
+      "correct": 12,
+      "wrong": 0,
+      "violations": 0,
+      "withheld": 6
+    },
+    "NR/agreement": {
+      "eligible": 15,
+      "policyReview": 3,
+      "correct": 7,
+      "wrong": 0,
+      "violations": 0,
+      "withheld": 11
+    },
+    "NRslot/Established": {
+      "eligible": 69,
+      "policyReview": 3,
+      "correct": 44,
+      "wrong": 0,
+      "violations": 3,
+      "withheld": 25
+    },
+    "NRslot/CPASLiteral": {
+      "eligible": 69,
+      "policyReview": 3,
+      "correct": 63,
+      "wrong": 0,
+      "violations": 0,
+      "withheld": 9
+    },
+    "NRslot/agreement": {
+      "eligible": 69,
+      "policyReview": 3,
+      "correct": 44,
+      "wrong": 0,
+      "violations": 0,
+      "withheld": 28
+    }
+  },
+  "cases": [
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC1",
+      "mode": "complete-dark",
+      "expected": "A",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "A",
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "A"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "A"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "A"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "A"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC2",
+      "mode": "complete-light",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9980711763103803,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC3",
+      "mode": "complete-textured",
+      "expected": "C",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9996649046738942,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "C"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "C"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC4",
+      "mode": "blank",
+      "expected": null,
+      "eligible": true,
+      "established": {
+        "status": "blank",
+        "symbol": null,
+        "review": false
+      },
+      "cpas": {
+        "optical": "blank",
+        "symbol": null,
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": null
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": null
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": null
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": null
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": null
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC5",
+      "mode": "half",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC6",
+      "mode": "cross",
+      "expected": "B",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC7",
+      "mode": "ghost",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.967799952502052,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC8",
+      "mode": "double",
+      "expected": "D",
+      "eligible": false,
+      "established": {
+        "status": "multiple",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC9",
+      "mode": "complete-plus-ghost",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC10",
+      "mode": "complete-offset",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9829982380072276,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC11",
+      "mode": "scribble",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "MC12",
+      "mode": "complete-medium",
+      "expected": "D",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "D",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "D",
+        "disposition": "would-accept",
+        "confidence": 0.9977360809842746,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "D"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "D"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "D"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "D"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "D"
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "NR1",
+      "eligible": true,
+      "expected": "3.14",
+      "established": {
+        "status": "multiple",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": null,
+        "reasons": [
+          "optical-unresolved"
+        ],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "3",
+            "confidence": 0.5822561369898419,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "competing",
+            "symbol": null,
+            "confidence": null,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "1",
+            "confidence": 0.5561259165153994,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "competing",
+            "symbol": null,
+            "confidence": null,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": false
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "NR2",
+      "eligible": true,
+      "expected": "72  ",
+      "established": {
+        "status": "multiple",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": null,
+        "reasons": [
+          "optical-unresolved"
+        ],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "7",
+            "confidence": 0.6467290522472467,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "competing",
+            "symbol": null,
+            "confidence": null,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.5804978900317413,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "incomplete",
+            "symbol": null,
+            "confidence": null,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": false
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 1.15,
+      "variant": 0,
+      "id": "NR3",
+      "eligible": true,
+      "expected": "8.6 ",
+      "established": {
+        "status": "multiple",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": null,
+        "reasons": [
+          "optical-unresolved"
+        ],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "8",
+            "confidence": 0.6217880401061848,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "competing",
+            "symbol": null,
+            "confidence": null,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "6",
+            "confidence": 0.5565792546025478,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "incomplete",
+            "symbol": null,
+            "confidence": null,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": false
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC1",
+      "mode": "complete-light",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9980711763103803,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC2",
+      "mode": "complete-textured",
+      "expected": "C",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9996649046738942,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "C"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "C"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC3",
+      "mode": "blank",
+      "expected": null,
+      "eligible": true,
+      "established": {
+        "status": "blank",
+        "symbol": null,
+        "review": false
+      },
+      "cpas": {
+        "optical": "blank",
+        "symbol": null,
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": null
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": null
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": null
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": null
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": null
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC4",
+      "mode": "half",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC5",
+      "mode": "cross",
+      "expected": "B",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC6",
+      "mode": "ghost",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9729073321446776,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC7",
+      "mode": "double",
+      "expected": "D",
+      "eligible": false,
+      "established": {
+        "status": "multiple",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC8",
+      "mode": "complete-plus-ghost",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC9",
+      "mode": "complete-offset",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9593433823436499,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC10",
+      "mode": "scribble",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC11",
+      "mode": "complete-medium",
+      "expected": "D",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "D",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "D",
+        "disposition": "would-accept",
+        "confidence": 0.9977360809842746,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "D"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "D"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "D"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "D"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "D"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "MC12",
+      "mode": "complete-dark",
+      "expected": "A",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "A",
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "A"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "A"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "A"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "A"
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "NR1",
+      "eligible": true,
+      "expected": "3.14",
+      "established": {
+        "status": "single",
+        "rawText": "3.14",
+        "review": false
+      },
+      "cpas": {
+        "rawText": "3.14",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "3",
+            "confidence": 0.8206128220558943,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.8206128220558943,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "1",
+            "confidence": 0.7787305316829588,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "4",
+            "confidence": 0.7952123638029055,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "3.14"
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "3.14"
+        },
+        "agreement": {
+          "accepted": true,
+          "value": "3.14"
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "NR2",
+      "eligible": true,
+      "expected": "72  ",
+      "established": {
+        "status": "ambiguous",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": "72  ",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "7",
+            "confidence": 0.8121948650087385,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "2",
+            "confidence": 0.8121948650087385,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.812384476941467,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.803879215370398,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "72  "
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 1.5,
+      "variant": 1,
+      "id": "NR3",
+      "eligible": false,
+      "expected": "8.6 ",
+      "established": {
+        "status": "ambiguous",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": null,
+        "reasons": [
+          "optical-unresolved"
+        ],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "8",
+            "confidence": 0.8114822564918237,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.7873124888729459,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "incomplete",
+            "symbol": null,
+            "confidence": null,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.7866172178318569,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": false
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC1",
+      "mode": "complete-textured",
+      "expected": "C",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9996649046738942,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "C"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "C"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC2",
+      "mode": "blank",
+      "expected": null,
+      "eligible": true,
+      "established": {
+        "status": "blank",
+        "symbol": null,
+        "review": false
+      },
+      "cpas": {
+        "optical": "blank",
+        "symbol": null,
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": null
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": null
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": null
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": null
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": null
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC3",
+      "mode": "half",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC4",
+      "mode": "cross",
+      "expected": "B",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC5",
+      "mode": "ghost",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9629591008648276,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC6",
+      "mode": "double",
+      "expected": "D",
+      "eligible": false,
+      "established": {
+        "status": "multiple",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC7",
+      "mode": "complete-plus-ghost",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC8",
+      "mode": "complete-offset",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9075164269655943,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC9",
+      "mode": "scribble",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC10",
+      "mode": "complete-medium",
+      "expected": "D",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "D",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "D",
+        "disposition": "would-accept",
+        "confidence": 0.9977360809842746,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "D"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "D"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "D"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "D"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "D"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC11",
+      "mode": "complete-dark",
+      "expected": "A",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "A",
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "A"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "A"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "A"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "A"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2,
+      "variant": 2,
+      "id": "MC12",
+      "mode": "complete-light",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9980711763103803,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 2,
+      "variant": 2,
+      "id": "NR1",
+      "eligible": true,
+      "expected": "3.14",
+      "established": {
+        "status": "single",
+        "rawText": "3.14",
+        "review": false
+      },
+      "cpas": {
+        "rawText": "3.14",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "3",
+            "confidence": 0.8284223974585377,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.8197020893101581,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "1",
+            "confidence": 0.8201067478201973,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "4",
+            "confidence": 0.8201067478201973,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "3.14"
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "3.14"
+        },
+        "agreement": {
+          "accepted": true,
+          "value": "3.14"
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 2,
+      "variant": 2,
+      "id": "NR2",
+      "eligible": true,
+      "expected": "72  ",
+      "established": {
+        "status": "single",
+        "rawText": "72  ",
+        "review": false
+      },
+      "cpas": {
+        "rawText": "72  ",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "7",
+            "confidence": 0.844539784170532,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "2",
+            "confidence": 0.8362064508371987,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.8113687559768247,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.8113687559768247,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "72  "
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "72  "
+        },
+        "agreement": {
+          "accepted": true,
+          "value": "72  "
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 2,
+      "variant": 2,
+      "id": "NR3",
+      "eligible": true,
+      "expected": "8.6 ",
+      "established": {
+        "status": "single",
+        "rawText": "8.6 ",
+        "review": false
+      },
+      "cpas": {
+        "rawText": "8.6 ",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "8",
+            "confidence": 0.8528554338088725,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.8113687559768247,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "6",
+            "confidence": 0.8113687559768247,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.8113687559768247,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "8.6 "
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "8.6 "
+        },
+        "agreement": {
+          "accepted": true,
+          "value": "8.6 "
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC1",
+      "mode": "blank",
+      "expected": null,
+      "eligible": true,
+      "established": {
+        "status": "blank",
+        "symbol": null,
+        "review": false
+      },
+      "cpas": {
+        "optical": "blank",
+        "symbol": null,
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": null
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": null
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": null
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": null
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": null
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC2",
+      "mode": "half",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC3",
+      "mode": "cross",
+      "expected": "B",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC4",
+      "mode": "ghost",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.966660873653988,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC5",
+      "mode": "double",
+      "expected": "D",
+      "eligible": false,
+      "established": {
+        "status": "multiple",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC6",
+      "mode": "complete-plus-ghost",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC7",
+      "mode": "complete-offset",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.881171282629172,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC8",
+      "mode": "scribble",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC9",
+      "mode": "complete-medium",
+      "expected": "D",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "D",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "D",
+        "disposition": "would-accept",
+        "confidence": 0.9977360809842746,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "D"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "D"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "D"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "D"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "D"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC10",
+      "mode": "complete-dark",
+      "expected": "A",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "A",
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "A"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "A"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "A"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "A"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC11",
+      "mode": "complete-light",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9980711763103803,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "MC12",
+      "mode": "complete-textured",
+      "expected": "C",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9977360809842746,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "C"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "C"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "NR1",
+      "eligible": true,
+      "expected": "3.14",
+      "established": {
+        "status": "single",
+        "rawText": "3.14",
+        "review": false
+      },
+      "cpas": {
+        "rawText": "3.14",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "3",
+            "confidence": 0.8528329044017785,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.8445172547634381,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "1",
+            "confidence": 0.8117959438939579,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "4",
+            "confidence": 0.8117959438939579,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "3.14"
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "3.14"
+        },
+        "agreement": {
+          "accepted": true,
+          "value": "3.14"
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "NR2",
+      "eligible": true,
+      "expected": "72  ",
+      "established": {
+        "status": "single",
+        "rawText": "72  ",
+        "review": false
+      },
+      "cpas": {
+        "rawText": "72  ",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "7",
+            "confidence": 0.8443041622832728,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "2",
+            "confidence": 0.8443041622832728,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.8198448776306274,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.8198448776306274,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "72  "
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "72  "
+        },
+        "agreement": {
+          "accepted": true,
+          "value": "72  "
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 2.5,
+      "variant": 3,
+      "id": "NR3",
+      "eligible": false,
+      "expected": "8.6 ",
+      "established": {
+        "status": "single",
+        "rawText": "8.6 ",
+        "review": false
+      },
+      "cpas": {
+        "rawText": null,
+        "reasons": [
+          "optical-unresolved"
+        ],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "8",
+            "confidence": 0.8609814031883919,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.8278505880967714,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "incomplete",
+            "symbol": null,
+            "confidence": null,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.8117246367774593,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "8.6 "
+        },
+        "CPASLiteral": {
+          "accepted": false
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC1",
+      "mode": "half",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC2",
+      "mode": "cross",
+      "expected": "B",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC3",
+      "mode": "ghost",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9736490626508991,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC4",
+      "mode": "double",
+      "expected": "D",
+      "eligible": false,
+      "established": {
+        "status": "multiple",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC5",
+      "mode": "complete-plus-ghost",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC6",
+      "mode": "complete-offset",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.8311712826291721,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC7",
+      "mode": "scribble",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC8",
+      "mode": "complete-medium",
+      "expected": "D",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "D",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "D",
+        "disposition": "would-accept",
+        "confidence": 0.9977360809842746,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "D"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "D"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "D"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "D"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "D"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC9",
+      "mode": "complete-dark",
+      "expected": "A",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "A",
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "A"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "A"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "A"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "A"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC10",
+      "mode": "complete-light",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9980711763103803,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC11",
+      "mode": "complete-textured",
+      "expected": "C",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9996649046738942,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "C"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "C"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 3,
+      "variant": 4,
+      "id": "MC12",
+      "mode": "blank",
+      "expected": null,
+      "eligible": true,
+      "established": {
+        "status": "blank",
+        "symbol": null,
+        "review": false
+      },
+      "cpas": {
+        "optical": "blank",
+        "symbol": null,
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": null
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": null
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": null
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": null
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": null
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 3,
+      "variant": 4,
+      "id": "NR1",
+      "eligible": true,
+      "expected": "3.14",
+      "established": {
+        "status": "ambiguous",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": "3.14",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "3",
+            "confidence": 0.8360623490725023,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.8281079236456814,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "1",
+            "confidence": 0.8195805169525556,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "4",
+            "confidence": 0.8116260915257347,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "3.14"
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 3,
+      "variant": 4,
+      "id": "NR2",
+      "eligible": true,
+      "expected": "72  ",
+      "established": {
+        "status": "ambiguous",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": "72  ",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "7",
+            "confidence": 0.8360853761783801,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "2",
+            "confidence": 0.8360853761783801,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.8116956112595896,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.8277520428450468,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "72  "
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 3,
+      "variant": 4,
+      "id": "NR3",
+      "eligible": true,
+      "expected": "8.6 ",
+      "established": {
+        "status": "ambiguous",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": "8.6 ",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "8",
+            "confidence": 0.8278223301633261,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.8116260915257347,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "6",
+            "confidence": 0.8281079236456814,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.8116260915257347,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "8.6 "
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC1",
+      "mode": "cross",
+      "expected": "B",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC2",
+      "mode": "ghost",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9729073321446776,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC3",
+      "mode": "double",
+      "expected": "D",
+      "eligible": false,
+      "established": {
+        "status": "multiple",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC4",
+      "mode": "complete-plus-ghost",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "ambiguous",
+        "symbol": null,
+        "review": true
+      },
+      "cpas": {
+        "optical": "competing",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC5",
+      "mode": "complete-offset",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9435095346222321,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC6",
+      "mode": "scribble",
+      "expected": "C",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC7",
+      "mode": "complete-medium",
+      "expected": "D",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "D",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "D",
+        "disposition": "would-accept",
+        "confidence": 0.9977360809842746,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "D"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "D"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "D"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "D"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "D"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC8",
+      "mode": "complete-dark",
+      "expected": "A",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "A",
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "A"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "A"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "A"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "A"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC9",
+      "mode": "complete-light",
+      "expected": "B",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "B",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "B",
+        "disposition": "would-accept",
+        "confidence": 0.9980711763103803,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "B"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "B"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "B"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "B"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "B"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC10",
+      "mode": "complete-textured",
+      "expected": "C",
+      "eligible": true,
+      "established": {
+        "status": "single",
+        "symbol": "C",
+        "review": false
+      },
+      "cpas": {
+        "optical": "single",
+        "symbol": "C",
+        "disposition": "would-accept",
+        "confidence": 0.9996649046738942,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "C"
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": "C"
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": "C"
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": "C"
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": "C"
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC11",
+      "mode": "blank",
+      "expected": null,
+      "eligible": true,
+      "established": {
+        "status": "blank",
+        "symbol": null,
+        "review": false
+      },
+      "cpas": {
+        "optical": "blank",
+        "symbol": null,
+        "disposition": "would-accept",
+        "confidence": 1,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": null
+        },
+        "CPAS": {
+          "accepted": true,
+          "value": null
+        },
+        "strictConsensus": {
+          "accepted": true,
+          "value": null
+        },
+        "sameOptical": {
+          "accepted": true,
+          "value": null
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": true,
+          "value": null
+        }
+      }
+    },
+    {
+      "kind": "MC",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "MC12",
+      "mode": "half",
+      "expected": "A",
+      "eligible": false,
+      "established": {
+        "status": "single",
+        "symbol": "A",
+        "review": false
+      },
+      "cpas": {
+        "optical": "incomplete",
+        "symbol": null,
+        "disposition": "review",
+        "confidence": null,
+        "evidenceComplete": true
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "A"
+        },
+        "CPAS": {
+          "accepted": false
+        },
+        "strictConsensus": {
+          "accepted": false
+        },
+        "sameOptical": {
+          "accepted": false
+        },
+        "cpasWithEstablishedRescue": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "NR1",
+      "eligible": true,
+      "expected": "3.14",
+      "established": {
+        "status": "single",
+        "rawText": "3.14",
+        "review": false
+      },
+      "cpas": {
+        "rawText": "3.14",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "3",
+            "confidence": 0.8203869225515519,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.8211098891275469,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "1",
+            "confidence": 0.7792761912569404,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "4",
+            "confidence": 0.7881990176470329,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": true,
+          "value": "3.14"
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "3.14"
+        },
+        "agreement": {
+          "accepted": true,
+          "value": "3.14"
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "NR2",
+      "eligible": true,
+      "expected": "72  ",
+      "established": {
+        "status": "ambiguous",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": "72  ",
+        "reasons": [],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "7",
+            "confidence": 0.7697114408811709,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": "2",
+            "confidence": 0.80373938063276,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.7790694165004728,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.7790694165004728,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": true,
+          "value": "72  "
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    },
+    {
+      "kind": "NR",
+      "scale": 1.8,
+      "variant": 5,
+      "id": "NR3",
+      "eligible": false,
+      "expected": "8.6 ",
+      "established": {
+        "status": "ambiguous",
+        "rawText": null,
+        "review": true
+      },
+      "cpas": {
+        "rawText": null,
+        "reasons": [
+          "optical-unresolved"
+        ],
+        "slots": [
+          {
+            "optical": "single",
+            "symbol": "8",
+            "confidence": 0.7868078438254694,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "single",
+            "symbol": ".",
+            "confidence": 0.820949515500494,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "incomplete",
+            "symbol": null,
+            "confidence": null,
+            "evidenceComplete": true
+          },
+          {
+            "optical": "blank",
+            "symbol": null,
+            "confidence": 0.7793911441268089,
+            "evidenceComplete": true
+          }
+        ]
+      },
+      "policies": {
+        "Established": {
+          "accepted": false
+        },
+        "CPASLiteral": {
+          "accepted": false
+        },
+        "agreement": {
+          "accepted": false
+        }
+      }
+    }
+  ],
+  "limits": "Authored synthetic raster pilot, fixed oracle pose, seven-segment print approximation; no real paper, JPEG, CPAS/ISTE reserve, handwriting, registration uncertainty, or grading-policy validation. NR trailing blank treated as a literal space. Complete-plus-ghost treated as requiring review. Candidate rules not tuned or promoted."
+}
