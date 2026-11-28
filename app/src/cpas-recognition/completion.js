@@ -98,10 +98,13 @@ export function evaluateCompletion(gray, profile, registration, { reference, pre
       if (rawText === null) reasons.push('optical-unresolved');
       else if (rawText.trim() && !/^(?:0|[1-9][0-9]*)(?:\.[0-9]+)? *$/.test(rawText)) reasons.push('nr-format');
       if (slots.some(slot => slot.multimodal === 'disagreement')) reasons.push('handwriting-disagreement');
-      const localRecognition = localGeometry ? {
-        ...decideNumerical(slots.map(slot => slot.localDecision), item.slots.map(slot => slot.id)),
-        slots: slots.map(slot => slot.localDecision),
-      } : undefined;
+      let localRecognition;
+      if (localGeometry) {
+        const decisions = slots.map(slot => slot.localDecision);
+        const optical = decideNumerical(decisions, item.slots.map(slot => slot.id));
+        localRecognition = { status: 'review', opticalStatus: optical.status, rawText: optical.rawText,
+          reason: optical.reason ?? 'printed-correspondence-unverified', slots: decisions };
+      }
       return { id: item.id, kind: 'nr', slots, rawText, disposition: 'review', reasons, localRecognition };
     });
   });

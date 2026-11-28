@@ -98,8 +98,9 @@ export function showComparison(container, cpas, established, all) {
       item.disposition === 'would-accept' ? 'Passes the experimental optical check' : 'CPAS suggests inspection');
     if (item.localRecognition) {
       const local = item.localRecognition;
-      add(disclosure, 'p', local.status === 'would-accept'
-        ? `Local geometry candidate · ${local.rawText.trim() || 'Blank'}` : 'Local geometry candidate · Review');
+      add(disclosure, 'p', local.rawText !== null
+        ? `Local optical reading for inspection · ${local.rawText.trim() || 'Blank'}` : 'Local optical reading unavailable');
+      add(disclosure, 'p', 'Check the printed digits on the sheet. Alignment checks do not verify their identity.');
     }
     if (item.methods) {
       for (const [key, name] of [['agreement', 'Optical agreement'], ['stacking', 'Logistic stacking'],

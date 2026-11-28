@@ -14,3 +14,7 @@
 The research handoffs are frozen at REC-R8–R10 `b83afe821dd4abbca82f0bc5bc573b204eeddf53` and REC-R11–R16 `bb54daccd0f90e454d0dac59afeb5d36075c8ecd`. No thresholds or model weights were trained or changed. Local evidence can support sampling positions, while correct printed-feature correspondence requires independent compatibility checks. The preview provides no automatic grade or answer substitution.
 
 [Physical iPhone procedure](CPAS_IPHONE_ACCEPTANCE.md)
+
+## Independent correspondence finding
+
+On the independent glyph-permutation control, automatic registration admitted an NR grid with intact ring positions and permuted printed digits. The original and locally supported optical reads both reported 0.94 where the filled printed response was 0.67. Consequently all local NR outputs are explicitly review-only. The diagnostic export retains the internal optical disposition and literal for comparison. A supported alignment is evidence about ring locations. Independent printed-feature checks remain necessary for any future NR acceptance policy.
