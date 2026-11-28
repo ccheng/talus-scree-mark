@@ -1,0 +1,20 @@
+// Run from checkout root with Node 22: node research/psa-rec/run-rec-r7.mjs
+import { readFileSync } from 'node:fs';
+import { strict as assert } from 'node:assert';
+import { createPredictor } from '../../app/src/cpas-recognition/forest.js';
+import { evaluateCompletion } from '../../app/src/cpas-recognition/completion.js';
+import { readBubbleRegions } from '../../app/src/marks.js';
+import { candidateFeatures, fitLogistic, score, stackDecision } from './stacking.js';
+import { runStacking } from './rec-r7-stacking.mjs';
+const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+const predict = createPredictor(read('../../app/assets/cpas/completion-native.json'),readFileSync(new URL('../../app/assets/cpas/completion.bin',import.meta.url)));
+const actual = runStacking({predict,evaluateCompletion,readBubbleRegions,candidateFeatures,fitLogistic,score,stackDecision});
+const expected = read('./rec-r7-stacking-summary.json');
+assert.deepEqual(actual.groups,expected.groups);
+assert.deepEqual(actual.trainCounts,expected.trainCounts);
+assert.deepEqual(actual.summaries,expected.summaries);
+assert.deepEqual(actual.perFamily,expected.perFamily);
+assert.deepEqual(actual.byMode,expected.byMode);
+assert.ok(Math.abs(actual.threshold-expected.threshold)<1e-8);
+assert.ok(actual.model.w.every((w,i)=>Math.abs(w-expected.model.w[i])<1e-8));
+console.log('REC-R7 discrete results and fitted model reproduced.');
