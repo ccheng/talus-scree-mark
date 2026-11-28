@@ -203,3 +203,16 @@ figcaption { color: var(--muted); margin-top: .45rem; font-size: .87rem; text-al
   width: 100%;
   max-width: 48rem;
 }
+
+#cpas-preview details summary {
+  cursor: pointer;
+  padding-block: 0.65rem;
+}
+.cpas-item {
+  border-top: 1px solid currentColor;
+  margin-top: 0.35rem;
+  overflow-wrap: anywhere;
+}
+.cpas-item p {
+  margin-block: 0.35rem 0.65rem;
+}

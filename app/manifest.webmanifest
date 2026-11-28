@@ -1,9 +1,9 @@
 {
   "id": "./",
   "name": "Talus Scree Mark",
-  "short_name": "Scree Mark",
+  "short_name": "Scree Mark CPAS",
   "lang": "en",
-  "start_url": "./",
+  "start_url": "./?cpas=preview",
   "scope": "./",
   "display": "standalone",
   "theme_color": "#eff3ec",

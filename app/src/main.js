@@ -50,6 +50,7 @@ const grading = createGradingView({ scope, async recover(entry) {
   if (workspace.activeBatch === batch) runRecognition();
 } });
 const recognition = createRecognitionView({
+  selectedProfile: () => workspace.selectedProfile,
   button: read, status: byId('recognition-status'), results: byId('recognition-results'),
   table: byId('recognition-items'), overlay: byId('recognition-overlay'),
   diagnostics: byId('scan-diagnostics'),
@@ -62,6 +63,7 @@ const workspace = createProfileWorkspace({
   onBatchChanged: grading.setBatch,
   onChanged({ clearImage = false } = {}) {
     grading.select(workspace.selectedProfile, clearImage);
+    recognition.refreshReference();
     if (clearImage) {
       cancelImport();
       camera.close();
@@ -73,6 +75,7 @@ const workspace = createProfileWorkspace({
   },
   onEditorClosed(saved) {
     grading.select(workspace.selectedProfile);
+    recognition.refreshReference();
     if (saved) {
       recognition.reset();
       workingImage = undefined;

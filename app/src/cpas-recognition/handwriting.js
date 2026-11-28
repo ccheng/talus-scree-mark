@@ -124,7 +124,9 @@ export function classifyHandwriting(paper, gate, weights) {
   const confidence = Math.max(...scores);
   const selected = scores.indexOf(confidence);
   const symbol = selected < 10 ? String(selected) : selected === 10 ? '.' : null;
-  return { symbol, confidence, confident: symbol !== null && confidence >= (selected === 10 ? .9219172932330828 : .85) };
+  const symbols = [...'0123456789', '.', 'blank', 'other'];
+  const probabilities = Object.fromEntries(symbols.map((label, i) => [label, scores[i]]));
+  return { symbol, confidence, probabilities, gate: { digit, dot, blank, other }, confident: symbol !== null && confidence >= (selected === 10 ? .9219172932330828 : .85) };
 }
 
 export function observeHandwriting(gray, matrix, box, gate, weights) {

@@ -30,7 +30,7 @@ function observeGroup(gray, matrix, reference, referenceMatrix, choices, nr, pre
   else if (complete.length === 1 && bubbles.every(b => ['no-added-mark', 'complete'].includes(b.completion))) optical = 'single';
   const confidence = ['single', 'blank'].includes(optical)
     ? Math.min(...bubbles.map(b => b.probabilities[b.completion === 'complete' ? 2 : 0])) : null;
-  return { optical, symbol: optical === 'single' ? complete[0].symbol : null, confidence, bubbles };
+  return { optical, evidenceComplete: bubbles.every(b => b.conditioned && b.rawCoreInk !== null), symbol: optical === 'single' ? complete[0].symbol : null, confidence, bubbles };
 }
 
 function compareHandwriting(optical, handwriting) {
@@ -52,8 +52,10 @@ export function evaluateCompletion(gray, profile, registration, { reference, pre
       if (item.kind === 'mc') {
         const optical = read(item.choices, false, observed);
         const admitted = optical.confidence !== null && optical.confidence + 1e-12 >= mcConfidence &&
-          optical.bubbles.every(b => b.conditioned && b.rawCoreInk !== null);
-        return { id: item.id, kind: 'mc', ...optical, disposition: admitted ? 'would-accept' : 'review' };
+          optical.evidenceComplete;
+        return { id: item.id, kind: 'mc', ...optical, disposition: admitted ? 'would-accept' : 'review',
+          reason: admitted ? null : optical.confidence === null ? optical.optical :
+            !reference ? 'no-reference' : !optical.evidenceComplete ? 'unobservable' : 'low-confidence' };
       }
       const slots = item.slots.map((slot, index) => {
         const optical = read(slot.choices, true, observed?.slots?.[index]);

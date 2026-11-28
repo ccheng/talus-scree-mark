@@ -67,19 +67,22 @@ function validatedBoxes(boxes, profile) {
 
 export async function readProfileSheetWithCpas(image, profile, options = {}) {
   const established = readProfileSheet(image, profile, options);
-  if (established.status !== 'read') return { ...established, cpas: { status: 'registration-rejected', items: [] } };
+  return { ...established, cpas: await compareProfileSheet(image, profile, established, options) };
+}
+
+export async function compareProfileSheet(image, profile, established, options = {}) {
+  if (established.status !== 'read') return { status: 'registration-rejected', items: [] };
   try {
     const start = performance.now();
     const validated = createMarkerlessProfile(profile);
     let reference;
+    let referenceRejected = false;
     if (options.cpasReference) {
       const alignment = registerMarkerless(options.cpasReference, validated, {
         batch: options.batch, corners: options.cpasReferenceCorners,
       });
-      if (alignment.status !== 'registered') {
-        return { ...established, cpas: { status: 'reference-registration-rejected', items: [] } };
-      }
-      reference = { ...alignment, gray: toGrayImage(options.cpasReference) };
+      if (alignment.status === 'registered') reference = { ...alignment, gray: toGrayImage(options.cpasReference) };
+      else referenceRejected = true;
     }
     const predict = options.cpasPredict ?? await predictor();
     const gray = toGrayImage(image);
@@ -93,8 +96,8 @@ export async function readProfileSheetWithCpas(image, profile, options = {}) {
       reference, predict, established: established.items, handwriting,
     });
     cpas.handwriting = { eligibleBoxes: boxes.size, modelAvailable: Boolean(hwr) };
-    return { ...established, cpas: { ...cpas, elapsedMs: performance.now() - start } };
+    return { ...cpas, referenceRejected, elapsedMs: performance.now() - start };
   } catch {
-    return { ...established, cpas: { status: 'unavailable', items: [] } };
+    return { status: 'unavailable', items: [] };
   }
 }

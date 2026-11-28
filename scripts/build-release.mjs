@@ -8,7 +8,7 @@ const staticFiles = [
   'assets/icon-180.png',
   ...['completion-native.json', 'completion.bin', 'adapted.f32', 'handwriting-gate.json']
     .map(file => `assets/cpas/${file}`),
-  ...['completion', 'spatial', 'preview', 'forest', 'digit-cnn', 'handwriting']
+  ...['completion', 'spatial', 'preview', 'forest', 'digit-cnn', 'handwriting', 'comparison-view', 'reference-store']
     .map(module => `src/cpas-recognition/${module}.js`),
   'assets/icon-192.png',
   'assets/icon-512.png',

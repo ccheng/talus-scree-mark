@@ -1,3 +1,5 @@
+import { blankReference, referenceKey } from './cpas-recognition/reference-store.js';
+import { showComparison } from './cpas-recognition/comparison-view.js';
 import { importWorkingImage } from './image.js';
 import { project } from './projective.js';
 
@@ -106,7 +108,7 @@ function addItems(table, items) {
   table.replaceChildren(fragment);
 }
 
-export function createRecognitionView({ button, status, results, table, overlay, diagnostics, onRegistration, onRead }) {
+export function createRecognitionView({ button, status, results, table, overlay, diagnostics, onRegistration, onRead, selectedProfile }) {
   let active;
   let available = false;
   let jobId = 0;
@@ -115,30 +117,169 @@ export function createRecognitionView({ button, status, results, table, overlay,
   const blankInput = preview?.querySelector('#cpas-blank');
   const previewStatus = preview?.querySelector('#cpas-preview-status');
   const download = preview?.querySelector('#cpas-download');
-  let blank;
-  let blankImport;
-  let blankProfile;
+  const referenceStatus = preview?.querySelector('#cpas-reference-status');
+  const removeBlank = preview?.querySelector('#cpas-remove-blank');
+  const comparisonList = preview?.querySelector('#cpas-comparison');
+  const showAll = preview?.querySelector('#cpas-all');
+  const showAllLabel = preview?.querySelector('#cpas-all-label');
   let comparison;
   let handwritingConfig;
+  let referenceJob;
+  let comparisonJob;
+
+  const serialize = image => ({ id: image.id, width: image.width, height: image.height, pixels: image.pixels.data });
+  async function prepareReference(job, file) {
+    const image = await importWorkingImage(file, job.controller.signal);
+    if (referenceJob !== job) return undefined;
+    return serialize(image);
+  }
+
+  function startReference(key) {
+    referenceJob?.controller.abort();
+    const job = { key, controller: new AbortController(), value: undefined };
+    referenceJob = job;
+    return job;
+  }
+
+  function refreshReference() {
+    if (!preview) return;
+    const profile = selectedProfile();
+    const key = referenceKey(profile);
+    if (referenceJob?.key === key) return;
+    const job = startReference(key);
+    blankInput.value = '';
+    blankInput.disabled = !key;
+    removeBlank.disabled = true;
+    referenceStatus.textContent = key ? 'Checking for a saved blank…' : 'Select a template profile first.';
+    if (!key) return;
+    job.value = blankReference(key, 'get').then(async file => {
+      if (referenceJob !== job) return undefined;
+      const image = file ? await prepareReference(job, file) : undefined;
+      if (referenceJob !== job) return undefined;
+      removeBlank.disabled = !image;
+      referenceStatus.textContent = image ? `Saved blank ready for ${profile.name}, revision ${profile.revision}.` :
+        'No blank saved for this revision. Optical observations are still available.';
+      return image;
+    }).catch(() => {
+      if (referenceJob === job) {
+        removeBlank.disabled = false;
+        referenceStatus.textContent = 'Saved blank unavailable. You can replace or remove it.';
+      }
+      return undefined;
+    });
+  }
+
+  function showCpas(cpas, established) {
+    comparison = { profile: established.profile, established: established.items, cpas };
+    download.hidden = cpas.status !== 'evaluated';
+    showAllLabel.hidden = cpas.status !== 'evaluated';
+    const messages = {
+      'registration-rejected': 'CPAS skipped this scan because Established requested a retake.',
+      unavailable: 'CPAS comparison unavailable. Established results are available as usual.',
+    };
+    if (cpas.status === 'evaluated') {
+      const mc = cpas.items.filter(item => item.kind === 'mc');
+      const accepted = mc.filter(item => item.disposition === 'would-accept').length;
+      const blankStatus = cpas.referenceRejected ? 'Saved blank did not pass the reference checks. Showing observations without it.' :
+        cpas.reference === 'conditioned' ? 'Compared with the saved blank.' : 'Showing observations without a matching blank.';
+      previewStatus.textContent = `${blankStatus} MC completion checks passed ${accepted} of ${mc.length}.`;
+      if (cpas.handwriting.eligibleBoxes) {
+        previewStatus.textContent += cpas.handwriting.modelAvailable
+          ? ` Handwriting regions checked ${cpas.handwriting.eligibleBoxes}.` : ' Handwriting model unavailable.';
+      }
+    } else previewStatus.textContent = messages[cpas.status] ?? messages.unavailable;
+    showComparison(comparisonList, cpas, established.items, showAll.checked);
+  }
+
+  function cancelComparison() {
+    const job = comparisonJob;
+    comparisonJob = undefined;
+    job?.worker?.terminate();
+    clearTimeout(job?.timer);
+  }
+
+  async function compare(image, request, established) {
+    if (!preview || !request) return;
+    if (established.status !== 'read') {
+      showCpas({ status: 'registration-rejected', items: [] }, established);
+      return;
+    }
+    const job = {};
+    comparisonJob = job;
+    previewStatus.textContent = 'Comparing with CPAS…';
+    const finish = cpas => {
+      if (comparisonJob !== job) return;
+      cancelComparison();
+      showCpas(cpas ?? { status: 'unavailable', items: [] }, established);
+    };
+    job.timer = setTimeout(() => finish(), 15000);
+    try {
+      refreshReference();
+      const ref = referenceJob;
+      const reference = ref?.key === referenceKey(request.profile) ? await ref.value : undefined;
+      if (comparisonJob !== job) return;
+      const cpasHandwritingBoxes = handwritingConfig && request.profile.id === handwritingConfig.profileId &&
+        request.profile.revision === handwritingConfig.revision ? handwritingConfig.boxes : undefined;
+      job.worker = new Worker(new URL('./omr-worker.js', import.meta.url), { type: 'module' });
+      job.worker.addEventListener('message', ({ data }) => finish(data.cpas));
+      job.worker.addEventListener('error', () => finish());
+      job.worker.addEventListener('messageerror', () => finish());
+      job.worker.postMessage({ type: 'compare-cpas', image: serialize(image), profile: request.profile, established,
+        options: { ...request.options, cpasReference: ref === referenceJob ? reference : undefined, cpasHandwritingBoxes } });
+    } catch { finish(); }
+  }
+
   if (preview) {
     preview.hidden = false;
+    blankInput.disabled = removeBlank.disabled = true;
     blankInput.addEventListener('change', async () => {
-      blankImport?.abort();
-      const controller = new AbortController();
-      blankImport = controller;
-      blank = undefined;
-      blankProfile = undefined;
+      const profile = selectedProfile();
+      const key = referenceKey(profile);
       const file = blankInput.files[0];
-      previewStatus.textContent = file ? 'Opening blank reference…' : '';
-      if (!file) return;
+      blankInput.value = '';
+      if (!key || !file) return;
+      const previous = referenceJob?.value;
+      const job = startReference(key);
+      removeBlank.disabled = true;
+      referenceStatus.textContent = 'Opening blank reference…';
+      job.value = (async () => {
+        try {
+          const image = await prepareReference(job, file);
+          if (referenceJob !== job) return undefined;
+          try {
+            await blankReference(key, 'save', file);
+            if (referenceJob === job) referenceStatus.textContent = `Saved blank for ${profile.name}, revision ${profile.revision}.`;
+          } catch {
+            if (referenceJob === job) referenceStatus.textContent = 'Could not save the blank. It is ready for this session.';
+          }
+          if (referenceJob === job) removeBlank.disabled = false;
+          return image;
+        } catch {
+          if (referenceJob === job) {
+            referenceStatus.textContent = 'Could not open that blank. Choose a JPEG or PNG.';
+            removeBlank.disabled = false;
+          }
+          return previous;
+        }
+      })();
+    });
+    removeBlank.addEventListener('click', async () => {
+      const key = referenceJob?.key;
+      if (!key) return;
+      const job = startReference(key);
+      removeBlank.disabled = true;
       try {
-        const image = await importWorkingImage(file, controller.signal);
-        if (controller.signal.aborted) return;
-        blank = { id: image.id, width: image.width, height: image.height, pixels: image.pixels.data };
-        previewStatus.textContent = 'Blank reference ready for the next scan.';
+        await blankReference(key, 'remove');
+        if (referenceJob === job) referenceStatus.textContent = 'Saved blank removed.';
       } catch {
-        if (!controller.signal.aborted) previewStatus.textContent = 'Could not open the blank reference. Choose a JPEG or PNG.';
+        if (referenceJob === job) {
+          referenceStatus.textContent = 'Could not remove the saved blank.';
+          removeBlank.disabled = false;
+        }
       }
+    });
+    showAll.addEventListener('change', () => {
+      if (comparison) showComparison(comparisonList, comparison.cpas, comparison.established, showAll.checked);
     });
     const boxInput = preview.querySelector('#cpas-handwriting');
     const boxStatus = preview.querySelector('#cpas-handwriting-status');
@@ -182,8 +323,14 @@ export function createRecognitionView({ button, status, results, table, overlay,
     active?.worker.terminate();
     active = undefined;
     setStatus('idle');
+    cancelComparison();
     comparison = undefined;
-    if (download) download.hidden = true;
+    if (download) {
+      download.hidden = true;
+      showAllLabel.hidden = true;
+      comparisonList.replaceChildren();
+      previewStatus.textContent = '';
+    }
     for (const field of ['strategy', 'authorization', 'cornerPath', 'profileId', 'revision']) delete status.dataset[field];
     table.replaceChildren();
     results.hidden = true;
@@ -286,16 +433,6 @@ export function createRecognitionView({ button, status, results, table, overlay,
         setStatus('error', 'Recognition did not finish. Try reading the bubbles again.');
         return;
       }
-      if (result.cpas && preview) {
-        comparison = { profile: result.profile, established: result.items, cpas: result.cpas };
-        download.hidden = false;
-        const mc = result.cpas.items.filter(item => item.kind === 'mc');
-        const nr = result.cpas.items.filter(item => item.kind === 'nr');
-        const accepted = mc.filter(item => item.disposition === 'would-accept').length;
-        previewStatus.textContent = result.cpas.status === 'evaluated'
-          ? `CPAS ${result.cpas.reference}. MC would accept ${accepted} of ${mc.length}. NR experimental observations ${nr.length}. Handwriting boxes evaluated ${result.cpas.handwriting.modelAvailable ? result.cpas.handwriting.eligibleBoxes : 0}.`
-          : `CPAS comparison unavailable. ${result.cpas.status.replaceAll('-', ' ')}.`;
-      }
       onRegistration(result.registration);
       showDiagnostics(result.registration, request?.profile);
       if (result.registration.strategy) status.dataset.strategy = result.registration.strategy;
@@ -311,6 +448,7 @@ export function createRecognitionView({ button, status, results, table, overlay,
           ? ' Check the selected profile, retake or set scan corners.'
           : ' Retake the photo or choose a clear image of the reference sheet.';
         setStatus('retake', explanation + next);
+        compare(image, request, result);
         return;
       }
 
@@ -322,26 +460,16 @@ export function createRecognitionView({ button, status, results, table, overlay,
       const path = request ? ' Read against the confirmed batch profile.' : '';
       setStatus('read', (reviewCount ? summary : 'All responses read.') + path);
       onRead?.(result, request?.profile, image);
+      compare(image, request, result);
     }
     worker.addEventListener('message', ({ data }) => complete(data));
     worker.addEventListener('error', () => complete());
     worker.addEventListener('messageerror', () => complete());
     try {
-      const profileKey = request?.profile && JSON.stringify([request.profile.id, request.profile.revision]);
-      if (preview && profileKey && blank) {
-        blankProfile ??= profileKey;
-        if (blankProfile !== profileKey) {
-          blank = undefined;
-          blankInput.value = '';
-        }
-      }
-      const cpasHandwritingBoxes = handwritingConfig && request?.profile?.id === handwritingConfig.profileId &&
-        request.profile.revision === handwritingConfig.revision ? handwritingConfig.boxes : undefined;
       worker.postMessage({
         type: request ? 'read-profile' : 'read-reference', jobId: job.id,
         ...request,
-        ...(preview && request ? { options: { ...request.options, cpasPreview: true, cpasReference: blank, cpasHandwritingBoxes } } : {}),
-        image: { id: image.id, width: image.width, height: image.height, pixels: image.pixels.data },
+        image: serialize(image),
       });
     } catch {
       complete();
@@ -353,5 +481,5 @@ export function createRecognitionView({ button, status, results, table, overlay,
     button.hidden = !value || !visible;
   }
 
-  return { read, reset, setAvailable };
+  return { read, reset, setAvailable, refreshReference };
 }
