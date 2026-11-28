@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="scree-release" content="6c765bd6771ad94e9b0f8884">
+  <meta name="theme-color" content="#eff3ec">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Talus Scree Mark</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="./assets/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/icon-180.png">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body>
+  <main class="app">
+    <header class="heading">
+      <h1><img src="./assets/icon-192.png" width="44" height="44" alt="">Talus Scree Mark</h1>
+      <div class="offline-panel">
+        <p id="offline-status" role="status">Checking offline setup…</p>
+        <button id="retry-offline" type="button" hidden>Retry offline setup</button>
+        <p id="build-id" class="build-id"></p>
+      </div>
+    </header>
+    <section class="capture-panel" aria-labelledby="capture-heading">
+      <h2 id="capture-heading">Capture an answer sheet</h2>
+      <p class="preview-note">Development preview. Use mock sheets only.</p>
+      <p class="hint">Use the camera or choose a JPEG or PNG. The preview clears when you close this page.</p>
+      <div class="controls" id="marked-capture-controls">
+        <button id="start-camera" type="button">Open camera</button>
+        <button id="shutter" type="button" class="primary" hidden disabled>Take photo</button>
+        <button id="cancel-camera" type="button" hidden>Cancel camera</button>
+        <button id="choose-image" type="button">Choose image</button>
+        <input id="image-picker" type="file" hidden>
+        <button id="read-bubbles" type="button" hidden>Read bubbles</button>
+        <button id="clear-image" type="button" hidden>Clear preview</button>
+      </div>
+      <p id="capture-status" class="capture-status" role="status"></p>
+      <button id="retry-checkpoint" type="button" hidden>Retry saving captured sheet</button>
+      <div id="camera-preview" class="preview" hidden>
+        <video id="camera-video" aria-label="Live camera preview" autoplay playsinline muted></video>
+      </div>
+      <figure id="image-preview" class="preview" hidden>
+        <div class="image-stack">
+          <canvas id="sheet-canvas" width="1" height="1" role="img" aria-label="Answer sheet preview"></canvas>
+          <canvas id="recognition-overlay" width="1" height="1" aria-hidden="true" hidden></canvas>
+        </div>
+        <figcaption id="preview-caption"></figcaption>
+      </figure>
+      <div class="controls scan-registration" id="scan-registration" hidden>
+        <button id="manual-corners" type="button" hidden>Set scan corners</button>
+      </div>
+      <section id="scan-corner-panel" class="profile-card" aria-labelledby="scan-corner-heading" hidden>
+        <h3 id="scan-corner-heading">Set scan corners</h3>
+        <p>Check that the photo is upright and unmirrored. Drag the four numbered markers onto the corresponding page corners.</p>
+        <div class="profile-viewport"><canvas id="scan-corner-canvas" width="1" height="1" aria-label="Mark scan corners"></canvas></div>
+        <div class="controls">
+          <button id="reset-scan-corners" type="button">Reset corner markers</button>
+          <button id="apply-scan-corners" type="button" disabled>Use these corners</button>
+          <button id="cancel-scan-corners" type="button">Cancel</button>
+        </div>
+      </section>
+      <section id="cpas-preview" class="profile-card" hidden>
+        <h3>CPAS recognition preview</h3>
+        <p>Established supplies the responses used for grading. Compare its reads with experimental CPAS observations below.</p>
+        <details>
+          <summary>Blank reference and handwriting setup</summary>
+        <p>Choose an unmarked copy of the selected template. The preview saves it on this device for this profile revision.</p>
+        <label for="cpas-blank">Blank reference image</label>
+        <input id="cpas-blank" type="file" accept="image/png,image/jpeg">
+        <button id="cpas-remove-blank" type="button">Remove saved blank</button>
+        <p id="cpas-reference-status" role="status"></p>
+        <label for="cpas-handwriting">Optional profile-matched handwriting box map (JSON)</label>
+        <input id="cpas-handwriting" type="file" accept=".json,application/json">
+        <p id="cpas-handwriting-status" role="status"></p>
+        </details>
+        <p id="cpas-preview-status" role="status"></p>
+        <label id="cpas-all-label" hidden><input id="cpas-all" type="checkbox"> Show all responses</label>
+        <div id="cpas-comparison"></div>
+        <button id="cpas-download" type="button" hidden>Download CPAS diagnostics</button>
+      </section>
+      <p id="recognition-status" class="capture-status" role="status" data-status="idle"></p>
+      <ol id="scan-diagnostics" aria-label="Scan checks" hidden>
+        <li data-stage="page-pose"></li>
+        <li data-stage="orientation"></li>
+        <li data-stage="response-geometry"></li>
+        <li data-stage="printed-landmarks" hidden></li>
+      </ol>
+      <section id="recognition-results" aria-labelledby="recognition-heading" data-status="idle" hidden>
+        <h3 id="recognition-heading">Observed responses</h3>
+        <p class="hint">Dashed outlines show areas to review. In numerical responses, · marks an empty position and ? marks an unresolved position.</p>
+        <table>
+          <thead><tr><th scope="col">Item</th><th scope="col">Observed</th><th scope="col">Review</th></tr></thead>
+          <tbody id="recognition-items"></tbody>
+        </table>
+      </section>
+      <section class="profile-card" aria-labelledby="profiles-heading">
+        <h3 id="profiles-heading">Answer-sheet profiles</h3>
+        <label for="profile-selector">Profile for successive scans</label>
+        <select id="profile-selector"><option value="reference">Coded reference sheet (M2)</option></select>
+        <p id="profile-pin" class="hint" role="status">Coded reference sheet selected.</p>
+        <div class="controls">
+          <button id="setup-profile" type="button" class="primary">Import blank sheet</button>
+          <button id="scan-completed" type="button" class="primary" hidden>Scan completed sheet</button>
+          <button id="scan-next" type="button" class="primary" hidden>Scan next sheet</button>
+        </div>
+        <details id="profile-advanced" hidden>
+          <summary>Manage profiles</summary>
+          <div class="controls">
+            <button id="end-batch" type="button" hidden>End batch</button>
+            <button id="revise-profile" type="button" hidden>Revise selected profile</button>
+            <button id="rename-profile" type="button" hidden>Rename</button>
+            <button id="delete-profile" type="button" hidden>Delete</button>
+          </div>
+        </details>
+        <form id="profile-management" hidden>
+          <p id="profile-management-message" role="status"></p>
+          <label id="rename-profile-label" hidden>New profile name <input id="rename-profile-name" maxlength="80" required></label>
+          <button id="confirm-profile-management" type="submit">Confirm</button>
+          <button id="cancel-profile-management" type="button">Cancel</button>
+        </form>
+        <p id="profile-status" class="capture-status" role="status"></p>
+      </section>
+      <section id="profile-editor" class="profile-card" aria-labelledby="profile-editor-heading" hidden>
+        <h3 id="profile-editor-heading">Review the blank-sheet template</h3>
+        <div class="editor-fields">
+          <label>Profile name <input id="profile-name" maxlength="80"></label>
+          <label>Paper orientation
+            <select id="profile-orientation"><option value="portrait">Letter portrait</option><option value="landscape">Letter landscape</option></select>
+          </label>
+        </div>
+        <label><input id="profile-mc-only" type="checkbox"> MC-only grading (NR and WR excluded)</label>
+        <div>
+          <label>Expected MC questions (optional) <input id="mc-expected-count" type="number" min="1" max="1536" step="1" inputmode="numeric"></label>
+          <p id="mc-expected-status" role="status"></p>
+        </div>
+        <div id="profile-mc-review" hidden>
+          <p>Draw a box around one group of MC bubbles, including missing rows and a little margin. Use the controls below the page to fit the block.</p>
+        </div>
+        <p id="editor-status" role="status"></p>
+        <p id="discovery-status" role="status" class="capture-status" data-status="idle"></p>
+        <div class="controls">
+          <button id="editor-zoom-out" type="button">Zoom out</button>
+          <button id="editor-zoom-in" type="button">Zoom in</button>
+          <button id="editor-pan" type="button" aria-pressed="false">Pan preview</button>
+          <button id="reset-blank-corners" type="button">Place corners again</button>
+          <button id="apply-blank-corners" type="button" disabled>Use these corners</button>
+          <button id="cancel-blank-corners" type="button" hidden>Cancel corner placement</button>
+          <button id="discover-layout" type="button" hidden>Find all response blocks</button>
+          <button id="discover-psa-page" type="button" hidden>Find all blocks with PSA Structured</button>
+          <button id="export-template-diagnostics" type="button">Export template diagnostics</button>
+          <button id="cancel-psa-page" type="button" hidden>Cancel page search</button>
+          <button id="rediscover-layout" type="button" hidden>Find blocks outside exclusions</button>
+          <button id="clear-discovery" type="button" hidden>Clear proposed blocks</button>
+          <button id="review-discovery" type="button" hidden>Keep found blocks and check gaps</button>
+        </div>
+        <div class="profile-viewport"><canvas id="profile-canvas" width="1" height="1" aria-label="Blank reference image and layout marks"></canvas></div>
+        <div id="profile-grid-controls" hidden>
+          <p>Bubble rings show placement. Green is observed, orange is estimated, and blue is manually adjusted. An orange block outline needs review.</p>
+          <ol id="profile-discovery-conflicts"></ol>
+          <fieldset id="profile-region-options">
+            <legend>Response region</legend>
+            <p>Drag across the preview to select one response block, or enter its bounds in Letter points. For numerical response, box one question at a time, including its decimal bubbles. Leave names and headings outside the region.</p>
+            <details id="region-coordinate-details" open>
+              <summary>Enter box coordinates</summary>
+            <div class="editor-fields">
+              <label>Left <input id="region-x" type="number" step="any"></label>
+              <label>Top <input id="region-y" type="number" step="any"></label>
+              <label>Width <input id="region-width" type="number" step="any" min="1"></label>
+              <label>Height <input id="region-height" type="number" step="any" min="1"></label>
+            </div>
+            </details>
+            <div class="controls">
+              <button id="preview-region" type="button">Preview box</button>
+              <button id="add-exclusion" type="button">Use box as exclusion</button>
+              <button id="cancel-exclusion-edit" type="button" hidden>Cancel exclusion edit</button>
+            </div>
+            <p>Exclusions affect discovery only. Mark a response block as kept to retain it during another search.</p>
+            <ol id="profile-exclusions"></ol>
+          </fieldset>
+          <fieldset id="profile-block-options">
+            <legend>Set up a response block</legend>
+            <div class="editor-fields">
+              <label>Questions / rows <input id="grid-rows" type="number" value="8" min="1" max="64"></label>
+              <label>Choices / columns <input id="grid-columns" type="number" value="4" min="1" max="64"></label>
+              <label>Block type <select id="block-kind"><option value="mc">Multiple choice</option><option value="nr">Numerical response</option></select></label>
+              <label>First item number <input id="item-start" type="number" min="1" value="1"></label>
+            </div>
+            <div id="mc-fit-controls" class="controls" hidden>
+              <button id="fit-mc-grid" type="button">Fit MC block in box</button>
+              <button id="fit-mc-row" type="button" hidden>Find bubbles in new row</button>
+              <button id="place-mc-row" type="button" hidden>Place new row in box</button>
+              <button id="accept-mc-fit" type="button" hidden>Use estimated positions</button>
+            </div>
+            <p id="mc-fit-status" role="status"></p>
+            <div id="nr-fit-controls" hidden>
+              <p>Box one Alberta NR question, including its writing boxes, decimal bubbles and ten digit rows.</p>
+              <label>NR discovery <select id="nr-discovery-engine">
+                <option value="established">Established</option>
+                <option value="psa">PSA structured</option>
+              </select></label>
+              <div class="controls">
+                <button id="cancel-nr-discovery" type="button" hidden>Cancel search</button>
+                <button id="fit-nr-grid" type="button">Find Alberta NR bubbles</button>
+                <button id="anchor-nr-grid" type="button">Place NR grid with four taps</button>
+                <button id="accept-nr-fit" type="button" hidden>Confirm estimated NR positions</button>
+              </div>
+              <p id="nr-fit-status" role="status"></p>
+            </div>
+            <div class="controls">
+              <button id="confirm-block" type="button" aria-describedby="block-confirm-status">Confirm this block</button>
+              <button id="cancel-block-edit" type="button" hidden>Cancel block edit</button>
+            </div>
+            <p id="block-confirm-status" role="status"></p>
+            <details id="legacy-grid-details" open>
+              <summary>More grid options</summary>
+              <div class="editor-fields">
+              <label>Item prefix <input id="item-prefix" value="MC" maxlength="30"></label>
+              <label>Direction <select id="grid-axis"><option value="rows">MC items down; NR slots across</option><option value="columns">MC items across; NR slots down</option></select></label>
+              <label>Symbols in order <input id="grid-symbols" value="A,B,C,D"></label>
+              <label id="decimal-slots-label" hidden>Slots with a decimal bubble <input id="decimal-slots" value="2,3"></label>
+              </div>
+              <label><input id="reverse-grid-order" type="checkbox"> Reverse item or slot order</label>
+              <div class="controls">
+                <button id="detect-grid" type="button">Find bubbles in box</button>
+                <button id="manual-grid" type="button">Place grid across box</button>
+                <button id="assign-grid-labels" type="button">Apply labels and order</button>
+              </div>
+            </details>
+            <details>
+              <summary>Adjust grid endpoints, spacing or angle</summary>
+              <div class="editor-fields">
+                <label>First cell x <input id="grid-first-x" type="number" step="any"></label>
+                <label>First cell y <input id="grid-first-y" type="number" step="any"></label>
+                <label>Last cell in first row x <input id="grid-across-x" type="number" step="any"></label>
+                <label>Last cell in first row y <input id="grid-across-y" type="number" step="any"></label>
+                <label>Last cell in first column x <input id="grid-down-x" type="number" step="any"></label>
+                <label>Last cell in first column y <input id="grid-down-y" type="number" step="any"></label>
+                <label>Radius <input id="grid-radius" type="number" step="any" min=".25" value="3"></label>
+                <label>Column spacing <input id="grid-column-spacing" type="number" step="any" min="0"></label>
+                <label>Row spacing <input id="grid-row-spacing" type="number" step="any" min="0"></label>
+                <label>Across angle (degrees) <input id="grid-angle" type="number" step="any"></label>
+              </div>
+              <div class="controls">
+                <button id="apply-grid-endpoints" type="button">Apply endpoints and counts</button>
+                <button id="apply-grid-spacing" type="button">Apply spacing and angle</button>
+                <button id="pick-grid-endpoints" type="button">Point to three end cells</button>
+              </div>
+            </details>
+            <details>
+              <summary>Correct an individual bubble</summary>
+              <div class="editor-fields">
+                <label>Position <select id="cell-selector"></select></label>
+                <label>Center x <input id="cell-x" type="number" step="any"></label>
+                <label>Center y <input id="cell-y" type="number" step="any"></label>
+                <label>Radius <input id="cell-radius" type="number" step="any" min=".25"></label>
+                <label>Symbol <input id="cell-symbol" maxlength="5"></label>
+              </div>
+              <label><input id="cell-omit" type="checkbox"> This position has no printed bubble</label>
+              <button id="apply-cell" type="button">Apply bubble correction</button>
+            </details>
+
+          </fieldset>
+          <h4>Response blocks</h4>
+          <p id="numbering-conflicts" role="status" hidden></p>
+          <ol id="profile-blocks"></ol>
+          <section id="renumber-block" hidden aria-labelledby="renumber-block-heading">
+            <h4 id="renumber-block-heading">Renumber response block</h4>
+            <div class="editor-fields">
+              <label>First item number <input id="block-first-number" inputmode="numeric" type="number" min="1" step="1"></label>
+            </div>
+            <div class="controls">
+              <button id="apply-block-renumber" type="button">Apply item numbers</button>
+              <button id="cancel-block-renumber" type="button">Cancel</button>
+            </div>
+          </section>
+          <section id="block-mapping" hidden aria-labelledby="block-mapping-heading">
+            <h4 id="block-mapping-heading">Edit numbering and printed symbols</h4>
+            <div id="block-mapping-fields" class="editor-fields"></div>
+            <div class="controls">
+              <button id="apply-block-mapping" type="button">Apply numbering and symbols</button>
+              <button id="cancel-block-mapping" type="button">Cancel</button>
+            </div>
+          </section>
+          <div id="mc-completeness-panel" hidden>
+            <label>MC coverage <select id="mc-completeness">
+              <option value="">Choose after comparing the overlay with the sheet</option>
+              <option value="complete">All intended MC questions are mapped</option>
+              <option value="partial">Save only the mapped MC questions</option>
+            </select></label>
+          </div>
+          <p id="template-save-status" role="status"></p>
+          <div class="controls"><button id="enroll-profile" type="button" class="primary" aria-describedby="template-save-status">Confirm and save template</button></div>
+        </div>
+        <button id="cancel-profile-editor" type="button">Close setup</button>
+      </section>
+      <details class="reference-panel">
+        <summary>Reference sheet and examples</summary>
+        <p>Print on Letter paper at actual size (100%). Keep all four corner markers in view.</p>
+        <ul>
+          <li><a href="./reference/reference-blank.pdf">Blank reference PDF</a></li>
+          <li><a href="./reference/reference-filled.pdf">Filled example PDF</a></li>
+          <li><a href="./reference/reference-filled.png">Filled example image</a></li>
+          <li><a href="./reference/reference-key.json">Expected readings</a></li>
+          <li><a href="./fixtures/m3/mc-only-blank.png">MC-only blank image</a> · <a href="./fixtures/m3/mc-only-filled.png">Filled example</a></li>
+          <li><a href="./fixtures/m3/mixed-blank.png">Mixed blank image</a> · <a href="./fixtures/m3/mixed-filled.png">Filled example</a></li>
+          <li><a href="./fixtures/m3/interleaved-blank.png">Interleaved blank image</a> · <a href="./fixtures/m3/interleaved-filled.png">Filled example</a></li>
+        </ul>
+      </details>
+      <noscript>Turn on JavaScript to capture a sheet or set up offline use.</noscript>
+    </section>
+    <section id="grading" aria-labelledby="grading-heading">
+      <h2 id="grading-heading">Grade and review</h2>
+      <p>Use a saved template to grade scans. Saving a result also retains the source photograph on this device. Safari can clear local storage. Keep a JSON backup for anything you need to retain.</p>
+      <button id="grading-edit-key" type="button" disabled>Edit selected template’s key</button>
+      <form id="grading-key-panel" hidden>
+        <h3 id="grading-key-title"></h3>
+        <div id="grading-key-inputs" class="grading-fields"></div>
+        <details id="grading-categories">
+          <summary>Question categories</summary>
+          <p>Enter one category value per line for each dimension.</p>
+          <div class="grading-fields">
+            <label>First dimension <input id="grading-category-name-1" maxlength="60"></label>
+            <label>First dimension values <textarea id="grading-category-values-1" rows="3"></textarea></label>
+            <label>Second dimension <input id="grading-category-name-2" maxlength="60"></label>
+            <label>Second dimension values <textarea id="grading-category-values-2" rows="3"></textarea></label>
+          </div>
+          <button id="grading-category-refresh" type="button">Update category choices</button>
+          <p id="grading-category-status" role="status"></p>
+          <div id="grading-category-controls" hidden>
+            <fieldset>
+              <legend>Bulk assignment</legend>
+              <div class="grading-fields">
+                <label>From question <select id="grading-category-from"></select></label>
+                <label>Through question <select id="grading-category-through"></select></label>
+                <label>Dimension <select id="grading-category-dimension"></select></label>
+                <label>Category <select id="grading-category-value"></select></label>
+              </div>
+              <button id="grading-category-range" type="button">Assign to range</button>
+              <button id="grading-category-selected" type="button">Assign to checked questions</button>
+            </fieldset>
+            <div id="grading-category-assignments" class="grading-fields"></div>
+          </div>
+        </details>
+        <button type="submit">Save new key revision</button>
+        <button id="grading-key-cancel" type="button">Cancel</button>
+      </form>
+      <p id="grading-status" role="status"></p>
+      <p>This classroom build has its own local grading records. Import a JSON backup to bring in saved grades from an earlier preview.</p>
+      <section id="grading-pending-panel" hidden aria-label="Pending captures">
+        <p>These photos are saved locally and still need recognition. Use the original template revision to reopen one.</p>
+        <label>Pending capture <select id="grading-pending-picker"></select></label>
+        <button id="grading-pending-open" type="button">Resume captured sheet</button>
+        <button id="grading-pending-delete" type="button">Discard captured sheet</button>
+      </section>
+      <p id="grading-rescan-note"></p>
+      <button id="grading-cancel-rescan" type="button" hidden>Cancel rescan</button>
+      <label>Results <select id="grading-saved"><option value="">Choose a result</option></select></label>
+      <div id="grading-result" hidden>
+        <h3 id="grading-label"></h3>
+        <p id="grading-scope" hidden></p>
+        <p>Score <output id="grading-score" aria-live="polite"></output></p>
+        <details id="grading-subtotals-panel" hidden>
+          <summary>Category subtotals</summary>
+          <div class="grading-table"><table>
+            <thead><tr><th>Category</th><th>Score</th><th>Pending</th></tr></thead>
+            <tbody id="grading-subtotals"></tbody>
+          </table></div>
+        </details>
+        <button id="grading-save" type="button">Retry saving result</button>
+        <div class="grading-table">
+          <table>
+            <thead><tr><th>Question</th><th>Observed</th><th>Effective</th><th>Status</th><th>Points</th><th>Review detail</th></tr></thead>
+            <tbody id="grading-items"></tbody>
+          </table>
+        </div>
+        <label>Question <select id="grading-item"></select></label>
+        <label>Corrected answer (empty for blank) <input id="grading-answer" maxlength="5"></label>
+        <div class="grading-fields">
+          <button id="grading-correct" type="button">Correct answer</button>
+          <button id="grading-award" type="button">Award credit</button>
+          <button id="grading-deny" type="button">Deny credit</button>
+          <button id="grading-undo" type="button">Undo last decision</button>
+        </div>
+        <details>
+          <summary>Source photograph and review history</summary>
+          <p id="grading-photo-status"></p>
+          <img id="grading-photo" alt="Source photograph for this scan" hidden>
+          <ol id="grading-history"></ol>
+          <button id="grading-delete-photo" type="button">Delete photograph only</button>
+        </details>
+        <details>
+          <summary>Result and batch actions</summary>
+          <button id="grading-repeat" type="button">Rescan this sheet</button>
+          <button id="grading-edit-saved-key" type="button">Edit key for this template</button>
+          <button id="grading-regrade" type="button">Regrade with latest key</button>
+          <button id="grading-delete-result" type="button">Delete result</button>
+          <button id="grading-delete-batch" type="button">Delete batch</button>
+        </details>
+      </div>
+      <details>
+        <summary>Local export and restore</summary>
+        <button id="grading-csv" type="button">Export selected batch CSV</button>
+        <button id="grading-json" type="button">Create JSON backup with photographs</button>
+        <label>Restore JSON backup <input id="grading-import" type="file" accept=".json,application/json"></label>
+        <p id="grading-download"></p>
+      </details>
+    </section>
+  </main>
+</body>
+</html>
